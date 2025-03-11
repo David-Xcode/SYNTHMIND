@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="300" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .logo-synth {
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
+      font-size: 40px;
+      fill: #3498db;
+    }
+    .logo-mind {
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
+      font-size: 40px;
+      fill: #2c3e50;
+    }
+    @keyframes lineAnim {
+      to { stroke-dashoffset: 0; }
+    }
+  </style>
+  
+  <!-- 背景元素 -->
+  <rect x="0" y="0" width="300" height="80" fill="none" />
+  
+  <!-- Logo文字 -->
+  <text x="50" y="40">
+    <tspan class="logo-synth">Synth</tspan><tspan class="logo-mind">mind</tspan>
+  </text>
+  
+  <!-- 装饰元素 - 更粗的脑电波线条 -->
+  <g transform="translate(-40, 5)">
+    <!-- 加粗的蓝色脑电波线条 -->
+    <path d="M100,55 
+             C115,55 125,48 140,48
+             C155,48 165,58 180,58
+             C195,58 205,45 220,45
+             C235,45 245,55 260,55"
+          stroke="#3498db" 
+          stroke-width="4"
+          fill="none"
+          style="stroke-linecap: round;
+                 filter: drop-shadow(0 1px 1px rgba(52,152,219,0.3));">
+    </path>
+    
+    <!-- 加粗的黑色脑电波线条 -->
+    <path d="M120,50 
+             C135,50 145,40 160,40
+             C175,40 185,55 200,55
+             C215,55 225,40 240,40
+             C255,40 265,50 280,50"
+          stroke="#2c3e50" 
+          stroke-width="3.2"
+          fill="none"
+          style="stroke-linecap: round;
+                 filter: drop-shadow(0 1px 1px rgba(44,62,80,0.2));">
+    </path>
+  </g>
+</svg> 
