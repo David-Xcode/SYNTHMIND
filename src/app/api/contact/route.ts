@@ -23,34 +23,29 @@ const sendCustomerReply = async (
     to: [email],
     subject: 'Thank you for contacting Synthmind - We have received your message',
     html: `
-      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f9fa;">
-        <div style="background: linear-gradient(135deg, #1A73E8, #6C63FF); padding: 40px 30px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 300;">Synthmind</h1>
-          <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Reshaping the Future with AI</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        
+        <div style="background: linear-gradient(135deg, #1A73E8, #6C63FF); padding: 30px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: 300;">Synthmind</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Reshaping the Future with AI</p>
         </div>
         
-        <div style="background-color: white; padding: 40px 30px;">
-          <h2 style="color: #1A73E8; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">
-            Dear ${name},
-          </h2>
+        <div style="background-color: white; padding: 30px;">
+          <p style="color: #333; font-size: 18px; margin: 0 0 20px 0;">Dear ${name},</p>
           
-          <p style="color: #333; line-height: 1.6; margin: 0 0 20px 0; font-size: 16px;">
-            Thank you for reaching out to Synthmind! We have received your message and truly appreciate your interest in our AI solutions.
-          </p>
+          <p style="color: #333; line-height: 1.6; margin: 0 0 25px 0;">Thank you for reaching out to Synthmind! We have received your message and truly appreciate your interest in our AI solutions.</p>
           
-          <div style="background-color: #f8f9ff; border-left: 4px solid #1A73E8; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
-            <h3 style="color: #1A73E8; margin: 0 0 15px 0; font-size: 18px;">Your Message Summary</h3>
+          <div style="background-color: #f8f9ff; border-left: 4px solid #1A73E8; padding: 20px; margin: 25px 0;">
+            <p style="color: #1A73E8; font-weight: bold; margin: 0 0 15px 0;">Your Message Summary</p>
             <p style="margin: 0 0 10px 0; color: #555;"><strong>Subject:</strong> ${subject}</p>
-            <div style="background-color: white; padding: 15px; border-radius: 6px; border: 1px solid #e1e5e9;">
-              <p style="margin: 0; color: #333; white-space: pre-wrap; line-height: 1.5;">${message}</p>
-            </div>
+            <p style="margin: 0; color: #333;"><strong>Message:</strong></p>
+            <p style="margin: 10px 0 0 0; color: #333; line-height: 1.5;">${message}</p>
           </div>
           
-          <p style="color: #333; line-height: 1.6; margin: 0; font-size: 16px;">
-            Best regards,<br>
-            <strong style="color: #1A73E8;">The Synthmind Team</strong>
-          </p>
+          <p style="color: #333; margin: 20px 0 0 0;">Best regards,</p>
+          <p style="color: #1A73E8; font-weight: bold; margin: 5px 0 0 0;">The Synthmind Team</p>
         </div>
+        
       </div>
     `,
   });
@@ -64,8 +59,8 @@ const sendNotificationEmail = async (
   message: string
 ) => {
   return await resend.emails.send({
-    from: 'Synthmind Website <contact@synthmind.ca>',
-    to: ['info@synthmind.ca'],
+    from: 'Synthmind <onboarding@resend.dev>',
+    to: ['synthmind.technology@gmail.com'],
     subject: `[Website Contact] New message from ${name}`,
     replyTo: email,
     html: `
@@ -126,17 +121,23 @@ export async function POST(request: NextRequest) {
 
     console.log(`New contact form submission: ${name} (${email}) - ${subject}`);
 
-    // 同时发送两封邮件
-    const [customerEmail, notificationEmail] = await Promise.all([
-      sendCustomerReply(name, email, subject, message),
-      sendNotificationEmail(name, email, subject, message)
-    ]);
+    // 只发送管理员通知邮件（优先保证你能收到客户留言）
+    const notificationEmail = await sendNotificationEmail(name, email, subject, message);
+
+    // 尝试发送客户确认邮件（如果失败不影响主要功能）
+    let customerEmailSent = false;
+    try {
+      const customerEmail = await sendCustomerReply(name, email, subject, message);
+      customerEmailSent = !!customerEmail.data;
+    } catch (error) {
+      console.warn('Customer reply email failed, but notification email sent successfully:', error);
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Emails sent successfully',
+      message: 'Contact form submitted successfully',
       data: {
-        customerEmailSent: !!customerEmail.data,
+        customerEmailSent,
         notificationEmailSent: !!notificationEmail.data
       }
     });
