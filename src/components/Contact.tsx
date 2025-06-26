@@ -32,7 +32,6 @@ const Contact: React.FC = () => {
     setSubmitStatus('idle');
 
     try {
-      // 这里需要创建API端点来处理Resend集成
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -41,14 +40,18 @@ const Contact: React.FC = () => {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         setSubmitStatus('success');
         setFormData({ name: '', email: '', subject: '', message: '' });
+        console.log('Email sent successfully:', result.data);
       } else {
+        console.error('Email sending failed:', result.error || result.details);
         setSubmitStatus('error');
       }
     } catch (error) {
-      console.error('提交错误:', error);
+      console.error('Submission error:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -83,10 +86,10 @@ const Contact: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-500">Email</p>
                     <a 
-                      href="mailto:synthmind.technology@gmail.com"
+                      href="mailto:info@synthmind.ca"
                       className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors"
                     >
-                      synthmind.technology@gmail.com
+                      info@synthmind.ca
                     </a>
                   </div>
                 </div>

@@ -62,11 +62,20 @@ npm run dev
 
 #### 分别运行:
 ```bash
-# 启动后端服务器 (端口 3001)
+# 启动TypeScript后端服务器 (端口 3001)
 npm run server
 
 # 启动前端开发服务器 (端口 3000)
 npm start
+```
+
+#### 生产环境部署:
+```bash
+# 构建后端
+npm run build-server
+
+# 启动生产环境后端
+npm run start-prod
 ```
 
 ### 6. 访问应用
@@ -83,6 +92,8 @@ synthmind/
 │   ├── synthmind_logo.png    # Logo文件
 │   └── synthmind_logo.svg    # Logo文件
 ├── src/
+│   ├── api/
+│   │   └── contact.ts        # TypeScript联系表单API
 │   ├── components/
 │   │   ├── Header.tsx        # 导航栏组件
 │   │   ├── Hero.tsx          # 主页横幅
@@ -93,7 +104,7 @@ synthmind/
 │   ├── App.tsx               # 主应用组件
 │   ├── index.tsx             # 应用入口
 │   └── index.css             # 全局样式
-├── server.js                 # Express服务器
+├── server.ts                 # TypeScript Express服务器
 ├── tailwind.config.js        # Tailwind配置
 ├── package.json              # 项目配置
 └── README.md                 # 项目说明
@@ -125,17 +136,34 @@ synthmind/
 ### GET /api/health
 健康检查端点
 
-## 环境变量设置说明
+## 邮件配置说明
 
-请创建 `.env` 文件并设置以下变量：
+### Email Sending Logic
+- 🔄 **Dual Email System**: After customer submits form, system sends two emails simultaneously
+- 📧 **Customer Auto-Reply**: Sent to customer confirming message received (from: noreply@synthmind.ca)
+- 📬 **Admin Notification**: Sent to you with customer details (to: info@synthmind.ca)
+
+### Environment Variables Setup
+
+Create a `.env` file and set the following variables:
 
 ```env
-# Resend API密钥 - 在 https://resend.com/api-keys 获取
+# Resend API Key - Get from https://resend.com/api-keys
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
 
-# 服务器端口
+# Server Port
 PORT=3001
+
+# Development Environment Identifier (optional)
+NODE_ENV=development
 ```
+
+### Domain Verification Requirements
+- Ensure `synthmind.ca` domain is verified in Resend console
+- Email address configuration:
+  - Customer Reply: `noreply@synthmind.ca`
+  - Website Notification: `contact@synthmind.ca`
+  - Receiving Email: `info@synthmind.ca`
 
 ## 自定义配置
 
