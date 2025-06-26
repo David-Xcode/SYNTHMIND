@@ -32,6 +32,8 @@ const Contact: React.FC = () => {
     setSubmitStatus('idle');
 
     try {
+      console.log('Sending contact form:', formData); // 调试信息
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -40,14 +42,28 @@ const Contact: React.FC = () => {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      console.log('Response status:', response.status); // 调试信息
+      console.log('Response headers:', response.headers); // 调试信息
+
+      // 检查响应是否为空或不是JSON
+      const contentType = response.headers.get('content-type');
+      let result;
+      
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        // 如果不是JSON，读取为文本
+        const text = await response.text();
+        console.log('Non-JSON response:', text);
+        result = { success: false, error: `Server returned ${response.status}: ${text || 'No content'}` };
+      }
 
       if (response.ok && result.success) {
         setSubmitStatus('success');
         setFormData({ name: '', email: '', subject: '', message: '' });
         console.log('Email sent successfully:', result.data);
       } else {
-        console.error('Email sending failed:', result.error || result.details);
+        console.error('Email sending failed:', result.error || result.details || `HTTP ${response.status}`);
         setSubmitStatus('error');
       }
     } catch (error) {
