@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { EnvelopeIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 
@@ -34,12 +36,8 @@ const Contact: React.FC = () => {
     try {
       console.log('Sending contact form:', formData); // 调试信息
 
-      // 获取API URL - 生产环境使用绝对URL，开发环境使用相对URL
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://synthmind.ca/api/contact'
-        : '/api/contact';
-
-      const response = await fetch(apiUrl, {
+      // 使用Next.js API路由 - 无需区分环境
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
