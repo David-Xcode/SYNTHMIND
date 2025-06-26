@@ -1,31 +1,52 @@
 {
   "name": "synthmind",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Synthmind - Reshaping the Future with AI",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
-    "@types/node": "^16.18.112",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.14.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
     "resend": "^4.0.1",
-    "typescript": "^4.9.5",
-    "express": "^4.21.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "@types/express": "^5.0.0",
-    "@types/cors": "^2.8.17"
+    "typescript": "^5.3.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.14",
+    "ts-node": "^10.9.2"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "react-scripts build",
+    "build:server": "tsc --project tsconfig.server.json",
     "eject": "react-scripts eject",
-    "server": "ts-node --project tsconfig.server.json server.ts",
-    "dev": "concurrently \"npm run server\" \"npm start\"",
-    "build-server": "tsc --project tsconfig.server.json",
-    "start-prod": "node dist/server.js"
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "react-scripts start",
+    "dev:server": "ts-node --project tsconfig.server.json server.ts",
+    "start:server": "node dist/server.js",
+    "start:prod": "npm run build && npm run start:server",
+    "serve": "node dist/server.js",
+    "test": "react-scripts test",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf build dist",
+    "deploy": "npm run clean && npm run build && npm run start:server",
+    "heroku-postbuild": "npm run build"
   },
   "eslintConfig": {
     "extends": [
@@ -44,13 +65,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.5.1",
-    "tailwindcss": "^3.4.14",
-    "concurrently": "^9.1.0",
-    "ts-node": "^10.9.2"
   },
   "proxy": "http://localhost:3001"
 }

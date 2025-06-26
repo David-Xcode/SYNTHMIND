@@ -34,7 +34,12 @@ const Contact: React.FC = () => {
     try {
       console.log('Sending contact form:', formData); // 调试信息
 
-      const response = await fetch('/api/contact', {
+      // 获取API URL - 生产环境使用绝对URL，开发环境使用相对URL
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://synthmind.ca/api/contact'
+        : '/api/contact';
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

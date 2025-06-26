@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Synthmind",
+  "name": "Synthmind - Reshaping the Future with AI",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,18 +8,19 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "synthmind_logo.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "synthmind_logo.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#1A73E8",
+  "background_color": "#ffffff",
+  "description": "Synthmind - AI solutions to reshape the future"
 }

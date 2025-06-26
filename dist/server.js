@@ -1,71 +1,54 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { Resend } from 'resend';
-import path from 'path';
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const resend_1 = require("resend");
+const path_1 = __importDefault(require("path"));
 // 加载环境变量
-dotenv.config();
-
-const app = express();
+dotenv_1.default.config();
+const app = (0, express_1.default)();
 const port = parseInt(process.env.PORT || '3001', 10);
 const isProduction = process.env.NODE_ENV === 'production';
-
 // 初始化Resend客户端
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// 定义请求数据接口
-interface ContactFormData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
-
+const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 // CORS配置 - 生产环境使用域名，开发环境允许localhost
 const corsOptions = {
-  origin: isProduction 
-    ? ['https://synthmind.ca', 'https://www.synthmind.ca']
-    : ['http://localhost:3000', 'http://192.168.2.21:3000'],
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+    origin: isProduction
+        ? ['https://synthmind.ca', 'https://www.synthmind.ca']
+        : ['http://localhost:3000', 'http://192.168.2.21:3000'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 };
-
 // 中间件
-app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
+app.use((0, cors_1.default)(corsOptions));
+app.use(express_1.default.json({ limit: '10mb' }));
+app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 // 生产环境：提供静态文件服务
 if (isProduction) {
-  // 为React构建文件提供静态服务
-  app.use(express.static(path.join(__dirname, '../build')));
-  
-  // 处理任何非API请求，返回React应用
-  app.get('/', (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, '../build', 'index.html'));
-  });
+    // 为React构建文件提供静态服务
+    app.use(express_1.default.static(path_1.default.join(__dirname, '../build')));
+    // 处理任何非API请求，返回React应用
+    app.get('/', (req, res) => {
+        res.sendFile(path_1.default.join(__dirname, '../build', 'index.html'));
+    });
 }
-
 // 请求日志中间件
-app.use((req: Request, res: Response, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
 });
-
 // 发送自动回复给客户
-const sendCustomerReply = async (
-  name: string, 
-  email: string, 
-  subject: string, 
-  message: string
-) => {
-  return await resend.emails.send({
-    from: 'Synthmind <noreply@synthmind.ca>',
-    to: [email],
-    subject: 'Thank you for contacting Synthmind - We have received your message',
-    html: `
+const sendCustomerReply = async (name, email, subject, message) => {
+    return await resend.emails.send({
+        from: 'Synthmind <noreply@synthmind.ca>',
+        to: [email],
+        subject: 'Thank you for contacting Synthmind - We have received your message',
+        html: `
       <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8f9fa;">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1A73E8, #6C63FF); padding: 40px 30px; text-align: center;">
@@ -122,22 +105,16 @@ const sendCustomerReply = async (
         </div>
       </div>
     `,
-  });
+    });
 };
-
 // 发送通知邮件给管理员
-const sendNotificationEmail = async (
-  name: string, 
-  email: string, 
-  subject: string, 
-  message: string
-) => {
-  return await resend.emails.send({
-    from: 'Synthmind Website <contact@synthmind.ca>',
-    to: ['info@synthmind.ca'],
-    subject: `[Website Contact Form] New message from ${name}`,
-    replyTo: email, // 方便直接回复客户
-    html: `
+const sendNotificationEmail = async (name, email, subject, message) => {
+    return await resend.emails.send({
+        from: 'Synthmind Website <contact@synthmind.ca>',
+        to: ['info@synthmind.ca'],
+        subject: `[Website Contact Form] New message from ${name}`,
+        replyTo: email, // 方便直接回复客户
+        html: `
       <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1A73E8, #6C63FF); padding: 30px; text-align: center; color: white;">
@@ -203,122 +180,109 @@ const sendNotificationEmail = async (
         </div>
       </div>
     `,
-  });
+    });
 };
-
 // 联系表单处理函数
-const handleContactForm = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { name, email, subject, message }: ContactFormData = req.body;
-
-    // 验证必需字段
-    if (!name || !email || !subject || !message) {
-      res.status(400).json({ 
-        success: false,
-        error: 'All fields are required' 
-      });
-      return;
+const handleContactForm = async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+        // 验证必需字段
+        if (!name || !email || !subject || !message) {
+            res.status(400).json({
+                success: false,
+                error: 'All fields are required'
+            });
+            return;
+        }
+        // 验证邮箱格式
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            res.status(400).json({
+                success: false,
+                error: 'Invalid email format'
+            });
+            return;
+        }
+        console.log(`New contact form submission: ${name} (${email}) - ${subject}`);
+        // 同时发送两封邮件
+        const [customerEmail, notificationEmail] = await Promise.all([
+            // 1. 发送自动回复给客户
+            sendCustomerReply(name, email, subject, message),
+            // 2. 发送通知邮件给管理员
+            sendNotificationEmail(name, email, subject, message)
+        ]);
+        console.log('Emails sent successfully:', {
+            customerEmail: customerEmail.data,
+            notificationEmail: notificationEmail.data
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Emails sent successfully',
+            data: {
+                customerEmailSent: !!customerEmail.data,
+                notificationEmailSent: !!notificationEmail.data
+            }
+        });
     }
-
-    // 验证邮箱格式
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      res.status(400).json({
-        success: false,
-        error: 'Invalid email format'
-      });
-      return;
+    catch (error) {
+        console.error('Failed to send emails:', error);
+        // 根据错误类型返回不同的错误信息
+        if (error instanceof Error) {
+            res.status(500).json({
+                success: false,
+                error: 'Failed to send emails',
+                details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+            });
+        }
+        else {
+            res.status(500).json({
+                success: false,
+                error: 'Unknown error'
+            });
+        }
     }
-
-    console.log(`New contact form submission: ${name} (${email}) - ${subject}`);
-
-    // 同时发送两封邮件
-    const [customerEmail, notificationEmail] = await Promise.all([
-      // 1. 发送自动回复给客户
-      sendCustomerReply(name, email, subject, message),
-      // 2. 发送通知邮件给管理员
-      sendNotificationEmail(name, email, subject, message)
-    ]);
-
-    console.log('Emails sent successfully:', {
-      customerEmail: customerEmail.data,
-      notificationEmail: notificationEmail.data
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Emails sent successfully',
-      data: {
-        customerEmailSent: !!customerEmail.data,
-        notificationEmailSent: !!notificationEmail.data
-      }
-    });
-
-  } catch (error) {
-    console.error('Failed to send emails:', error);
-    
-    // 根据错误类型返回不同的错误信息
-    if (error instanceof Error) {
-      res.status(500).json({
-        success: false,
-        error: 'Failed to send emails',
-        details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: 'Unknown error'
-      });
-    }
-  }
 };
-
 // 联系表单API端点
 app.post('/api/contact', handleContactForm);
-
 // 健康检查端点
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
+    });
 });
-
 // 生产环境：catch-all处理器，返回React应用 (必须在API路由之后)
 if (isProduction) {
-  app.get('*', (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, '../build', 'index.html'));
-  });
+    app.get('*', (req, res) => {
+        res.sendFile(path_1.default.join(__dirname, '../build', 'index.html'));
+    });
 }
-
 // 404处理 (仅用于API路由)
-app.use('/api/*', (req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    error: 'API endpoint not found',
-    path: req.originalUrl
-  });
+app.use('/api/*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        error: 'API endpoint not found',
+        path: req.originalUrl
+    });
 });
-
 // 全局错误处理
-app.use((error: Error, req: Request, res: Response, next: any) => {
-  console.error('Server error:', error);
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error',
-    details: process.env.NODE_ENV === 'development' ? error.message : undefined
-  });
+app.use((error, req, res, next) => {
+    console.error('Server error:', error);
+    res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
 });
-
 app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 TypeScript server running on port ${port}`);
-  console.log(`📍 Health check: http://localhost:${port}/api/health`);
-  console.log(`📧 Contact form API: http://localhost:${port}/api/contact`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔧 Production mode: ${isProduction}`);
-  
-  if (isProduction) {
-    console.log(`🌐 Serving React app from: ${path.join(__dirname, '../build')}`);
-  }
-}); 
+    console.log(`🚀 TypeScript server running on port ${port}`);
+    console.log(`📍 Health check: http://localhost:${port}/api/health`);
+    console.log(`📧 Contact form API: http://localhost:${port}/api/contact`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔧 Production mode: ${isProduction}`);
+    if (isProduction) {
+        console.log(`🌐 Serving React app from: ${path_1.default.join(__dirname, '../build')}`);
+    }
+});
+//# sourceMappingURL=server.js.map
