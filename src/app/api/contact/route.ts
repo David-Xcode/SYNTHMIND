@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-// 初始化Resend客户端 - 从环境变量获取API密钥
+// 初始化Resend客户端
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface ContactFormData {
@@ -66,7 +66,7 @@ const sendNotificationEmail = async (
   return await resend.emails.send({
     from: 'Synthmind Website <contact@synthmind.ca>',
     to: ['info@synthmind.ca'],
-    subject: `[Website Contact Form] New message from ${name}`,
+    subject: `[Website Contact] New message from ${name}`,
     replyTo: email,
     html: `
       <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
@@ -93,7 +93,7 @@ const sendNotificationEmail = async (
           
           <div style="margin-top: 30px; text-align: center;">
             <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}" 
-               style="display: inline-block; background: linear-gradient(135deg, #1A73E8, #6C63FF); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; margin-right: 15px;">
+               style="display: inline-block; background: linear-gradient(135deg, #1A73E8, #6C63FF); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">
               Reply to Customer
             </a>
           </div>
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   try {
     const { name, email, subject, message }: ContactFormData = await request.json();
 
-    // 验证必需字段 - 输入验证
+    // 验证必需字段
     if (!name || !email || !subject || !message) {
       return NextResponse.json({ 
         success: false,
@@ -131,11 +131,6 @@ export async function POST(request: NextRequest) {
       sendCustomerReply(name, email, subject, message),
       sendNotificationEmail(name, email, subject, message)
     ]);
-
-    console.log('Emails sent successfully:', {
-      customerEmail: customerEmail.data,
-      notificationEmail: notificationEmail.data
-    });
 
     return NextResponse.json({
       success: true,
