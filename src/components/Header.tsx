@@ -57,6 +57,13 @@ const Header: React.FC = () => {
             Services
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></span>
           </button>
+          <a 
+            href="/invoice"
+            className="text-dark hover:text-primary transition-colors duration-300 font-medium relative group"
+          >
+            Invoice
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></span>
+          </a>
           <button 
             onClick={() => scrollToSection('contact')}
             className="text-dark hover:text-primary transition-colors duration-300 font-medium relative group"
@@ -95,6 +102,12 @@ const Header: React.FC = () => {
             >
               Services
             </button>
+            <a 
+              href="/invoice"
+              className="block w-full text-left text-dark hover:text-primary transition-colors duration-300 font-medium py-2"
+            >
+              Invoice
+            </a>
             <button 
               onClick={() => scrollToSection('contact')}
               className="block w-full text-left text-dark hover:text-primary transition-colors duration-300 font-medium py-2"

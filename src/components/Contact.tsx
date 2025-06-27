@@ -91,48 +91,7 @@ const Contact: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* 联系信息 */}
-          <div className="space-y-8">
-            <div className="bg-white p-8 rounded-2xl shadow-lg">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Get in Touch</h3>
-              
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <EnvelopeIcon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <a 
-                      href="mailto:info@synthmind.ca"
-                      className="text-lg font-medium text-gray-900 hover:text-blue-600 transition-colors"
-                    >
-                      info@synthmind.ca
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <GlobeAltIcon className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Website</p>
-                    <a 
-                      href="https://synthmind.ca" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-lg font-medium text-gray-900 hover:text-green-600 transition-colors"
-                    >
-                      synthmind.ca
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div className="max-w-3xl mx-auto">
           {/* 联系表单 */}
           <div className="bg-white p-8 rounded-2xl shadow-lg">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h3>
