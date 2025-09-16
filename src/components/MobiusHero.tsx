@@ -5,94 +5,57 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { Environment, OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 
-// 创建莫比乌斯环的几何体
-function createMobiusGeometry(radius = 2, tube = 0.3, radialSegments = 32, tubularSegments = 200) {
-  const points: THREE.Vector3[] = []
-  const normals: THREE.Vector3[] = []
-
-  for (let i = 0; i <= tubularSegments; i++) {
-    const u = (i / tubularSegments) * Math.PI * 2
-
-    // 莫比乌斯环参数方程
-    for (let j = 0; j <= radialSegments; j++) {
-      const v = (j / radialSegments) * 2 - 1
-      const halfTwist = u / 2
-
-      const x = (radius + tube * v * Math.cos(halfTwist)) * Math.cos(u)
-      const y = (radius + tube * v * Math.cos(halfTwist)) * Math.sin(u)
-      const z = tube * v * Math.sin(halfTwist)
-
-      points.push(new THREE.Vector3(x, y, z))
-
-      // 计算法线
-      const nx = Math.cos(u) * Math.cos(halfTwist)
-      const ny = Math.sin(u) * Math.cos(halfTwist)
-      const nz = Math.sin(halfTwist)
-      normals.push(new THREE.Vector3(nx, ny, nz).normalize())
-    }
-  }
-
-  // 创建面索引
-  const indices: number[] = []
-  for (let i = 0; i < tubularSegments; i++) {
-    for (let j = 0; j < radialSegments; j++) {
-      const a = (radialSegments + 1) * i + j
-      const b = (radialSegments + 1) * (i + 1) + j
-      const c = (radialSegments + 1) * (i + 1) + j + 1
-      const d = (radialSegments + 1) * i + j + 1
-
-      indices.push(a, b, d)
-      indices.push(b, c, d)
-    }
-  }
-
-  const geometry = new THREE.BufferGeometry()
-  const vertices = new Float32Array(points.length * 3)
-  const normalsArray = new Float32Array(normals.length * 3)
-
-  for (let i = 0; i < points.length; i++) {
-    vertices[i * 3] = points[i].x
-    vertices[i * 3 + 1] = points[i].y
-    vertices[i * 3 + 2] = points[i].z
-
-    normalsArray[i * 3] = normals[i].x
-    normalsArray[i * 3 + 1] = normals[i].y
-    normalsArray[i * 3 + 2] = normals[i].z
-  }
-
-  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-  geometry.setAttribute('normal', new THREE.BufferAttribute(normalsArray, 3))
-  geometry.setIndex(indices)
-
-  return geometry
-}
-
-// 单个莫比乌斯环组件
-function MobiusRing({
+// 雾状环组件 - 由粒子组成的旋转环
+function FoggyRing({
   color,
   radius,
-  tube,
+  thickness = 1.5,
+  particleCount = 3000,
   rotationSpeed = 0.01,
   rotationAxis = 'y',
-  opacity = 0.85,
-  emissive = false,
+  opacity = 0.4,
   offset = [0, 0, 0]
 }: {
   color: string
   radius: number
-  tube: number
+  thickness?: number
+  particleCount?: number
   rotationSpeed?: number
   rotationAxis?: 'x' | 'y' | 'z'
   opacity?: number
-  emissive?: boolean
   offset?: [number, number, number]
 }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const geometry = useMemo(() => createMobiusGeometry(radius, tube), [radius, tube])
+  const groupRef = useRef<THREE.Group>(null)
+
+  // 创建环形粒子分布
+  const positions = useMemo(() => {
+    const pos = new Float32Array(particleCount * 3)
+    const sizes = new Float32Array(particleCount)
+    const opacities = new Float32Array(particleCount)
+
+    for (let i = 0; i < particleCount; i++) {
+      // 在环形路径上分布粒子
+      const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.5
+      const radiusVariation = radius + (Math.random() - 0.5) * thickness
+
+      // 添加一些垂直方向的变化，使其更像雾
+      const heightVariation = (Math.random() - 0.5) * thickness * 0.5
+
+      pos[i * 3] = Math.cos(angle) * radiusVariation
+      pos[i * 3 + 1] = heightVariation
+      pos[i * 3 + 2] = Math.sin(angle) * radiusVariation
+
+      // 随机大小和透明度 - 更大的粒子，更高的密度
+      sizes[i] = Math.random() * 0.6 + 0.2
+      opacities[i] = Math.random() * 0.7 + 0.3
+    }
+
+    return { positions: pos, sizes, opacities }
+  }, [particleCount, radius, thickness])
 
   // 动画循环
   useFrame((state) => {
-    if (meshRef.current) {
+    if (groupRef.current) {
       // 主旋转 - 缓慢且流畅
       const baseRotation = state.clock.elapsedTime * rotationSpeed
 
@@ -102,99 +65,128 @@ function MobiusRing({
       const mouseInfluenceY = pointer.y * 0.3
 
       if (rotationAxis === 'y') {
-        meshRef.current.rotation.y = baseRotation + mouseInfluenceX
-        meshRef.current.rotation.x = mouseInfluenceY * 0.5
+        groupRef.current.rotation.y = baseRotation + mouseInfluenceX
+        groupRef.current.rotation.x = mouseInfluenceY * 0.5
       } else if (rotationAxis === 'x') {
-        meshRef.current.rotation.x = baseRotation + mouseInfluenceY
-        meshRef.current.rotation.z = mouseInfluenceX * 0.5
+        groupRef.current.rotation.x = baseRotation + mouseInfluenceY
+        groupRef.current.rotation.z = mouseInfluenceX * 0.5
       } else {
-        meshRef.current.rotation.z = baseRotation + mouseInfluenceX
-        meshRef.current.rotation.y = mouseInfluenceY * 0.5
+        groupRef.current.rotation.z = baseRotation + mouseInfluenceX
+        groupRef.current.rotation.y = mouseInfluenceY * 0.5
       }
 
-      // 轻微的浮动效果 - 更平滑
-      meshRef.current.position.y = offset[1] + Math.sin(state.clock.elapsedTime * 0.2) * 0.05
+      // 轻微的浮动效果
+      groupRef.current.position.y = offset[1] + Math.sin(state.clock.elapsedTime * 0.2) * 0.05
+
+      // 更新粒子属性以创建流动效果
+      const points = groupRef.current.children[0] as THREE.Points
+      if (points && points.geometry) {
+        const positionAttribute = points.geometry.attributes.position
+        const time = state.clock.elapsedTime
+
+        for (let i = 0; i < particleCount; i++) {
+          const angle = (i / particleCount) * Math.PI * 2 + time * 0.05
+          const radiusVariation = radius + Math.sin(time * 0.5 + i * 0.1) * thickness * 0.3
+
+          positionAttribute.array[i * 3] = Math.cos(angle) * radiusVariation
+          positionAttribute.array[i * 3 + 2] = Math.sin(angle) * radiusVariation
+        }
+
+        positionAttribute.needsUpdate = true
+      }
     }
   })
 
   return (
-    <mesh
-      ref={meshRef}
-      geometry={geometry}
-      position={offset}
-      castShadow
-      receiveShadow
-    >
-      <meshPhysicalMaterial
-        color={color}
-        metalness={0.1}
-        roughness={0.8}
-        clearcoat={0.2}
-        clearcoatRoughness={0.3}
-        transparent={false}
-        opacity={1.0}
-        emissive={emissive ? color : undefined}
-        emissiveIntensity={emissive ? 0.3 : 0}
-        envMapIntensity={0.4}
-        side={THREE.DoubleSide}
-        depthWrite={true}
-        depthTest={true}
-      />
-    </mesh>
-  )
-}
+    <group ref={groupRef} position={offset}>
+      <points>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={particleCount}
+            array={positions.positions}
+            itemSize={3}
+          />
+          <bufferAttribute
+            attach="attributes-size"
+            count={particleCount}
+            array={positions.sizes}
+            itemSize={1}
+          />
+          <bufferAttribute
+            attach="attributes-opacity"
+            count={particleCount}
+            array={positions.opacities}
+            itemSize={1}
+          />
+        </bufferGeometry>
+        <shaderMaterial
+          transparent
+          depthWrite={false}
+          blending={THREE.NormalBlending}
+          uniforms={{
+            color: { value: new THREE.Color(color) },
+            opacity: { value: opacity }
+          }}
+          vertexShader={`
+            attribute float size;
+            attribute float opacity;
+            varying float vOpacity;
 
-// 雾化粒子效果
-function FogParticles({ color, count = 500 }: { color: string, count?: number }) {
-  const points = useMemo(() => {
-    const positions = new Float32Array(count * 3)
-    for (let i = 0; i < count; i++) {
-      // 创建围绕中心的雾状分布
-      const angle = Math.random() * Math.PI * 2
-      const radius = Math.random() * 8 + 2
-      const height = (Math.random() - 0.5) * 10
+            void main() {
+              vOpacity = opacity;
+              vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+              gl_PointSize = size * 50.0 / -mvPosition.z;
+              gl_Position = projectionMatrix * mvPosition;
+            }
+          `}
+          fragmentShader={`
+            uniform vec3 color;
+            uniform float opacity;
+            varying float vOpacity;
 
-      positions[i * 3] = Math.cos(angle) * radius
-      positions[i * 3 + 1] = height
-      positions[i * 3 + 2] = Math.sin(angle) * radius
-    }
-    return positions
-  }, [count])
+            void main() {
+              vec2 center = gl_PointCoord - vec2(0.5);
+              float dist = length(center);
+              float alpha = smoothstep(0.5, 0.0, dist);
 
-  const pointsRef = useRef<THREE.Points>(null)
-
-  useFrame((state) => {
-    if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.elapsedTime * 0.02
-      pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.01) * 0.1
-    }
-  })
-
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={points}
-          itemSize={3}
+              gl_FragColor = vec4(color, alpha * opacity * vOpacity);
+            }
+          `}
         />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.15}
-        color={color}
-        transparent
-        opacity={0.15}
-        sizeAttenuation
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
+      </points>
+    </group>
   )
 }
+
 
 // 主场景组件
 function Scene() {
+  const mainGroupRef = useRef<THREE.Group>(null)
+  const initialRotationRef = useRef(0)
+
+  // 整体场景的旋转动画
+  useFrame((state) => {
+    if (mainGroupRef.current) {
+      const elapsedTime = state.clock.elapsedTime
+
+      // 初始快速旋转效果 - 在前1秒内快速向右旋转90度，然后过渡到正常速度
+      let sceneRotation
+      if (elapsedTime < 1) {
+        // 使用缓动函数实现减速效果
+        const progress = elapsedTime / 1
+        const easeOut = 1 - Math.pow(1 - progress, 3)
+        initialRotationRef.current = easeOut * Math.PI * 0.5 // 90度向右
+        sceneRotation = initialRotationRef.current
+      } else {
+        // 1秒后继续缓慢旋转 - 更慢的自旋
+        sceneRotation = initialRotationRef.current + (elapsedTime - 1) * 0.02
+      }
+
+      mainGroupRef.current.rotation.y = sceneRotation
+    }
+  })
+
   return (
     <>
       {/* 相机设置 - 拉远视角 */}
@@ -206,8 +198,7 @@ function Scene() {
         enableZoom={false}
         maxPolarAngle={Math.PI / 1.5}
         minPolarAngle={Math.PI / 3}
-        autoRotate
-        autoRotateSpeed={0.1}
+        autoRotate={false}
         enableRotate={true}
         rotateSpeed={0.5}
       />
@@ -228,34 +219,35 @@ function Scene() {
       {/* 环境贴图 */}
       <Environment preset="night" />
 
-      {/* 雾效果 - 更亮的雾 */}
-      <fog attach="fog" args={['#4a4a4a', 12, 45]} />
+      {/* 雾效果 - 深色调雾 */}
+      <fog attach="fog" args={['#1a1f2e', 12, 45]} />
 
       {/* 主容器 - 整体45度倾斜朝向观察者 */}
-      <group rotation={[Math.PI / 4, 0, 0]}>
+      <group ref={mainGroupRef} rotation={[Math.PI / 4, 0, 0]}>
 
-        {/* 蓝色莫比乌斯环 - 垂直轨道 */}
-        <MobiusRing
-          color="#3498db"
-          radius={5.2}
-          tube={0.4}
-          rotationSpeed={0.08}
+        {/* 浅灰色雾状环 - 垂直轨道（后面） */}
+        <FoggyRing
+          color="#95a5a6"
+          radius={4.8}
+          thickness={1.5}
+          particleCount={35000}
+          rotationSpeed={-0.35}
           rotationAxis="y"
-          opacity={1.0}
-          emissive={true}
-          offset={[0, 0, 0]}
+          opacity={0.6}
+          offset={[0, 0, -0.5]}
         />
 
-        {/* 黑色（深灰）莫比乌斯环 - 60度倾斜轨道 */}
+        {/* 蓝色雾状环 - 60度倾斜轨道（前面） */}
         <group rotation={[Math.PI / 3, Math.PI / 6, 0]}>
-          <MobiusRing
-            color="#2c3e50"
-            radius={5.0}
-            tube={0.38}
-            rotationSpeed={-0.09}
+          <FoggyRing
+            color="#3498db"
+            radius={5.5}
+            thickness={1.8}
+            particleCount={40000}
+            rotationSpeed={0.25}
             rotationAxis="y"
-            opacity={1.0}
-            offset={[0, 0, 0]}
+            opacity={0.7}
+            offset={[0, 0, 0.5]}
           />
         </group>
       </group>
@@ -266,7 +258,7 @@ function Scene() {
 // 主组件
 export default function MobiusHero() {
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-gray-900 via-gray-700 to-gray-500">
+    <div className="relative w-full h-screen bg-gradient-to-b from-[#0f1419] via-[#1a1f2e] to-[#252b3b]">
       {/* 3D画布 */}
       <Canvas
         shadows
@@ -287,7 +279,7 @@ export default function MobiusHero() {
       {/* 覆盖层文字内容 */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center mt-16">
-          <h1 className="text-6xl md:text-8xl font-bold text-white/90 tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-bold tracking-tight">
             <span className="text-[#3498db]">Synth</span>
             <span className="text-gray-300">mind</span>
           </h1>
@@ -298,7 +290,7 @@ export default function MobiusHero() {
       </div>
 
       {/* 渐变遮罩 - 底部淡出效果 */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-500 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#252b3b] to-transparent pointer-events-none" />
     </div>
   )
 }
