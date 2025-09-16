@@ -35,13 +35,13 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Invoice Details</h2>
-        <div className="text-sm text-gray-500">Enter invoice information</div>
+        <h2 className="text-xl font-semibold text-gray-100">Invoice Details</h2>
+        <div className="text-sm text-gray-400">Enter invoice information</div>
       </div>
       
       <div className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Client Name
           </label>
           <input
@@ -49,13 +49,13 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             name="clientName"
             value={invoiceData.clientName}
             onChange={onInputChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="w-full px-4 py-3 input-premium"
             placeholder="Enter client name"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Client Address
           </label>
           <textarea
@@ -63,7 +63,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             value={invoiceData.clientAddress}
             onChange={onInputChange}
             rows={3}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+            className="w-full px-4 py-3 input-premium resize-none"
             placeholder="Enter client address&#10;Support multiple lines"
           />
         </div>
@@ -78,7 +78,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               <button
                 type="button"
                 onClick={onAddService}
-                className="flex items-center px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center px-3 py-1 text-sm btn-premium"
               >
                 <PlusIcon className="w-4 h-4 mr-1" />
                 Add Service
@@ -88,14 +88,14 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           
           <div className="space-y-4">
             {invoiceData.services.map((service, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <div key={index} className="glass-card rounded-lg p-4">
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-700">Service {index + 1}</span>
+                  <span className="text-sm font-medium text-gray-300">Service {index + 1}</span>
                   {invoiceData.services.length > 1 && (
                     <button
                       type="button"
                       onClick={() => onRemoveService(index)}
-                      className="text-red-500 hover:text-red-700 transition-colors"
+                      className="text-red-400 hover:text-red-500 transition-all duration-300"
                     >
                       <XMarkIcon className="w-4 h-4" />
                     </button>
@@ -104,31 +104,31 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       Service Description
                     </label>
                     <input
                       type="text"
                       value={service.serviceName}
                       onChange={(e) => onServiceChange(index, 'serviceName', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      className="w-full px-4 py-3 input-premium"
                       placeholder="e.g., Federal and Ontario Corporation Income Tax Return (T2)"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       Amount ($)
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                      <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
                       <input
                         type="number"
                         value={service.serviceAmount || ''}
                         onChange={(e) => onServiceChange(index, 'serviceAmount', parseFloat(e.target.value) || 0)}
                         step="0.01"
                         min="0"
-                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        className="w-full pl-8 pr-4 py-3 input-premium"
                         placeholder="0.00"
                       />
                     </div>
@@ -140,7 +140,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         </div>
          
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Deposit ($)
           </label>
           <div className="relative">
@@ -156,11 +156,11 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               placeholder="0.00"
             />
           </div>
-          <p className="mt-1 text-sm text-gray-500">Optional: Amount already received as deposit</p>
+          <p className="mt-1 text-sm text-gray-400">Optional: Amount already received as deposit</p>
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Invoice Date
           </label>
           <input
@@ -168,7 +168,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             name="invoiceDate"
             value={invoiceData.invoiceDate}
             onChange={onInputChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="w-full px-4 py-3 input-premium"
           />
         </div>
       </div>

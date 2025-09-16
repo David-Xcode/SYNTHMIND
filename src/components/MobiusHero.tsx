@@ -292,15 +292,16 @@ export default function MobiusHero() {
         </Suspense>
       </Canvas>
 
-      {/* 覆盖层文字内容 */}
+      {/* 覆盖层文字内容 - 极简风格 */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center mt-16">
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tight">
-            <span className="text-[#3498db]">Synth</span>
-            <span className="text-gray-300">mind</span>
+          <h1 className="text-7xl md:text-9xl font-extralight tracking-wider">
+            <span className="text-white/80">Synth</span>
+            <span className="text-white font-normal">mind</span>
           </h1>
-          <p className="mt-4 text-xl md:text-2xl text-gray-400">
-            Where Mathematics Meets Innovation
+          <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mt-8 mb-6"></div>
+          <p className="text-lg md:text-xl text-white/50 font-light tracking-wider">
+            Unleash Human Potential with AI.
           </p>
         </div>
       </div>

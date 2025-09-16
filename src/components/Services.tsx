@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
   ComputerDesktopIcon,
   ArrowPathIcon,
   LightBulbIcon,
@@ -12,71 +12,70 @@ const Services: React.FC = () => {
       icon: ComputerDesktopIcon,
       title: 'AI-Driven Software Development',
       description: 'Utilize cutting-edge AI technology to help businesses develop efficient and intelligent software solutions.',
-      color: 'text-blue-600'
     },
     {
       icon: ArrowPathIcon,
       title: 'Legacy System Optimization',
       description: 'Transform and upgrade legacy systems in traditional industries to improve operational efficiency and reduce maintenance costs.',
-      color: 'text-green-600'
     },
     {
       icon: LightBulbIcon,
       title: 'AI Solution Consulting',
       description: 'Provide professional consulting services for AI technology application and implementation, creating customized solutions for businesses.',
-      color: 'text-purple-600'
     },
     {
       icon: ChartBarIcon,
       title: 'Efficiency Enhancement Analysis',
       description: 'Analyze existing business workflows and provide AI optimization recommendations to maximize efficiency.',
-      color: 'text-orange-600'
     }
   ];
 
   return (
-    <section id="services" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 节标题 */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Our Services
+    <section id="services" className="py-32 bg-gradient-to-b from-[#1a1f2e] to-[#252b3b] relative overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 节标题 - 简约优雅 */}
+        <div className="text-center mb-20">
+          <h2 className="text-5xl md:text-6xl font-extralight text-white mb-6 tracking-wide">
+            Our <span className="font-normal">Services</span>
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto rounded-full"></div>
+          <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto"></div>
         </div>
 
-        {/* 服务网格 */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* 服务网格 - 极简设计 */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, index) => {
             const IconComponent = service.icon;
             return (
-              <div 
+              <div
                 key={index}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100"
+                className="group bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] p-8 rounded-lg transition-all duration-500 hover:bg-white/[0.05] hover:border-white/[0.1]"
               >
-                {/* 图标 */}
+                {/* 图标 - 简洁设计 */}
                 <div className="mb-6">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
-                    <IconComponent className={`w-8 h-8 ${service.color}`} />
-                  </div>
+                  <IconComponent className="w-8 h-8 text-white/60 group-hover:text-white/80 transition-colors duration-300" />
                 </div>
 
                 {/* 标题 */}
-                <h3 className="text-xl font-bold text-gray-900 mb-4 leading-tight">
+                <h3 className="text-lg font-medium text-white/90 mb-4 leading-tight">
                   {service.title}
                 </h3>
 
                 {/* 描述 */}
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-400 text-sm leading-relaxed">
                   {service.description}
                 </p>
               </div>
             );
           })}
         </div>
+
+        {/* 底部装饰线 */}
+        <div className="mt-20 flex justify-center">
+          <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        </div>
       </div>
     </section>
   );
 };
 
-export default Services; 
+export default Services;

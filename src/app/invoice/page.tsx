@@ -101,36 +101,36 @@ const InvoicePage: React.FC = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50 pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-b from-[#1a1f2e] to-[#252b3b] pt-24 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* 页面头部 */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <a 
+                <a
                   href="/"
-                  className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                  className="inline-flex items-center text-gray-400 hover:text-[#3498db] transition-all duration-300"
                 >
                   <ArrowLeftIcon className="w-5 h-5 mr-2" />
                   Back to Home
                 </a>
-                <div className="h-6 w-px bg-gray-300"></div>
-                <h1 className="text-2xl font-bold text-gray-900">Invoice Generator</h1>
+                <div className="h-6 w-px bg-gray-600"></div>
+                <h1 className="text-2xl font-bold text-gray-100">Invoice Generator</h1>
               </div>
               <button
                 onClick={() => setIsAuthenticated(false)}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-sm text-gray-400 hover:text-[#3498db] transition-all duration-300"
               >
                 Logout
               </button>
             </div>
-            <p className="mt-2 text-gray-600">Generate professional invoices for Synthmind</p>
+            <p className="mt-2 text-gray-400">Generate professional invoices for Synthmind</p>
           </div>
 
           {/* 主要内容区域 */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             {/* 左侧 - 表单输入 */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="glass-card rounded-xl p-6">
               <InvoiceForm 
                 invoiceData={invoiceData}
                 onInputChange={handleInputChange}
@@ -143,7 +143,7 @@ const InvoicePage: React.FC = () => {
             {/* 右侧 - 预览和生成 */}
             <div className="space-y-6">
               {/* 发票预览 */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="glass-card rounded-xl p-6">
                 <InvoicePreview 
                   invoiceData={invoiceData}
                   subtotal={subtotal}
@@ -155,7 +155,7 @@ const InvoicePage: React.FC = () => {
               </div>
 
               {/* PDF生成按钮 */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="glass-card rounded-xl p-6">
                 <PDFGenerator 
                   invoiceData={invoiceData}
                   subtotal={subtotal}
@@ -171,7 +171,7 @@ const InvoicePage: React.FC = () => {
 
           {/* 页面底部提示 */}
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               Generated invoices will include Synthmind branding and professional layout
             </p>
           </div>

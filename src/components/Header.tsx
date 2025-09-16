@@ -7,14 +7,6 @@ const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -24,52 +16,44 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-gray-900/80 backdrop-blur-md shadow-lg' : 'bg-transparent'
-      }`}
-    >
-      <nav className="flex justify-between items-center px-4 md:px-12 py-4">
+    <header className="fixed top-0 left-0 w-full z-50">
+      <nav className="flex justify-between items-center px-6 md:px-12 py-5">
         {/* Logo */}
         <div className="flex items-center">
           <a href="#" className="flex items-center">
-            <img 
-              src="/synthmind_logo.png" 
-              alt="Synthmind Logo" 
-              className="h-12 w-auto transition-transform duration-300 hover:scale-105"
+            <img
+              src="/synthmind_logo.png"
+              alt="Synthmind Logo"
+              className="h-10 w-auto transition-all duration-300 hover:scale-105 opacity-90 hover:opacity-100"
             />
           </a>
         </div>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex gap-8">
-          <button 
+        {/* Desktop Navigation - 极简风格 */}
+        <div className="hidden md:flex gap-10">
+          <button
             onClick={() => scrollToSection('about')}
-            className={`${isScrolled ? 'text-gray-200' : 'text-white'} hover:text-[#3498db] transition-colors duration-300 font-medium relative group`}
+            className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
-            About Us
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#3498db] transition-all duration-300 group-hover:w-full"></span>
+            About
           </button>
-          <button 
+          <button
             onClick={() => scrollToSection('services')}
-            className={`${isScrolled ? 'text-gray-200' : 'text-white'} hover:text-[#3498db] transition-colors duration-300 font-medium relative group`}
+            className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
             Services
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#3498db] transition-all duration-300 group-hover:w-full"></span>
           </button>
-          <a 
-            href="/invoice"
-            className={`${isScrolled ? 'text-gray-200' : 'text-white'} hover:text-[#3498db] transition-colors duration-300 font-medium relative group`}
+          <button
+            onClick={() => scrollToSection('products')}
+            className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
-            Invoice
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#3498db] transition-all duration-300 group-hover:w-full"></span>
-          </a>
-          <button 
+            Products
+          </button>
+          <button
             onClick={() => scrollToSection('contact')}
-            className={`${isScrolled ? 'text-gray-200' : 'text-white'} hover:text-[#3498db] transition-colors duration-300 font-medium relative group`}
+            className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
-            Contact Us
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#3498db] transition-all duration-300 group-hover:w-full"></span>
+            Contact
           </button>
         </div>
 
@@ -79,40 +63,40 @@ const Header: React.FC = () => {
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? (
-            <XMarkIcon className={`h-6 w-6 ${isScrolled ? 'text-gray-200' : 'text-white'}`} />
+            <XMarkIcon className="h-5 w-5 text-white/70 transition-colors" />
           ) : (
-            <Bars3Icon className={`h-6 w-6 ${isScrolled ? 'text-gray-200' : 'text-white'}`} />
+            <Bars3Icon className="h-5 w-5 text-white/70 transition-colors" />
           )}
         </button>
       </nav>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - 极简风格 */}
       {isOpen && (
-        <div className="md:hidden bg-gray-900/95 backdrop-blur-md border-t border-gray-700">
-          <div className="px-4 py-4 space-y-4">
-            <button 
+        <div className="md:hidden">
+          <div className="px-6 py-6 space-y-4 bg-black/20 backdrop-blur-lg">
+            <button
               onClick={() => scrollToSection('about')}
-              className="block w-full text-left text-gray-200 hover:text-[#3498db] transition-colors duration-300 font-medium py-2"
+              className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
-              About Us
+              About
             </button>
-            <button 
+            <button
               onClick={() => scrollToSection('services')}
-              className="block w-full text-left text-gray-200 hover:text-[#3498db] transition-colors duration-300 font-medium py-2"
+              className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
               Services
             </button>
-            <a 
-              href="/invoice"
-              className="block w-full text-left text-gray-200 hover:text-[#3498db] transition-colors duration-300 font-medium py-2"
+            <button
+              onClick={() => scrollToSection('products')}
+              className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
-              Invoice
-            </a>
-            <button 
+              Products
+            </button>
+            <button
               onClick={() => scrollToSection('contact')}
-              className="block w-full text-left text-gray-200 hover:text-[#3498db] transition-colors duration-300 font-medium py-2"
+              className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
-              Contact Us
+              Contact
             </button>
           </div>
         </div>
@@ -121,4 +105,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header; 
+export default Header;

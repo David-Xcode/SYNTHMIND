@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { EnvelopeIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 
 interface FormData {
   name: string;
@@ -51,7 +50,7 @@ const Contact: React.FC = () => {
       // 检查响应是否为空或不是JSON
       const contentType = response.headers.get('content-type');
       let result;
-      
+
       if (contentType && contentType.includes('application/json')) {
         result = await response.json();
       } else {
@@ -78,28 +77,27 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 节标题 */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Contact Us
+    <section id="contact" className="py-32 bg-gradient-to-b from-[#252b3b] to-[#1a1f2e] relative overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 节标题 - 简约优雅 */}
+        <div className="text-center mb-20">
+          <h2 className="text-5xl md:text-6xl font-extralight text-white mb-6 tracking-wide">
+            Contact <span className="font-normal">Us</span>
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto rounded-full"></div>
-          <p className="max-w-3xl mx-auto mt-8 text-lg text-gray-600 leading-relaxed">
+          <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto"></div>
+          <p className="max-w-3xl mx-auto mt-8 text-lg text-gray-300 font-light leading-relaxed">
             Whether you want to learn more about our services or are ready to begin your AI transformation journey, we're eager to hear your ideas.
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto">
-          {/* 联系表单 */}
-          <div className="bg-white p-8 rounded-2xl shadow-lg">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h3>
-            
+        <div className="max-w-2xl mx-auto">
+          {/* 联系表单 - 极简设计 */}
+          <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] p-10 rounded-lg">
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="name" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
                     Name
                   </label>
                   <input
@@ -109,13 +107,13 @@ const Contact: React.FC = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
                     placeholder="Your name"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
                     Email
                   </label>
                   <input
@@ -125,14 +123,14 @@ const Contact: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    placeholder="your.email@example.com"
+                    className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+                    placeholder="your@email.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="subject" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
                   Subject
                 </label>
                 <input
@@ -142,57 +140,64 @@ const Contact: React.FC = () => {
                   value={formData.subject}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="How can we help you?"
+                  className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+                  placeholder="How can we help?"
                 />
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="message" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
                   Message
                 </label>
                 <textarea
                   id="message"
                   name="message"
-                  rows={5}
+                  rows={4}
                   value={formData.message}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-vertical"
-                  placeholder="Tell us about your project or question..."
+                  className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-none"
+                  placeholder="Tell us about your project..."
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-300 ${
-                  isSubmitting
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 shadow-lg hover:shadow-xl'
-                }`}
-              >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
-              </button>
+              <div className="pt-6">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`w-full py-4 px-6 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-light tracking-wider uppercase text-sm transition-all duration-500 hover:bg-white/20 hover:border-white/30 ${
+                    isSubmitting
+                      ? 'cursor-not-allowed opacity-50'
+                      : ''
+                  }`}
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                </button>
+              </div>
 
-              {/* 状态消息 */}
+              {/* 状态消息 - 极简设计 */}
               {submitStatus === 'success' && (
-                <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                  Thank you! Your message has been sent successfully.
+                <div className="p-4 bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+                  Thank you. Your message has been sent.
                 </div>
               )}
 
               {submitStatus === 'error' && (
-                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                  Sorry, there was an error sending your message. Please try again or contact us directly.
+                <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                  Sorry, there was an error. Please try again.
                 </div>
               )}
             </form>
           </div>
+        </div>
+
+        {/* 底部装饰线 */}
+        <div className="mt-20 flex justify-center">
+          <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         </div>
       </div>
     </section>
   );
 };
 
-export default Contact; 
+export default Contact;
