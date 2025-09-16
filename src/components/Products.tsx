@@ -48,7 +48,7 @@ const Products: React.FC = () => {
         {/* 节标题 - 简约优雅 */}
         <div className="text-center mb-20">
           <h2 className="text-5xl md:text-6xl font-extralight text-white mb-6 tracking-wide">
-            Our <span className="font-normal">Portfolio</span>
+            Our <span className="font-normal">Products and Services</span>
           </h2>
           <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto"></div>
         </div>
