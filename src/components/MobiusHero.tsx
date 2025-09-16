@@ -164,26 +164,39 @@ function FoggyRing({
 function Scene() {
   const mainGroupRef = useRef<THREE.Group>(null)
   const initialRotationRef = useRef(0)
+  const grayRingGroupRef = useRef<THREE.Group>(null)
+  const blueRingGroupRef = useRef<THREE.Group>(null)
 
   // 整体场景的旋转动画
   useFrame((state) => {
     if (mainGroupRef.current) {
       const elapsedTime = state.clock.elapsedTime
 
-      // 初始快速旋转效果 - 在前1秒内快速向右旋转90度，然后过渡到正常速度
+      // 初始快速旋转效果 - 在前1秒内快速旋转180度（半圈），然后继续较快旋转
       let sceneRotation
       if (elapsedTime < 1) {
         // 使用缓动函数实现减速效果
         const progress = elapsedTime / 1
         const easeOut = 1 - Math.pow(1 - progress, 3)
-        initialRotationRef.current = easeOut * Math.PI * 0.5 // 90度向右
+        initialRotationRef.current = easeOut * Math.PI // 180度旋转
         sceneRotation = initialRotationRef.current
       } else {
-        // 1秒后继续缓慢旋转 - 更慢的自旋
-        sceneRotation = initialRotationRef.current + (elapsedTime - 1) * 0.02
+        // 1秒后继续保持较快的旋转速度
+        sceneRotation = initialRotationRef.current + (elapsedTime - 1) * 0.08
       }
 
       mainGroupRef.current.rotation.y = sceneRotation
+    }
+
+    // 两个环围绕中心的公转动画（相对旋转）
+    if (grayRingGroupRef.current && blueRingGroupRef.current) {
+      const time = state.clock.elapsedTime
+
+      // 浅灰色环围绕Y轴公转（正向）- 更慢速
+      grayRingGroupRef.current.rotation.y = time * 0.15
+
+      // 蓝色环围绕Y轴公转（反向）- 更慢速
+      blueRingGroupRef.current.rotation.y = -time * 0.12
     }
   })
 
@@ -225,26 +238,29 @@ function Scene() {
       {/* 主容器 - 整体45度倾斜朝向观察者 */}
       <group ref={mainGroupRef} rotation={[Math.PI / 4, 0, 0]}>
 
-        {/* 浅灰色雾状环 - 垂直轨道（后面） */}
-        <FoggyRing
-          color="#95a5a6"
-          radius={4.8}
-          thickness={1.5}
-          particleCount={35000}
-          rotationSpeed={-0.35}
-          rotationAxis="y"
-          opacity={0.6}
-          offset={[0, 0, -0.5]}
-        />
+        {/* 浅灰色雾状环容器 - 围绕中心公转 */}
+        <group ref={grayRingGroupRef}>
+          {/* 浅灰色雾状环 - 垂直轨道（后面） */}
+          <FoggyRing
+            color="#95a5a6"
+            radius={4.8}
+            thickness={1.5}
+            particleCount={35000}
+            rotationSpeed={0.15}
+            rotationAxis="y"
+            opacity={0.6}
+            offset={[0, 0, -0.5]}
+          />
+        </group>
 
-        {/* 蓝色雾状环 - 60度倾斜轨道（前面） */}
-        <group rotation={[Math.PI / 3, Math.PI / 6, 0]}>
+        {/* 蓝色雾状环容器 - 围绕中心公转 */}
+        <group rotation={[Math.PI / 3, Math.PI / 6, 0]} ref={blueRingGroupRef}>
           <FoggyRing
             color="#3498db"
             radius={5.5}
             thickness={1.8}
             particleCount={40000}
-            rotationSpeed={0.25}
+            rotationSpeed={-0.18}
             rotationAxis="y"
             opacity={0.7}
             offset={[0, 0, 0.5]}
