@@ -94,21 +94,26 @@ function MobiusRing({
   useFrame((state) => {
     if (meshRef.current) {
       // 主旋转 - 缓慢且流畅
+      const baseRotation = state.clock.elapsedTime * rotationSpeed
+
+      // 鼠标交互效果 - 增强响应
+      const pointer = state.pointer
+      const mouseInfluenceX = pointer.x * 0.3
+      const mouseInfluenceY = pointer.y * 0.3
+
       if (rotationAxis === 'y') {
-        meshRef.current.rotation.y = state.clock.elapsedTime * rotationSpeed
+        meshRef.current.rotation.y = baseRotation + mouseInfluenceX
+        meshRef.current.rotation.x = mouseInfluenceY * 0.5
       } else if (rotationAxis === 'x') {
-        meshRef.current.rotation.x = state.clock.elapsedTime * rotationSpeed
+        meshRef.current.rotation.x = baseRotation + mouseInfluenceY
+        meshRef.current.rotation.z = mouseInfluenceX * 0.5
       } else {
-        meshRef.current.rotation.z = state.clock.elapsedTime * rotationSpeed
+        meshRef.current.rotation.z = baseRotation + mouseInfluenceX
+        meshRef.current.rotation.y = mouseInfluenceY * 0.5
       }
 
       // 轻微的浮动效果 - 更平滑
-      meshRef.current.position.y = offset[1] + Math.sin(state.clock.elapsedTime * 0.2) * 0.1
-
-      // 鼠标交互效果 - 更微妙
-      const pointer = state.pointer
-      meshRef.current.rotation.x += pointer.y * 0.0001
-      meshRef.current.rotation.z += pointer.x * 0.0001
+      meshRef.current.position.y = offset[1] + Math.sin(state.clock.elapsedTime * 0.2) * 0.05
     }
   })
 
@@ -202,13 +207,15 @@ function Scene() {
         maxPolarAngle={Math.PI / 1.5}
         minPolarAngle={Math.PI / 3}
         autoRotate
-        autoRotateSpeed={0.2}
+        autoRotateSpeed={0.1}
+        enableRotate={true}
+        rotateSpeed={0.5}
       />
 
-      {/* 环境光照 - 稍微提亮 */}
-      <ambientLight intensity={0.15} />
-      <pointLight position={[10, 10, 10]} intensity={0.5} color="#ffffff" />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#3498db" />
+      {/* 环境光照 - 更亮的光照 */}
+      <ambientLight intensity={0.25} />
+      <pointLight position={[10, 10, 10]} intensity={0.7} color="#ffffff" />
+      <pointLight position={[-10, -10, -10]} intensity={0.4} color="#3498db" />
       <spotLight
         position={[0, 10, 0]}
         angle={0.3}
@@ -221,8 +228,8 @@ function Scene() {
       {/* 环境贴图 */}
       <Environment preset="night" />
 
-      {/* 雾效果 - 适中的雾 */}
-      <fog attach="fog" args={['#1a1a1a', 10, 40]} />
+      {/* 雾效果 - 更亮的雾 */}
+      <fog attach="fog" args={['#4a4a4a', 12, 45]} />
 
       {/* 主容器 - 整体45度倾斜朝向观察者 */}
       <group rotation={[Math.PI / 4, 0, 0]}>
@@ -232,7 +239,7 @@ function Scene() {
           color="#3498db"
           radius={5.2}
           tube={0.4}
-          rotationSpeed={0.25}
+          rotationSpeed={0.08}
           rotationAxis="y"
           opacity={1.0}
           emissive={true}
@@ -245,7 +252,7 @@ function Scene() {
             color="#2c3e50"
             radius={5.0}
             tube={0.38}
-            rotationSpeed={-0.28}
+            rotationSpeed={-0.09}
             rotationAxis="y"
             opacity={1.0}
             offset={[0, 0, 0]}
@@ -259,7 +266,7 @@ function Scene() {
 // 主组件
 export default function MobiusHero() {
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-950">
+    <div className="relative w-full h-screen bg-gradient-to-b from-gray-900 via-gray-700 to-gray-500">
       {/* 3D画布 */}
       <Canvas
         shadows
@@ -279,7 +286,7 @@ export default function MobiusHero() {
 
       {/* 覆盖层文字内容 */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-center">
+        <div className="text-center mt-16">
           <h1 className="text-6xl md:text-8xl font-bold text-white/90 tracking-tight">
             <span className="text-[#3498db]">Synth</span>
             <span className="text-gray-300">mind</span>
@@ -291,7 +298,7 @@ export default function MobiusHero() {
       </div>
 
       {/* 渐变遮罩 - 底部淡出效果 */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-500 to-transparent pointer-events-none" />
     </div>
   )
 }
