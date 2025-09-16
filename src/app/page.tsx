@@ -1,5 +1,5 @@
 import Header from '@/components/Header'
-import Hero from '@/components/Hero'
+import MobiusHero from '@/components/MobiusHero'
 import About from '@/components/About'
 import Services from '@/components/Services'
 import Contact from '@/components/Contact'
@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <main>
       <Header />
-      <Hero />
+      <MobiusHero />
       <About />
       <Services />
       <Contact />
