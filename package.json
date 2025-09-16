@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
-    "@react-three/drei": "^10.7.6",
+    "@react-three/drei": "^9.88.0",
     "@react-three/fiber": "^8.17.10",
     "@types/three": "^0.180.0",
     "jspdf": "^3.0.1",
