@@ -46,7 +46,7 @@ function FoggyRing({
       pos[i * 3 + 2] = Math.sin(angle) * radiusVariation
 
       // 随机大小和透明度 - 更大的粒子，更高的密度
-      sizes[i] = Math.random() * 0.6 + 0.2
+      sizes[i] = Math.random() * 1.2 + 0.4
       opacities[i] = Math.random() * 0.7 + 0.3
     }
 
@@ -136,7 +136,7 @@ function FoggyRing({
             void main() {
               vOpacity = opacity;
               vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-              gl_PointSize = size * 50.0 / -mvPosition.z;
+              gl_PointSize = size * 70.0 / -mvPosition.z;
               gl_Position = projectionMatrix * mvPosition;
             }
           `}
@@ -242,13 +242,13 @@ function Scene() {
         <group ref={grayRingGroupRef}>
           {/* 浅灰色雾状环 - 垂直轨道（后面） */}
           <FoggyRing
-            color="#95a5a6"
+            color="#ccd4dc"
             radius={4.8}
-            thickness={1.5}
-            particleCount={35000}
+            thickness={1.8}
+            particleCount={32000}
             rotationSpeed={0.15}
             rotationAxis="y"
-            opacity={0.6}
+            opacity={0.7}
             offset={[0, 0, -0.5]}
           />
         </group>
@@ -256,13 +256,13 @@ function Scene() {
         {/* 蓝色雾状环容器 - 围绕中心公转 */}
         <group rotation={[Math.PI / 3, Math.PI / 6, 0]} ref={blueRingGroupRef}>
           <FoggyRing
-            color="#3498db"
-            radius={5.5}
-            thickness={1.8}
-            particleCount={40000}
-            rotationSpeed={-0.18}
+            color="#5dade2"
+            radius={5.2}
+            thickness={2.1}
+            particleCount={36000}
+            rotationSpeed={-0.2}
             rotationAxis="y"
-            opacity={0.7}
+            opacity={0.75}
             offset={[0, 0, 0.5]}
           />
         </group>
@@ -274,7 +274,7 @@ function Scene() {
 // 主组件
 export default function MobiusHero() {
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-[#0f1419] via-[#1a1f2e] to-[#252b3b]">
+    <div className="relative w-full h-screen bg-gradient-to-b from-[#060b15] via-[#101c2f] to-[#1b2f49]">
       {/* 3D画布 */}
       <Canvas
         shadows
@@ -291,6 +291,9 @@ export default function MobiusHero() {
           <Scene />
         </Suspense>
       </Canvas>
+
+      {/* 背景高亮层 - 提升主体对比 */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(93,173,226,0.28),_rgba(9,18,33,0.08),_rgba(6,11,21,0))]" />
 
       {/* 覆盖层文字内容 - 极简风格 */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
