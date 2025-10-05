@@ -1,17 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { scrollToSection } from '@/utils/scrollToSection';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+  const handleScroll = (sectionId: string) => {
+    scrollToSection(sectionId);
     setIsOpen(false);
   };
 
@@ -32,25 +29,25 @@ const Header: React.FC = () => {
         {/* Desktop Navigation - 极简风格 */}
         <div className="hidden md:flex gap-10">
           <button
-            onClick={() => scrollToSection('about')}
+            onClick={() => handleScroll('about')}
             className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
             About
           </button>
           <button
-            onClick={() => scrollToSection('services')}
+            onClick={() => handleScroll('services')}
             className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
             Services
           </button>
           <button
-            onClick={() => scrollToSection('products')}
+            onClick={() => handleScroll('products')}
             className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
             Products
           </button>
           <button
-            onClick={() => scrollToSection('contact')}
+            onClick={() => handleScroll('contact')}
             className="text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase"
           >
             Contact
@@ -75,25 +72,25 @@ const Header: React.FC = () => {
         <div className="md:hidden">
           <div className="px-6 py-6 space-y-4 bg-black/20 backdrop-blur-lg">
             <button
-              onClick={() => scrollToSection('about')}
+              onClick={() => handleScroll('about')}
               className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
               About
             </button>
             <button
-              onClick={() => scrollToSection('services')}
+              onClick={() => handleScroll('services')}
               className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
               Services
             </button>
             <button
-              onClick={() => scrollToSection('products')}
+              onClick={() => handleScroll('products')}
               className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
               Products
             </button>
             <button
-              onClick={() => scrollToSection('contact')}
+              onClick={() => handleScroll('contact')}
               className="block w-full text-left text-white/70 hover:text-white transition-colors duration-300 text-sm font-light tracking-wider uppercase py-2"
             >
               Contact

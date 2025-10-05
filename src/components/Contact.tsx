@@ -9,6 +9,55 @@ interface FormData {
   message: string;
 }
 
+type ContactField<Name extends keyof FormData> = {
+  name: Name;
+  label: string;
+  placeholder: string;
+  autoComplete?: string;
+  layout: 'grid' | 'full';
+  component: 'input' | 'textarea';
+  type?: string;
+  rows?: number;
+};
+
+const CONTACT_FIELDS: ContactField<keyof FormData>[] = [
+  {
+    name: 'name',
+    label: 'Name',
+    type: 'text',
+    placeholder: 'Your name',
+    autoComplete: 'name',
+    layout: 'grid',
+    component: 'input',
+  },
+  {
+    name: 'email',
+    label: 'Email',
+    type: 'email',
+    placeholder: 'your@email.com',
+    autoComplete: 'email',
+    layout: 'grid',
+    component: 'input',
+  },
+  {
+    name: 'subject',
+    label: 'Subject',
+    type: 'text',
+    placeholder: 'How can we help?',
+    autoComplete: 'off',
+    layout: 'full',
+    component: 'input',
+  },
+  {
+    name: 'message',
+    label: 'Message',
+    placeholder: 'Tell us about your project...',
+    layout: 'full',
+    component: 'textarea',
+    rows: 4,
+  },
+];
+
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -96,70 +145,68 @@ const Contact: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="name" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
-                    placeholder="Your name"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
-                    placeholder="your@email.com"
-                  />
-                </div>
+                {CONTACT_FIELDS
+                  .filter((field) => field.layout === 'grid')
+                  .map((field) => (
+                    <div key={field.name}>
+                      <label htmlFor={field.name} className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
+                        {field.label}
+                      </label>
+                      <input
+                        type={field.type ?? 'text'}
+                        id={field.name}
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleInputChange}
+                        required
+                        autoComplete={field.autoComplete}
+                        className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+                        placeholder={field.placeholder}
+                      />
+                    </div>
+                  ))}
               </div>
 
-              <div>
-                <label htmlFor="subject" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
-                  placeholder="How can we help?"
-                />
-              </div>
+              {CONTACT_FIELDS
+                .filter((field) => field.layout === 'full' && field.component === 'input')
+                .map((field) => (
+                  <div key={field.name}>
+                    <label htmlFor={field.name} className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
+                      {field.label}
+                    </label>
+                    <input
+                      type={field.type}
+                      id={field.name}
+                      name={field.name}
+                      value={formData[field.name]}
+                      onChange={handleInputChange}
+                      required
+                      autoComplete={field.autoComplete}
+                      className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+                      placeholder={field.placeholder}
+                    />
+                  </div>
+                ))}
 
-              <div>
-                <label htmlFor="message" className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={4}
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-none"
-                  placeholder="Tell us about your project..."
-                />
-              </div>
+              {CONTACT_FIELDS
+                .filter((field) => field.layout === 'full' && field.component === 'textarea')
+                .map((field) => (
+                  <div key={field.name}>
+                    <label htmlFor={field.name} className="block text-xs font-light text-white/60 mb-2 uppercase tracking-wider">
+                      {field.label}
+                    </label>
+                    <textarea
+                      id={field.name}
+                      name={field.name}
+                      rows={field.rows}
+                      value={formData[field.name]}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-0 py-2 bg-transparent border-0 border-b border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-none"
+                      placeholder={field.placeholder}
+                    />
+                  </div>
+                ))}
 
               <div className="pt-6">
                 <button
