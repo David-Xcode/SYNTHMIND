@@ -1,5 +1,6 @@
 import Header from '@/components/Header'
 import MobiusHero from '@/components/MobiusHero'
+import Founder from '@/components/Founder'
 import About from '@/components/About'
 import Services from '@/components/Services'
 import Products from '@/components/Products'
@@ -11,6 +12,7 @@ export default function Home() {
     <main>
       <Header />
       <MobiusHero />
+      <Founder />
       <About />
       <Services />
       <Products />

@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ComputerDesktopIcon,
   ArrowPathIcon,
@@ -7,6 +9,26 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Services: React.FC = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const services = [
     {
       icon: ComputerDesktopIcon,
@@ -31,14 +53,20 @@ const Services: React.FC = () => {
   ];
 
   return (
-    <section id="services" className="py-32 bg-gradient-to-b from-[#1a1f2e] to-[#252b3b] relative overflow-hidden">
+    <section
+      id="services"
+      ref={sectionRef}
+      className="py-32 bg-gradient-to-b from-[#1a1f2e] to-[#252b3b] relative overflow-hidden"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 节标题 - 简约优雅 */}
-        <div className="text-center mb-20">
+        <div className={`text-center mb-20 transition-all duration-700 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}>
           <h2 className="text-5xl md:text-6xl font-extralight text-white mb-6 tracking-wide">
-            Our <span className="font-normal">Services</span>
+            How I Can <span className="font-normal">Help</span>
           </h2>
-          <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto"></div>
+          <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto" />
         </div>
 
         {/* 服务网格 - 极简设计 */}
@@ -48,7 +76,10 @@ const Services: React.FC = () => {
             return (
               <div
                 key={index}
-                className="group bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] p-8 rounded-lg transition-all duration-500 hover:bg-white/[0.05] hover:border-white/[0.1]"
+                className={`group bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] p-8 rounded-lg transition-all duration-500 hover:bg-white/[0.05] hover:border-white/[0.1] ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}
+                style={{ transitionDelay: `${index * 100 + 200}ms` }}
               >
                 {/* 图标 - 简洁设计 */}
                 <div className="mb-6">
@@ -71,7 +102,7 @@ const Services: React.FC = () => {
 
         {/* 底部装饰线 */}
         <div className="mt-20 flex justify-center">
-          <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="w-32 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         </div>
       </div>
     </section>
