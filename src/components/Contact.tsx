@@ -139,11 +139,9 @@ const Contact: React.FC = () => {
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          {/* 联系表单 - 极简设计 */}
-          <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] p-10 rounded-lg">
-
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="max-w-xl mx-auto">
+          {/* 联系表单 - 极简设计，去除卡片容器 */}
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid md:grid-cols-2 gap-6">
                 {CONTACT_FIELDS
                   .filter((field) => field.layout === 'grid')
@@ -208,34 +206,33 @@ const Contact: React.FC = () => {
                   </div>
                 ))}
 
-              <div className="pt-6">
+              <div className="pt-4">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full py-4 px-6 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-light tracking-wider uppercase text-sm transition-all duration-500 hover:bg-white/20 hover:border-white/30 ${
+                  className={`py-3 px-8 text-white/70 font-light tracking-wider text-sm transition-all duration-300 hover:text-white border-b border-white/20 hover:border-white/50 ${
                     isSubmitting
                       ? 'cursor-not-allowed opacity-50'
                       : ''
                   }`}
                 >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                  {isSubmitting ? 'Sending...' : 'Send Message →'}
                 </button>
               </div>
 
               {/* 状态消息 - 极简设计 */}
               {submitStatus === 'success' && (
-                <div className="p-4 bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+                <p className="text-green-400/80 text-sm font-light">
                   Thank you. Your message has been sent.
-                </div>
+                </p>
               )}
 
               {submitStatus === 'error' && (
-                <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                <p className="text-red-400/80 text-sm font-light">
                   Sorry, there was an error. Please try again.
-                </div>
+                </p>
               )}
             </form>
-          </div>
         </div>
 
         {/* 底部装饰线 */}

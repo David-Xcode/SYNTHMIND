@@ -1,315 +1,225 @@
 'use client'
 
-import React, { useRef, useMemo, Suspense } from 'react'
+import React, { useRef, useMemo, Suspense, useState, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Environment, OrbitControls, PerspectiveCamera } from '@react-three/drei'
+import { PerspectiveCamera, Line } from '@react-three/drei'
+import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import * as THREE from 'three'
 
-// 雾状环组件 - 由粒子组成的旋转环
-function FoggyRing({
-  color,
-  radius,
-  thickness = 1.5,
-  particleCount = 3000,
-  rotationSpeed = 0.01,
-  rotationAxis = 'y',
-  opacity = 0.4,
-  offset = [0, 0, 0]
+// 黄金比例常量
+const PHI = 1.618033988749895
+
+// 检测是否为移动设备
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  return isMobile
+}
+
+// 莫比乌斯环参数方程
+// x(u,v) = (R + v·cos(u/2)) · cos(u)
+// y(u,v) = (R + v·cos(u/2)) · sin(u)
+// z(u,v) = v · sin(u/2)
+function generateMobiusPoints(
+  R: number,        // 主半径
+  w: number,        // 带宽的一半
+  segments: number, // u 方向的分段数
+  lineCount: number // 平行线数量
+): THREE.Vector3[][] {
+  const lines: THREE.Vector3[][] = []
+
+  // 生成多条平行线（沿 v 方向分布）
+  for (let l = 0; l < lineCount; l++) {
+    const v = lineCount === 1 ? 0 : -w + (2 * w * l) / (lineCount - 1)
+    const points: THREE.Vector3[] = []
+
+    // 沿 u 方向生成点
+    for (let i = 0; i <= segments; i++) {
+      const u = (i / segments) * Math.PI * 2
+
+      const x = (R + v * Math.cos(u / 2)) * Math.cos(u)
+      const y = (R + v * Math.cos(u / 2)) * Math.sin(u)
+      const z = v * Math.sin(u / 2)
+
+      points.push(new THREE.Vector3(x, z, y)) // 交换 y 和 z 使环水平放置
+    }
+
+    lines.push(points)
+  }
+
+  return lines
+}
+
+// 莫比乌斯环组件
+function MobiusStrip({
+  radius = 3,
+  width = 0.8,
+  segments = 128,
+  lineCount = 5,
+  color = '#C0C0C0',
+  lineWidth = 1.5,
+  rotation = [0, 0, 0] as [number, number, number]
 }: {
-  color: string
-  radius: number
-  thickness?: number
-  particleCount?: number
-  rotationSpeed?: number
-  rotationAxis?: 'x' | 'y' | 'z'
-  opacity?: number
-  offset?: [number, number, number]
+  radius?: number
+  width?: number
+  segments?: number
+  lineCount?: number
+  color?: string
+  lineWidth?: number
+  rotation?: [number, number, number]
 }) {
   const groupRef = useRef<THREE.Group>(null)
 
-  // 创建环形粒子分布
-  const positions = useMemo(() => {
-    const pos = new Float32Array(particleCount * 3)
-    const sizes = new Float32Array(particleCount)
-    const opacities = new Float32Array(particleCount)
-
-    for (let i = 0; i < particleCount; i++) {
-      // 在环形路径上分布粒子
-      const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.5
-      const radiusVariation = radius + (Math.random() - 0.5) * thickness
-
-      // 添加一些垂直方向的变化，使其更像雾
-      const heightVariation = (Math.random() - 0.5) * thickness * 0.5
-
-      pos[i * 3] = Math.cos(angle) * radiusVariation
-      pos[i * 3 + 1] = heightVariation
-      pos[i * 3 + 2] = Math.sin(angle) * radiusVariation
-
-      // 随机大小和透明度 - 更大的粒子，更高的密度
-      sizes[i] = Math.random() * 1.2 + 0.4
-      opacities[i] = Math.random() * 0.7 + 0.3
-    }
-
-    return { positions: pos, sizes, opacities }
-  }, [particleCount, radius, thickness])
-
-  // 动画循环
-  useFrame((state) => {
-    if (groupRef.current) {
-      // 主旋转 - 缓慢且流畅
-      const baseRotation = state.clock.elapsedTime * rotationSpeed
-
-      // 鼠标交互效果 - 增强响应
-      const pointer = state.pointer
-      const mouseInfluenceX = pointer.x * 0.3
-      const mouseInfluenceY = pointer.y * 0.3
-
-      if (rotationAxis === 'y') {
-        groupRef.current.rotation.y = baseRotation + mouseInfluenceX
-        groupRef.current.rotation.x = mouseInfluenceY * 0.5
-      } else if (rotationAxis === 'x') {
-        groupRef.current.rotation.x = baseRotation + mouseInfluenceY
-        groupRef.current.rotation.z = mouseInfluenceX * 0.5
-      } else {
-        groupRef.current.rotation.z = baseRotation + mouseInfluenceX
-        groupRef.current.rotation.y = mouseInfluenceY * 0.5
-      }
-
-      // 轻微的浮动效果
-      groupRef.current.position.y = offset[1] + Math.sin(state.clock.elapsedTime * 0.2) * 0.05
-
-      // 更新粒子属性以创建流动效果
-      const points = groupRef.current.children[0] as THREE.Points
-      if (points && points.geometry) {
-        const positionAttribute = points.geometry.attributes.position
-        const time = state.clock.elapsedTime
-
-        for (let i = 0; i < particleCount; i++) {
-          const angle = (i / particleCount) * Math.PI * 2 + time * 0.05
-          const radiusVariation = radius + Math.sin(time * 0.5 + i * 0.1) * thickness * 0.3
-
-          positionAttribute.array[i * 3] = Math.cos(angle) * radiusVariation
-          positionAttribute.array[i * 3 + 2] = Math.sin(angle) * radiusVariation
-        }
-
-        positionAttribute.needsUpdate = true
-      }
-    }
-  })
+  // 生成莫比乌斯环的线条点
+  const lines = useMemo(() => {
+    return generateMobiusPoints(radius, width, segments, lineCount)
+  }, [radius, width, segments, lineCount])
 
   return (
-    <group ref={groupRef} position={offset}>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={particleCount}
-            array={positions.positions}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-size"
-            count={particleCount}
-            array={positions.sizes}
-            itemSize={1}
-          />
-          <bufferAttribute
-            attach="attributes-opacity"
-            count={particleCount}
-            array={positions.opacities}
-            itemSize={1}
-          />
-        </bufferGeometry>
-        <shaderMaterial
+    <group ref={groupRef} rotation={rotation}>
+      {lines.map((points, index) => (
+        <Line
+          key={index}
+          points={points}
+          color={color}
+          lineWidth={lineWidth}
           transparent
-          depthWrite={false}
-          blending={THREE.NormalBlending}
-          uniforms={{
-            color: { value: new THREE.Color(color) },
-            opacity: { value: opacity }
-          }}
-          vertexShader={`
-            attribute float size;
-            attribute float opacity;
-            varying float vOpacity;
-
-            void main() {
-              vOpacity = opacity;
-              vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-              gl_PointSize = size * 70.0 / -mvPosition.z;
-              gl_Position = projectionMatrix * mvPosition;
-            }
-          `}
-          fragmentShader={`
-            uniform vec3 color;
-            uniform float opacity;
-            varying float vOpacity;
-
-            void main() {
-              vec2 center = gl_PointCoord - vec2(0.5);
-              float dist = length(center);
-              float alpha = smoothstep(0.5, 0.0, dist);
-
-              gl_FragColor = vec4(color, alpha * opacity * vOpacity);
-            }
-          `}
+          opacity={0.06}
         />
-      </points>
+      ))}
     </group>
   )
 }
 
-
 // 主场景组件
-function Scene() {
-  const mainGroupRef = useRef<THREE.Group>(null)
-  const initialRotationRef = useRef(0)
-  const grayRingGroupRef = useRef<THREE.Group>(null)
-  const blueRingGroupRef = useRef<THREE.Group>(null)
+function Scene({ isMobile }: { isMobile: boolean }) {
+  const ring1Ref = useRef<THREE.Group>(null)
+  const ring2Ref = useRef<THREE.Group>(null)
+  const sceneRef = useRef<THREE.Group>(null)
 
-  // 整体场景的旋转动画
+  // 移动端减少线段数量
+  const segments = isMobile ? 64 : 128
+  const lineCount = isMobile ? 3 : 5
+
+  // 动画：黄金比例旋转
   useFrame((state) => {
-    if (mainGroupRef.current) {
-      const elapsedTime = state.clock.elapsedTime
+    const time = state.clock.elapsedTime
 
-      // 初始快速旋转效果 - 在前1秒内快速旋转180度（半圈），然后继续较快旋转
-      let sceneRotation
-      if (elapsedTime < 1) {
-        // 使用缓动函数实现减速效果
-        const progress = elapsedTime / 1
-        const easeOut = 1 - Math.pow(1 - progress, 3)
-        initialRotationRef.current = easeOut * Math.PI // 180度旋转
-        sceneRotation = initialRotationRef.current
-      } else {
-        // 1秒后继续保持较快的旋转速度
-        sceneRotation = initialRotationRef.current + (elapsedTime - 1) * 0.08
-      }
+    // 基础旋转速度
+    const baseSpeed = 0.15
 
-      mainGroupRef.current.rotation.y = sceneRotation
+    // 环 1：基础速度旋转
+    if (ring1Ref.current) {
+      ring1Ref.current.rotation.z = time * baseSpeed
     }
 
-    // 两个环围绕中心的公转动画（相对旋转）
-    if (grayRingGroupRef.current && blueRingGroupRef.current) {
-      const time = state.clock.elapsedTime
+    // 环 2：黄金比例速度旋转（更快）
+    if (ring2Ref.current) {
+      ring2Ref.current.rotation.z = time * baseSpeed * PHI
+    }
 
-      // 浅灰色环围绕Y轴公转（正向）- 更慢速
-      grayRingGroupRef.current.rotation.y = time * 0.15
-
-      // 蓝色环围绕Y轴公转（反向）- 更慢速
-      blueRingGroupRef.current.rotation.y = -time * 0.12
+    // 整体场景缓慢倾斜，增加动态感
+    if (sceneRef.current) {
+      sceneRef.current.rotation.x = Math.PI / 6 + Math.sin(time * 0.1) * 0.05
+      sceneRef.current.rotation.y = time * 0.02
     }
   })
 
   return (
     <>
-      {/* 相机设置 - 拉远视角 */}
-      <PerspectiveCamera makeDefault position={[0, 0, 15]} fov={50} />
+      {/* 相机设置 */}
+      <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={50} />
 
-      {/* 轨道控制 - 允许鼠标交互 */}
-      <OrbitControls
-        enablePan={false}
-        enableZoom={false}
-        maxPolarAngle={Math.PI / 1.5}
-        minPolarAngle={Math.PI / 3}
-        autoRotate={false}
-        enableRotate={true}
-        rotateSpeed={0.5}
-      />
+      {/* 环境光照 */}
+      <ambientLight intensity={0.3} />
+      <pointLight position={[10, 10, 10]} intensity={0.5} color="#ffffff" />
+      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#3498db" />
 
-      {/* 环境光照 - 更亮的光照 */}
-      <ambientLight intensity={0.25} />
-      <pointLight position={[10, 10, 10]} intensity={0.7} color="#ffffff" />
-      <pointLight position={[-10, -10, -10]} intensity={0.4} color="#3498db" />
-      <spotLight
-        position={[0, 10, 0]}
-        angle={0.3}
-        penumbra={1}
-        intensity={0.2}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-      />
-
-      {/* 环境贴图 */}
-      <Environment preset="night" />
-
-      {/* 雾效果 - 深色调雾 */}
-      <fog attach="fog" args={['#1a1f2e', 12, 45]} />
-
-      {/* 主容器 - 整体45度倾斜朝向观察者 */}
-      <group ref={mainGroupRef} rotation={[Math.PI / 4, 0, 0]}>
-
-        {/* 浅灰色雾状环容器 - 围绕中心公转 */}
-        <group ref={grayRingGroupRef}>
-          {/* 浅灰色雾状环 - 垂直轨道（后面） */}
-          <FoggyRing
-            color="#ccd4dc"
-            radius={4.8}
-            thickness={1.8}
-            particleCount={32000}
-            rotationSpeed={0.15}
-            rotationAxis="y"
-            opacity={0.7}
-            offset={[0, 0, -0.5]}
+      {/* 主场景容器 */}
+      <group ref={sceneRef}>
+        {/* 莫比乌斯环 1 - 金属银 */}
+        <group ref={ring1Ref}>
+          <MobiusStrip
+            radius={3}
+            width={0.6}
+            segments={segments}
+            lineCount={lineCount}
+            color="#B8C4CE"
+            lineWidth={isMobile ? 1 : 1.5}
           />
         </group>
 
-        {/* 蓝色雾状环容器 - 围绕中心公转 */}
-        <group rotation={[Math.PI / 3, Math.PI / 6, 0]} ref={blueRingGroupRef}>
-          <FoggyRing
-            color="#5dade2"
-            radius={5.2}
-            thickness={2.1}
-            particleCount={36000}
-            rotationSpeed={-0.2}
-            rotationAxis="y"
-            opacity={0.75}
-            offset={[0, 0, 0.5]}
+        {/* 莫比乌斯环 2 - 深蓝（正交放置） */}
+        <group ref={ring2Ref} rotation={[Math.PI / 2, 0, 0]}>
+          <MobiusStrip
+            radius={3}
+            width={0.6}
+            segments={segments}
+            lineCount={lineCount}
+            color="#3498DB"
+            lineWidth={isMobile ? 1 : 1.5}
           />
         </group>
       </group>
+
+      {/* 后处理效果 */}
+      <EffectComposer>
+        <Bloom
+          intensity={isMobile ? 0.4 : 0.8}
+          luminanceThreshold={0.2}
+          luminanceSmoothing={0.9}
+          mipmapBlur
+        />
+      </EffectComposer>
     </>
   )
 }
 
 // 主组件
 export default function MobiusHero() {
+  const isMobile = useIsMobile()
+
   return (
     <div className="relative w-full h-screen bg-gradient-to-b from-[#060b15] via-[#101c2f] to-[#1b2f49]">
-      {/* 3D画布 */}
+      {/* 3D 画布 */}
       <Canvas
-        shadows
-        dpr={[1, 2]}
+        dpr={isMobile ? 1 : [1, 2]}
         className="absolute inset-0"
         gl={{
-          antialias: true,
+          antialias: !isMobile,
           alpha: true,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.2
+          powerPreference: isMobile ? 'low-power' : 'high-performance'
         }}
       >
         <Suspense fallback={null}>
-          <Scene />
+          <Scene isMobile={isMobile} />
         </Suspense>
       </Canvas>
 
-      {/* 背景高亮层 - 提升主体对比 */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(93,173,226,0.28),_rgba(9,18,33,0.08),_rgba(6,11,21,0))]" />
-
-      {/* 覆盖层文字内容 - 极简风格 */}
+      {/* 覆盖层文字内容 */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center mt-16">
           <h1 className="text-7xl md:text-9xl font-extralight tracking-wider">
             <span className="text-white/80">Synth</span>
             <span className="text-white font-normal">mind</span>
           </h1>
-          <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mt-8 mb-6"></div>
+          <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mt-8 mb-6" />
           <p className="text-lg md:text-xl text-white/50 font-light tracking-wider">
             Unleash Human Potential with AI.
           </p>
         </div>
       </div>
 
-      {/* 渐变遮罩 - 底部淡出效果 */}
+      {/* 底部渐变遮罩 */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#252b3b] to-transparent pointer-events-none" />
     </div>
   )

@@ -65,24 +65,22 @@ const About: React.FC = () => {
             intelligent systems that just work.
           </p>
 
-          {/* 工作原则 - 极简卡片设计 */}
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
+          {/* 工作原则 - 极简纯文字设计 */}
+          <div className="grid md:grid-cols-3 gap-12 mt-16">
             {principles.map((principle, index) => (
               <div
                 key={principle.title}
-                className={`group transition-all duration-700 ${
+                className={`transition-all duration-700 ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
                 style={{ transitionDelay: `${index * 100 + 300}ms` }}
               >
-                <div className="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] p-8 rounded-lg transition-all duration-500 hover:bg-white/[0.05] hover:border-white/[0.1]">
-                  <h3 className="text-lg font-medium text-white/90 mb-4 tracking-wide">
-                    {principle.title}
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    {principle.description}
-                  </p>
-                </div>
+                <h3 className="text-base font-medium text-white/80 mb-3 tracking-wide">
+                  {principle.title}
+                </h3>
+                <p className="text-gray-500 text-sm leading-relaxed font-light">
+                  {principle.description}
+                </p>
               </div>
             ))}
           </div>

@@ -4,25 +4,24 @@ import React from 'react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-b from-[#1a1f2e] to-[#0f1419] text-white py-12 border-t border-gray-800/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center mb-8">
+    <footer className="bg-[#0f1419] text-white py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center">
           {/* Logo */}
-          <div>
-            <a href="#" className="flex items-center">
-              <img
-                src="/synthmind_logo.png"
-                alt="Synthmind Logo"
-                className="h-10 w-auto transition-all duration-300 hover:scale-110 hover:filter hover:brightness-125"
-              />
-            </a>
-          </div>
-        </div>
+          <a href="#" className="mb-8">
+            <img
+              src="/synthmind_logo.png"
+              alt="Synthmind Logo"
+              className="h-8 w-auto opacity-60 hover:opacity-100 transition-opacity duration-300"
+            />
+          </a>
 
-        {/* Copyright */}
-        <div className="border-t border-gray-800/50 pt-8 text-center">
-          <p className="text-gray-500">
-            &copy; 2024 Synthmind. All Rights Reserved.
+          {/* 细线分隔 */}
+          <div className="w-16 h-[1px] bg-white/10 mb-8" />
+
+          {/* Copyright */}
+          <p className="text-gray-600 text-xs font-light tracking-wider">
+            © 2024 Synthmind
           </p>
         </div>
       </div>
