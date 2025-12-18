@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -74,7 +75,7 @@ const Products: React.FC = () => {
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <h2 className="text-5xl md:text-6xl font-extralight text-white mb-6 tracking-wide">
-            What I've <span className="font-normal">Built</span>
+            What I&apos;ve <span className="font-normal">Built</span>
           </h2>
           <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-6" />
           <p className="text-gray-400 font-light max-w-2xl mx-auto">
@@ -100,9 +101,11 @@ const Products: React.FC = () => {
               }`}>
                 {/* Logo */}
                 <div className="w-20 h-8 mb-4">
-                  <img
+                  <Image
                     src={product.logo}
                     alt={`${product.name} logo`}
+                    width={80}
+                    height={32}
                     className="object-contain h-full w-auto max-w-full filter brightness-0 invert opacity-50 group-hover:opacity-90 transition-all duration-300"
                   />
                 </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 const Footer: React.FC = () => {
   return (
@@ -9,9 +10,11 @@ const Footer: React.FC = () => {
         <div className="flex flex-col items-center">
           {/* Logo */}
           <a href="#" className="mb-8">
-            <img
+            <Image
               src="/synthmind_logo.png"
               alt="Synthmind Logo"
+              width={120}
+              height={32}
               className="h-8 w-auto opacity-60 hover:opacity-100 transition-opacity duration-300"
             />
           </a>

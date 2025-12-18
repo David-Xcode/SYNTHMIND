@@ -135,7 +135,7 @@ const Contact: React.FC = () => {
           </h2>
           <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto"></div>
           <p className="max-w-3xl mx-auto mt-8 text-lg text-gray-300 font-light leading-relaxed">
-            Whether you want to learn more about our services or are ready to begin your AI transformation journey, we're eager to hear your ideas.
+            Whether you want to learn more about our services or are ready to begin your AI transformation journey, we&apos;re eager to hear your ideas.
           </p>
         </div>
 

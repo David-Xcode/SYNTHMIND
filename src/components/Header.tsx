@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { scrollToSection } from '@/utils/scrollToSection';
 
@@ -30,9 +31,11 @@ const Header: React.FC = () => {
         {/* Logo */}
         <div className="flex items-center">
           <a href="#" className="flex items-center">
-            <img
+            <Image
               src="/synthmind_logo.png"
               alt="Synthmind Logo"
+              width={150}
+              height={40}
               className="h-10 w-auto transition-all duration-300 hover:scale-105 opacity-90 hover:opacity-100"
             />
           </a>
