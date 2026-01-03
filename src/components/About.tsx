@@ -26,11 +26,11 @@ const About: React.FC = () => {
   const principles = [
     {
       title: 'Ship Fast',
-      description: 'No endless meetings or approval chains. I move quickly from idea to working software.',
+      description: 'No endless meetings or approval chains. We move quickly from idea to working software.',
     },
     {
       title: 'Stay Lean',
-      description: 'One developer means lower overhead, direct communication, and focused execution.',
+      description: 'Small team means lower overhead, direct communication, and focused execution.',
     },
     {
       title: 'Build Smart',
@@ -60,8 +60,8 @@ const About: React.FC = () => {
           <p className={`text-lg md:text-xl text-gray-300 leading-relaxed text-center font-light transition-all duration-700 delay-200 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
-            Synthmind is a solo software studio focused on building AI-powered tools for traditional industries.
-            I specialize in taking repetitive, time-consuming workflows and turning them into automated,
+            Synthmind is a software studio focused on building AI-powered tools for traditional industries.
+            We specialize in taking repetitive, time-consuming workflows and turning them into automated,
             intelligent systems that just work.
           </p>
 
