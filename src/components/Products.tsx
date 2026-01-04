@@ -60,6 +60,13 @@ const Products: React.FC = () => {
       description: 'Free automation tools for insurance brokers',
       url: 'https://brokertool.ai/',
       logo: '/product/brokertool.png'
+    },
+    {
+      id: 'costexpert',
+      name: 'CostExpert',
+      description: 'Free insurance cancellation calculator for Canadian policyholders',
+      url: 'https://www.costexpert.ca/',
+      logo: '/product/costexpert.png'
     }
   ];
 
@@ -75,7 +82,7 @@ const Products: React.FC = () => {
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <h2 className="text-5xl md:text-6xl font-extralight text-white mb-6 tracking-wide">
-            What I&apos;ve <span className="font-normal">Built</span>
+            What We&apos;ve <span className="font-normal">Built</span>
           </h2>
           <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-6" />
           <p className="text-gray-400 font-light max-w-2xl mx-auto">
