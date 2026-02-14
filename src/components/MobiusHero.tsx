@@ -92,8 +92,7 @@ function MobiusStrip({
           points={points}
           color={color}
           lineWidth={lineWidth}
-          transparent
-          opacity={0.25}
+          toneMapped={false}
         />
       ))}
     </group>
@@ -153,8 +152,8 @@ function Scene({ isMobile }: { isMobile: boolean }) {
             width={0.6}
             segments={segments}
             lineCount={lineCount}
-            color="#8FA8BD"
-            lineWidth={isMobile ? 1.5 : 2}
+            color="#4A6278"
+            lineWidth={isMobile ? 2 : 3}
           />
         </group>
 
@@ -165,8 +164,8 @@ function Scene({ isMobile }: { isMobile: boolean }) {
             width={0.6}
             segments={segments}
             lineCount={lineCount}
-            color="#2980B9"
-            lineWidth={isMobile ? 1.5 : 2}
+            color="#1A5277"
+            lineWidth={isMobile ? 2 : 3}
           />
         </group>
       </group>
@@ -174,8 +173,8 @@ function Scene({ isMobile }: { isMobile: boolean }) {
       {/* 后处理效果 */}
       <EffectComposer>
         <Bloom
-          intensity={isMobile ? 0.6 : 1.2}
-          luminanceThreshold={0.1}
+          intensity={isMobile ? 0.8 : 1.5}
+          luminanceThreshold={0.4}
           luminanceSmoothing={0.9}
           mipmapBlur
         />

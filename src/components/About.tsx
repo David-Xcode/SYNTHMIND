@@ -1,6 +1,11 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  BoltIcon,       // Ship Fast — 闪电，代表速度
+  UserGroupIcon,  // Stay Lean — 小团队
+  CpuChipIcon,    // Build Smart — AI/智能
+} from '@heroicons/react/24/outline';
 
 const About: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -13,7 +18,7 @@ const About: React.FC = () => {
           setIsVisible(true);
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
 
     if (sectionRef.current) {
@@ -25,14 +30,17 @@ const About: React.FC = () => {
 
   const principles = [
     {
+      icon: BoltIcon,
       title: 'Ship Fast',
       description: 'No endless meetings or approval chains. We move quickly from idea to working software.',
     },
     {
+      icon: UserGroupIcon,
       title: 'Stay Lean',
       description: 'Small team means lower overhead, direct communication, and focused execution.',
     },
     {
+      icon: CpuChipIcon,
       title: 'Build Smart',
       description: 'AI-first approach to every project. Automate the boring stuff, focus on what matters.',
     },
@@ -65,24 +73,36 @@ const About: React.FC = () => {
             intelligent systems that just work.
           </p>
 
-          {/* 工作原则 - 极简纯文字设计 */}
-          <div className="grid md:grid-cols-3 gap-12 mt-16">
-            {principles.map((principle, index) => (
-              <div
-                key={principle.title}
-                className={`transition-all duration-700 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-                style={{ transitionDelay: `${index * 100 + 300}ms` }}
-              >
-                <h3 className="text-base font-medium text-white/80 mb-3 tracking-wide">
-                  {principle.title}
-                </h3>
-                <p className="text-gray-500 text-sm leading-relaxed font-light">
-                  {principle.description}
-                </p>
-              </div>
-            ))}
+          {/* 工作原则 - glass-card 风格，与 Services 统一 */}
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-16">
+            {principles.map((principle, index) => {
+              const IconComponent = principle.icon;
+              return (
+                // 外层：入场动画
+                <div
+                  key={principle.title}
+                  className={`transition-all duration-700 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${index * 100 + 300}ms` }}
+                >
+                  {/* 内层：glass-card 负责 hover 效果 */}
+                  <div className="glass-card rounded-2xl p-8 h-full">
+                    {/* 图标容器 */}
+                    <div className="w-14 h-14 rounded-xl bg-[#3498db]/10 border border-[#3498db]/20 flex items-center justify-center mb-6">
+                      <IconComponent className="w-7 h-7 text-[#3498db]" />
+                    </div>
+
+                    <h3 className="text-lg font-medium text-white/90 mb-2">
+                      {principle.title}
+                    </h3>
+                    <p className="text-gray-400 text-sm leading-relaxed font-light">
+                      {principle.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* 底部装饰线 */}

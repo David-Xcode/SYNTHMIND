@@ -69,33 +69,35 @@ const Services: React.FC = () => {
           <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto" />
         </div>
 
-        {/* 服务列表 - 极简设计 */}
-        <div className="max-w-3xl mx-auto">
+        {/* 服务卡片 - 2x2 网格布局 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
           {services.map((service, index) => {
             const IconComponent = service.icon;
             return (
+              // 外层：入场动画（opacity + translate-y + delay）
               <div
                 key={index}
-                className={`group transition-all duration-700 ${
+                className={`transition-all duration-700 ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                } ${index !== services.length - 1 ? 'border-b border-white/[0.06]' : ''}`}
+                }`}
                 style={{ transitionDelay: `${index * 100 + 200}ms` }}
               >
-                <div className="py-8 flex items-start gap-6">
-                  {/* 图标 */}
-                  <IconComponent className="w-5 h-5 text-white/40 mt-1 flex-shrink-0" />
-
-                  <div className="flex-1">
-                    {/* 标题 */}
-                    <h3 className="text-base font-medium text-white/80 mb-2">
-                      {service.title}
-                    </h3>
-
-                    {/* 描述 */}
-                    <p className="text-gray-500 text-sm leading-relaxed font-light">
-                      {service.description}
-                    </p>
+                {/* 内层：glass-card 负责 hover 效果 */}
+                <div className="glass-card rounded-2xl p-8 h-full">
+                  {/* 图标容器 */}
+                  <div className="w-14 h-14 rounded-xl bg-[#3498db]/10 border border-[#3498db]/20 flex items-center justify-center mb-6">
+                    <IconComponent className="w-7 h-7 text-[#3498db]" />
                   </div>
+
+                  {/* 标题 */}
+                  <h3 className="text-lg font-medium text-white/90 mb-2">
+                    {service.title}
+                  </h3>
+
+                  {/* 描述 */}
+                  <p className="text-gray-400 text-sm leading-relaxed font-light">
+                    {service.description}
+                  </p>
                 </div>
               </div>
             );
