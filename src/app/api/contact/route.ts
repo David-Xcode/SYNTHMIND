@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-// 初始化Resend客户端
-const resend = new Resend(process.env.RESEND_API_KEY);
+// 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 // 字段长度上限
 const FIELD_LIMITS = { name: 100, subject: 200, message: 5000 } as const;
@@ -35,7 +37,7 @@ const sendCustomerReply = async (
   const safeSubject = escapeHtml(subject);
   const safeMessage = escapeHtml(message);
 
-  return await resend.emails.send({
+  return await getResendClient().emails.send({
     from: 'Synthmind <noreply@synthmind.ca>',
     to: [email],
     subject: 'Thank you for contacting Synthmind - We have received your message',
@@ -79,7 +81,7 @@ const sendNotificationEmail = async (
   const safeSubject = escapeHtml(subject);
   const safeMessage = escapeHtml(message);
 
-  return await resend.emails.send({
+  return await getResendClient().emails.send({
     from: 'Synthmind <onboarding@resend.dev>',
     to: ['synthmind.technology@gmail.com'],
     subject: `[Website Contact] New message from ${safeName}`,
