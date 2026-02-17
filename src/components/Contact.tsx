@@ -126,7 +126,7 @@ const Contact: React.FC = () => {
           />
 
           {/* 提交按钮 + 状态 */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center gap-4">
             <button
               type="submit"
               disabled={status === 'sending'}
