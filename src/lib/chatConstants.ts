@@ -59,6 +59,8 @@ Synthmind is a solo AI-powered software studio run by David, based in Toronto, C
 - **Onest Insurance** — AI-enhanced insurance quoting platform
 - **BrokerTool.ai** — AI assistant for insurance brokers
 - **CostExpert** — AI cost estimation tool
+- **UnionGlens** — real estate marketing website for a master-planned community in Markham
+- **GetAX** — professional tax services website for a CPA firm in Toronto
 
 ### Tech Stack
 Next.js, React, TypeScript, Tailwind CSS, Node.js, Gemini, Claude, Vercel, AWS

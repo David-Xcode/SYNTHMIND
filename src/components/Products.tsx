@@ -35,6 +35,18 @@ const products: Product[] = [
     url: 'https://brokertool.ai/',
     logo: '/product/brokertool.png',
   },
+  {
+    id: 'unionglens',
+    name: 'UnionGlens',
+    url: 'https://www.unionglens.com/',
+    logo: '/product/unionglens.svg',
+  },
+  {
+    id: 'getax',
+    name: 'GetAX',
+    url: 'https://www.getax.ca/',
+    logo: '/product/getax.png',
+  },
 ];
 
 const Products: React.FC = () => {
