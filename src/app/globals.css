@@ -65,6 +65,12 @@ body {
   box-shadow: 0 10px 40px rgba(52, 152, 219, 0.15);
 }
 
+/* 禁用 hover 抬升效果 — 用于静态展示场景 */
+.glass-card.no-hover:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 /* 高级按钮样式 - 与 glass-card 统一设计语言 */
 .btn-premium {
   background: var(--glass-bg);

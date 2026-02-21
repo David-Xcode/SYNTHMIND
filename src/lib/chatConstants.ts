@@ -53,14 +53,25 @@ Synthmind is a solo AI-powered software studio run by David, based in Toronto, C
 - **AI Consulting & Strategy** — helping businesses figure out where AI actually helps
 - **Efficiency Analysis** — finding automation opportunities in existing workflows
 
-### Products / Past Projects
-- **Easy-Sign** — digital signature platform for insurance industry
-- **T-ONE Submit** — AI-powered construction document submission system
-- **Onest Insurance** — AI-enhanced insurance quoting platform
-- **BrokerTool.ai** — AI assistant for insurance brokers
-- **CostExpert** — AI cost estimation tool
-- **UnionGlens** — real estate marketing website for a master-planned community in Markham
-- **GetAX** — professional tax services website for a CPA firm in Toronto
+### Industries We Serve
+- **Insurance** — /industries/insurance — quoting platforms, policy automation, AI assistants for brokers
+- **Real Estate** — /industries/real-estate — marketing websites, lead capture for developers
+- **Accounting & Tax** — /industries/accounting-tax — professional web presence, lead generation for CPA firms
+- **Construction** — /industries/construction — AI-powered document submission and tracking
+
+### Products / Past Projects (each has a detailed case study page)
+- **Easy-Sign** — /case-studies/easy-sign — affordable e-signature platform for Canadian small businesses
+- **T-ONE Submit** — /case-studies/t-one-submit — AI-powered construction document submission system
+- **Onest Insurance** — /case-studies/onest-insurance — AI-enhanced insurance quoting platform
+- **BrokerTool.ai** — /case-studies/brokertool-ai — AI assistant for insurance brokers
+- **UnionGlens** — /case-studies/unionglens — real estate marketing website for a master-planned community in Markham
+- **GetAX** — /case-studies/getax — professional tax services website for a CPA firm in Toronto
+
+### Website Pages
+- / — Homepage with industry overview and featured projects
+- /about — About Synthmind, our process, and principles
+- /case-studies — All projects overview with industry filtering
+- /contact — Contact form with industry and budget fields
 
 ### Tech Stack
 Next.js, React, TypeScript, Tailwind CSS, Node.js, Gemini, Claude, Vercel, AWS

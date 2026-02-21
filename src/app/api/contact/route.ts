@@ -25,6 +25,11 @@ interface ContactFormData {
   email: string;
   subject: string;
   message: string;
+  // 新增可选字段 — 来自增强版联系表单
+  company?: string;
+  industry?: string;
+  budget?: string;
+  source?: string;
 }
 
 // 发送自动回复给客户
@@ -76,7 +81,11 @@ const sendNotificationEmail = async (
   name: string,
   email: string,
   subject: string,
-  message: string
+  message: string,
+  company?: string,
+  industry?: string,
+  budget?: string,
+  source?: string,
 ) => {
   const safeName = escapeHtml(name);
   const safeSubject = escapeHtml(subject);
@@ -98,8 +107,12 @@ const sendNotificationEmail = async (
           <div style="background-color: #f8f9ff; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #1A73E8;">
             <h2 style="color: #1A73E8; margin: 0 0 20px 0; font-size: 20px;">Contact Information</h2>
             <p><strong>Name:</strong> ${safeName}</p>
-            <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+            <p><strong>Email:</strong> <a href="mailto:${encodeURIComponent(email)}">${escapeHtml(email)}</a></p>
             <p><strong>Subject:</strong> ${safeSubject}</p>
+            ${company ? `<p><strong>Company:</strong> ${escapeHtml(company)}</p>` : ''}
+            ${industry ? `<p><strong>Industry:</strong> ${escapeHtml(industry)}</p>` : ''}
+            ${budget ? `<p><strong>Budget:</strong> ${escapeHtml(budget)}</p>` : ''}
+            ${source ? `<p><strong>Source:</strong> ${escapeHtml(source)}</p>` : ''}
             <p><strong>Time:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' })}</p>
           </div>
 
@@ -111,7 +124,7 @@ const sendNotificationEmail = async (
           </div>
 
           <div style="margin-top: 30px; text-align: center;">
-            <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}"
+            <a href="mailto:${encodeURIComponent(email)}?subject=Re: ${encodeURIComponent(subject)}"
                style="display: inline-block; background: linear-gradient(135deg, #1A73E8, #6C63FF); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">
               Reply to Customer
             </a>
@@ -124,10 +137,10 @@ const sendNotificationEmail = async (
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, subject, message }: ContactFormData = await request.json();
+    const { name, email, subject, message, company, industry, budget, source }: ContactFormData = await request.json();
 
-    // 验证必需字段
-    if (!name || !email || !subject || !message) {
+    // 验证必需字段（subject 和 message 可以来自 mini/inline 变体，可选处理）
+    if (!email || (!name && !message && !subject)) {
       return NextResponse.json({ 
         success: false,
         error: 'All fields are required' 
@@ -144,10 +157,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 字段长度校验 — 防止超大 payload 滥用
+    // mini/inline 变体可能不发送 name/subject/message，用可选链避免 TypeError
     if (
-      name.length > FIELD_LIMITS.name ||
-      subject.length > FIELD_LIMITS.subject ||
-      message.length > FIELD_LIMITS.message
+      (name?.length ?? 0) > FIELD_LIMITS.name ||
+      (subject?.length ?? 0) > FIELD_LIMITS.subject ||
+      (message?.length ?? 0) > FIELD_LIMITS.message
     ) {
       return NextResponse.json({
         success: false,
@@ -165,8 +179,9 @@ export async function POST(request: NextRequest) {
 
     try {
       const db = createServiceClient();
+      // company/industry/budget 在当前 DB schema 中无对应列，不写入
       await db.from('form_submissions').insert({
-        source: 'contact',
+        source: source || 'contact',
         name,
         email,
         subject,
@@ -178,12 +193,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 只发送管理员通知邮件（优先保证你能收到客户留言）
-    const notificationEmail = await sendNotificationEmail(name, email, subject, message);
+    const notificationEmail = await sendNotificationEmail(name, email, subject || '', message || '', company, industry, budget, source);
 
     // 尝试发送客户确认邮件（如果失败不影响主要功能）
     let customerEmailSent = false;
     try {
-      const customerEmail = await sendCustomerReply(name, email, subject, message);
+      const customerEmail = await sendCustomerReply(name || '', email, subject || '', message || '');
       customerEmailSent = !!customerEmail.data;
     } catch (error) {
       console.warn('Customer reply email failed, but notification email sent successfully:', error);
