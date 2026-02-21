@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { createServiceClient } from '@/lib/supabase-server';
 
 // 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
 function getResendClient() {
@@ -155,6 +156,26 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('New contact form submission received');
+
+    // ── 写入 Supabase（DB 失败不阻断邮件发送）──
+    const ip =
+      request.headers.get('x-real-ip') ??
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      'unknown';
+
+    try {
+      const db = createServiceClient();
+      await db.from('form_submissions').insert({
+        source: 'contact',
+        name,
+        email,
+        subject,
+        message,
+        ip_address: ip,
+      });
+    } catch (dbErr) {
+      console.error('Failed to persist contact form to DB:', dbErr);
+    }
 
     // 只发送管理员通知邮件（优先保证你能收到客户留言）
     const notificationEmail = await sendNotificationEmail(name, email, subject, message);

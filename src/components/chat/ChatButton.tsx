@@ -1,11 +1,23 @@
 "use client";
 
-import { useState, lazy, Suspense } from "react";
+import { useState, useRef, lazy, Suspense } from "react";
 import { useChatOpen } from "@/hooks/useChatOpen";
 import type { ChatMessage } from "@/lib/chatConstants";
 
 // 懒加载 ChatPanel（面板打开时才加载）
 const ChatPanel = lazy(() => import("./ChatPanel"));
+
+// ── Session ID 管理：sessionStorage 持久化，刷新保持 ──
+function getOrCreateSessionId(): string {
+  if (typeof window === "undefined") return crypto.randomUUID();
+  const KEY = "synthmind_chat_session_id";
+  let id = sessionStorage.getItem(KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem(KEY, id);
+  }
+  return id;
+}
 
 // 懒加载 Spline 运行时（必须在模块顶层，不能放在组件函数体内）
 const SplineComponent = lazy(() =>
@@ -102,6 +114,11 @@ export default function ChatButton() {
   const { open, toggle, close } = useChatOpen();
   // 消息状态在这里持有 — 关闭面板不丢失历史
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // sessionId 用 ref 避免每次渲染重新生成
+  const sessionIdRef = useRef<string | null>(null);
+  if (!sessionIdRef.current) {
+    sessionIdRef.current = getOrCreateSessionId();
+  }
 
   return (
     <div className="fixed right-4 bottom-4 sm:right-6 sm:bottom-6 z-50 flex flex-col items-end gap-3">
@@ -120,6 +137,7 @@ export default function ChatButton() {
             messages={messages}
             setMessages={setMessages}
             onClose={close}
+            sessionId={sessionIdRef.current}
           />
         </Suspense>
       )}

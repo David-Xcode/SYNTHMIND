@@ -20,9 +20,10 @@ interface Props {
   messages: ChatMessageType[];
   setMessages: React.Dispatch<React.SetStateAction<ChatMessageType[]>>;
   onClose: () => void;
+  sessionId: string;
 }
 
-export default function ChatPanel({ messages, setMessages, onClose }: Props) {
+export default function ChatPanel({ messages, setMessages, onClose, sessionId }: Props) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,6 +48,32 @@ export default function ChatPanel({ messages, setMessages, onClose }: Props) {
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
   }, []);
+
+  // ── 从 DB 恢复聊天历史（首次打开面板时）──
+  const historyLoadedRef = useRef(false);
+  useEffect(() => {
+    if (historyLoadedRef.current || messages.length > 0) return;
+    historyLoadedRef.current = true;
+
+    fetch(`/api/chat/history?sessionId=${sessionId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.messages && data.messages.length > 0) {
+          const restored: ChatMessageType[] = data.messages.map(
+            (m: { role: string; content: string; created_at: string }, i: number) => ({
+              id: `history-${i}`,
+              role: m.role as "user" | "assistant",
+              content: m.content,
+              timestamp: new Date(m.created_at).getTime(),
+            }),
+          );
+          setMessages(restored.slice(-MAX_DISPLAY_MESSAGES));
+        }
+      })
+      .catch(() => {
+        // 历史加载失败不影响正常使用
+      });
+  }, [sessionId, messages.length, setMessages]);
 
   // 自动聚焦输入框
   useEffect(() => {
@@ -97,15 +124,13 @@ export default function ChatPanel({ messages, setMessages, onClose }: Props) {
       setIsLoading(true);
 
       try {
-        // 使用 ref 读取最新消息，避免闭包捕获过期 messages
+        // 发送单条消息 + sessionId（上下文从 DB 加载，不再传全部历史）
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages: [...messagesRef.current, userMessage].map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
+            sessionId,
+            message: trimmed,
           }),
           signal: controller.signal,
         });
@@ -145,7 +170,7 @@ export default function ChatPanel({ messages, setMessages, onClose }: Props) {
         setIsLoading(false);
       }
     },
-    [isLoading, setMessages]
+    [isLoading, setMessages, sessionId]
   );
 
   const handleSubmit = (e: FormEvent) => {
