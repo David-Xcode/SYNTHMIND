@@ -2,9 +2,12 @@
 
 // ─── 首页 Hero v2 ───
 // 包装 MobiusHero，叠加新 btn-primary/secondary
+// Next.js 15: 动态导入 Three.js 组件，禁止 SSR 避免 React 内部版本冲突
 
 import Link from 'next/link';
-import MobiusHero from '@/components/MobiusHero';
+import dynamic from 'next/dynamic';
+
+const MobiusHero = dynamic(() => import('@/components/MobiusHero'), { ssr: false });
 
 export default function HomeHero() {
   return (

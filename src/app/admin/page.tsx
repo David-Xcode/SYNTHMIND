@@ -12,16 +12,16 @@ function sanitizeSearch(raw: string): string {
 }
 
 // Server component：从 DB 加载会话列表或表单提交列表
-// Next.js 14: searchParams 直接解构，不用 await
+// Next.js 15: searchParams 是 Promise，需要 await
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: { q?: string; view?: string; sort?: string };
+  searchParams: Promise<{ q?: string; view?: string; sort?: string }>;
 }) {
   // 二次鉴权：纵深防御
   await requireAdmin();
 
-  const { q, view, sort } = searchParams;
+  const { q, view, sort } = await searchParams;
   const activeView = view === "submissions" ? "submissions" : "sessions";
   const sortAsc = sort === "asc";
   const db = createServiceClient();

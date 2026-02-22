@@ -29,16 +29,16 @@ function fmtTime(iso: string): string {
 }
 
 // Server component：查看单个 session 的所有消息
-// Next.js 14: params 直接解构，不用 await
+// Next.js 15: params 是 Promise，需要 await
 export default async function SessionDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   // 二次鉴权：纵深防御
   await requireAdmin();
 
-  const { id } = params;
+  const { id } = await params;
 
   // UUID 格式校验
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -22,8 +22,8 @@ const MAX_IDS = 100;
 
 export async function POST(req: NextRequest) {
   // ── 鉴权：验证 HMAC cookie ──
-  // Next.js 14: cookies() 是同步调用
-  const cookieStore = cookies();
+  // Next.js 15: cookies() 返回 Promise，需要 await
+  const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token || !(await verifyToken(token))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
