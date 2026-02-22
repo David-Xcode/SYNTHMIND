@@ -3,7 +3,7 @@
 // ─── 导航头部 · Neural ───
 // 实底滚动态 (无 backdrop-blur) / 蓝色活跃指示器 / DM Sans 导航
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -11,15 +11,12 @@ import { mainNav } from '@/data/navigation';
 
 export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [industriesOpen, setIndustriesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   // 页面切换时关闭菜单
   useEffect(() => {
     setMobileOpen(false);
-    setIndustriesOpen(false);
   }, [pathname]);
 
   // 滚动检测
@@ -27,17 +24,6 @@ export default function SiteHeader() {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // 点击外部关闭 dropdown
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && e.target instanceof Node && !dropdownRef.current.contains(e.target)) {
-        setIndustriesOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const isActive = (href: string) =>
@@ -65,80 +51,28 @@ export default function SiteHeader() {
 
         {/* 桌面端导航 */}
         <div className="hidden md:flex items-center gap-8">
-          {mainNav.map((item) =>
-            item.children ? (
-              // Industries 下拉菜单
-              <div key={item.label} className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setIndustriesOpen(!industriesOpen)}
-                  className={`group flex items-center gap-1.5 text-sm font-normal transition-colors duration-200 ${
-                    isActive('/industries')
-                      ? 'text-txt-primary'
-                      : 'text-txt-tertiary hover:text-txt-primary'
-                  }`}
-                  aria-haspopup="true"
-                  aria-expanded={industriesOpen}
-                >
-                  {item.label}
-                  <svg
-                    className={`w-3 h-3 transition-transform duration-300 ease-[var(--ease-out-expo)] ${
-                      industriesOpen ? 'rotate-180' : ''
-                    }`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Dropdown */}
-                <div
-                  role="menu"
-                  className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-52 bg-bg-elevated border border-accent/[0.12] rounded-xl py-1.5 transition-all duration-300 ease-out-expo origin-top ${
-                    industriesOpen
-                      ? 'opacity-100 scale-100 pointer-events-auto'
-                      : 'opacity-0 scale-95 pointer-events-none'
-                  }`}
-                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,0,0,0.2)' }}
-                >
-                  {item.children.map((child) => (
-                    <Link
-                      key={child.href}
-                      href={child.href}
-                      className={`block px-4 py-2.5 text-sm transition-colors duration-150 ${
-                        pathname === child.href
-                          ? 'text-accent bg-accent/[0.08]'
-                          : 'text-txt-secondary hover:text-txt-primary hover:bg-accent/[0.06]'
-                      }`}
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              // 普通链接 + 蓝色活跃指示器
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative text-sm font-normal transition-colors duration-200 py-1 ${
-                  isActive(item.href)
-                    ? 'text-txt-primary'
-                    : 'text-txt-tertiary hover:text-txt-primary'
-                }`}
-              >
-                {item.label}
-                {/* 底部小圆点指示器 — 蓝色 */}
-                {isActive(item.href) && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
-                )}
-              </Link>
-            )
-          )}
+          {mainNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`relative text-sm font-normal transition-colors duration-200 py-1 ${
+                isActive(item.href)
+                  ? 'text-txt-primary'
+                  : 'text-txt-tertiary hover:text-txt-primary'
+              }`}
+            >
+              {item.label}
+              {/* 底部小圆点指示器 — 蓝色 */}
+              {isActive(item.href) && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
+              )}
+            </Link>
+          ))}
 
           {/* CTA 按钮 */}
           <Link href="/contact" className="btn-primary text-sm px-5 py-2">
             Book a Call
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-3.5 h-3.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </Link>
@@ -164,61 +98,19 @@ export default function SiteHeader() {
         }`}
       >
         <div className="px-6 py-6 space-y-1 bg-bg-base border-t border-[var(--border-default)]">
-          {mainNav.map((item) =>
-            item.children ? (
-              <div key={item.label}>
-                <button
-                  onClick={() => setIndustriesOpen(!industriesOpen)}
-                  className="flex items-center justify-between w-full text-left text-txt-tertiary hover:text-txt-primary transition-colors text-sm font-normal py-3"
-                  aria-haspopup="true"
-                  aria-expanded={industriesOpen}
-                >
-                  {item.label}
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-300 ease-[var(--ease-out-expo)] ${
-                      industriesOpen ? 'rotate-180' : ''
-                    }`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-out-expo ${
-                    industriesOpen ? 'max-h-[200px] opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="pl-4 space-y-1 mb-2">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className={`block py-2 text-sm transition-colors duration-150 ${
-                          pathname === child.href
-                            ? 'text-accent'
-                            : 'text-txt-quaternary hover:text-txt-secondary'
-                        }`}
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`block w-full text-left text-sm font-normal py-3 transition-colors duration-150 ${
-                  isActive(item.href)
-                    ? 'text-txt-primary'
-                    : 'text-txt-tertiary hover:text-txt-primary'
-                }`}
-              >
-                {item.label}
-              </Link>
-            )
-          )}
+          {mainNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`block w-full text-left text-sm font-normal py-3 transition-colors duration-150 ${
+                isActive(item.href)
+                  ? 'text-txt-primary'
+                  : 'text-txt-tertiary hover:text-txt-primary'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
 
           {/* 移动端 CTA */}
           <div className="pt-4 border-t border-[var(--border-default)]">

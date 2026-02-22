@@ -13,8 +13,8 @@ export default function QuickReplies({ onSelect }: Props) {
         <button
           key={text}
           onClick={() => onSelect(text)}
-          className="px-3 py-1.5 text-xs rounded-full border border-[rgba(52,152,219,0.3)]
-                     text-white/70 hover:text-white hover:border-[#3498db] hover:bg-white/5
+          className="px-3 py-1.5 text-xs rounded-full border border-accent/20
+                     text-white/70 hover:text-white hover:border-accent hover:bg-white/5
                      transition-all duration-200 min-h-[44px] sm:min-h-0"
         >
           {text}

@@ -1,7 +1,7 @@
 'use client';
 
-// ─── 可复用联系表单 ───
-// 三种变体：full（完整版，/contact 页用）/ mini（侧边栏用）/ inline（CTA 嵌入用）
+// ─── 可复用联系表单 v2 ───
+// 蓝色中心展开 focus 下划线 / 成功态变换动画
 
 import React, { useState } from 'react';
 
@@ -9,15 +9,12 @@ type FormVariant = 'full' | 'mini' | 'inline';
 
 interface ContactFormProps {
   variant?: FormVariant;
-  /** 表单来源标识，会传给 API */
   source?: string;
 }
 
+// 带 focus 动画的输入框样式
 const inputClass =
-  'w-full bg-transparent border-0 border-b border-white/20 px-0 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#3498db] transition-colors text-sm font-light';
-
-const selectClass =
-  'w-full bg-transparent border-0 border-b border-white/20 px-0 py-3 text-white/30 focus:outline-none focus:border-[#3498db] transition-colors text-sm font-light appearance-none [&:has(option:checked:not([value=""]))]:text-white';
+  'w-full bg-transparent border-0 border-b border-accent/[0.10] px-0 py-3 text-txt-primary placeholder-txt-quaternary focus:outline-none text-sm transition-colors duration-300';
 
 export default function ContactForm({ variant = 'full', source = 'contact' }: ContactFormProps) {
   const [form, setForm] = useState({
@@ -25,9 +22,6 @@ export default function ContactForm({ variant = 'full', source = 'contact' }: Co
     email: '',
     subject: '',
     message: '',
-    company: '',
-    industry: '',
-    budget: '',
   });
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
@@ -41,18 +35,25 @@ export default function ContactForm({ variant = 'full', source = 'contact' }: Co
     e.preventDefault();
     setStatus('sending');
 
+    // 10 秒超时保护 — 防止 API 挂起时用户无限等待
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, source }),
+        signal: controller.signal,
       });
 
       if (!res.ok) throw new Error('Failed to send');
       setStatus('sent');
-      setForm({ name: '', email: '', subject: '', message: '', company: '', industry: '', budget: '' });
+      setForm({ name: '', email: '', subject: '', message: '' });
     } catch {
       setStatus('error');
+    } finally {
+      clearTimeout(timeout);
     }
   };
 
@@ -67,12 +68,12 @@ export default function ContactForm({ variant = 'full', source = 'contact' }: Co
           required
           value={form.email}
           onChange={handleChange}
-          className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#3498db] transition-colors"
+          className="flex-1 bg-accent/[0.04] border border-accent/[0.08] rounded-lg px-4 py-3 text-txt-primary placeholder-txt-quaternary text-sm focus:outline-none focus:border-accent/50 transition-colors"
         />
         <button
           type="submit"
           disabled={status === 'sending'}
-          className="bg-[#3498db] hover:bg-[#2980b9] text-white font-light px-6 py-3 rounded-xl transition-all duration-300 disabled:opacity-50 whitespace-nowrap"
+          className="btn-primary px-6 py-3 disabled:opacity-50 whitespace-nowrap"
         >
           {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Sent!' : 'Get Started'}
         </button>
@@ -80,14 +81,14 @@ export default function ContactForm({ variant = 'full', source = 'contact' }: Co
     );
   }
 
-  // ─── 迷你版：名字 + 邮箱 + 一行描述 ───
+  // ─── 迷你版 ───
   if (variant === 'mini') {
     return (
       <form onSubmit={handleSubmit} className="space-y-6">
-        <input type="text" name="name" placeholder="Name" required value={form.name} onChange={handleChange} className={inputClass} />
-        <input type="email" name="email" placeholder="Email" required value={form.email} onChange={handleChange} className={inputClass} />
-        <input type="text" name="message" placeholder="How can we help?" value={form.message} onChange={handleChange} className={inputClass} />
-        <button type="submit" disabled={status === 'sending'} className="w-full btn-premium disabled:opacity-50">
+        <div className="input-group"><input type="text" name="name" placeholder="Name" required value={form.name} onChange={handleChange} className={inputClass} /><div className="focus-line" /></div>
+        <div className="input-group"><input type="email" name="email" placeholder="Email" required value={form.email} onChange={handleChange} className={inputClass} /><div className="focus-line" /></div>
+        <div className="input-group"><input type="text" name="message" placeholder="How can we help?" value={form.message} onChange={handleChange} className={inputClass} /><div className="focus-line" /></div>
+        <button type="submit" disabled={status === 'sending'} className="w-full btn-primary disabled:opacity-50">
           {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Sent!' : 'Send Message'}
         </button>
         {status === 'error' && <p className="text-red-400 text-sm text-center">Something went wrong. Please try again.</p>}
@@ -95,58 +96,79 @@ export default function ContactForm({ variant = 'full', source = 'contact' }: Co
     );
   }
 
+  // ─── 成功态 ───
+  if (status === 'sent') {
+    return (
+      <div className="card-elevated p-8 text-center" style={{ animation: 'scaleIn 0.5s cubic-bezier(0.16,1,0.3,1)' }}>
+        <div className="w-14 h-14 rounded-full bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center mx-auto mb-5">
+          <svg className="w-7 h-7 text-emerald-400" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-txt-primary mb-2">Message Sent</h3>
+        <p className="text-txt-tertiary text-sm mb-6">We&apos;ll get back to you within 24 hours.</p>
+        <button
+          onClick={() => setStatus('idle')}
+          className="btn-secondary text-sm px-5 py-2"
+        >
+          Send another message
+        </button>
+      </div>
+    );
+  }
+
   // ─── 完整版 ───
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Name + Email 双列 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-        <input type="text" name="name" placeholder="Name" required value={form.name} onChange={handleChange} className={inputClass} />
-        <input type="email" name="email" placeholder="Email" required value={form.email} onChange={handleChange} className={inputClass} />
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-7">
+      {/* 每个输入框包装在 input-group 中，实现 focus 下划线动画 */}
+      <style jsx>{`
+        .input-group { position: relative; }
+        .focus-line {
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          right: 50%;
+          height: 1px;
+          background: var(--accent);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          pointer-events: none;
+        }
+        .input-group:focus-within .focus-line {
+          left: 0;
+          right: 0;
+        }
+      `}</style>
 
-      {/* Company + Industry 双列 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-        <input type="text" name="company" placeholder="Company (optional)" value={form.company} onChange={handleChange} className={inputClass} />
-        <select name="industry" value={form.industry} onChange={handleChange} className={selectClass}>
-          <option value="">Industry (optional)</option>
-          <option value="insurance">Insurance</option>
-          <option value="real-estate">Real Estate</option>
-          <option value="accounting-tax">Accounting & Tax</option>
-          <option value="construction">Construction</option>
-          <option value="other">Other</option>
-        </select>
+      {/* Name + Email */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
+        <div className="input-group"><input type="text" name="name" placeholder="Name" required value={form.name} onChange={handleChange} aria-label="Name" className={inputClass} /><div className="focus-line" /></div>
+        <div className="input-group"><input type="email" name="email" placeholder="Email" required value={form.email} onChange={handleChange} aria-label="Email" className={inputClass} /><div className="focus-line" /></div>
       </div>
-
-      {/* Budget */}
-      <select name="budget" value={form.budget} onChange={handleChange} className={selectClass}>
-        <option value="">Budget Range (optional)</option>
-        <option value="under-5k">Under $5,000</option>
-        <option value="5k-15k">$5,000 – $15,000</option>
-        <option value="15k-50k">$15,000 – $50,000</option>
-        <option value="50k+">$50,000+</option>
-      </select>
 
       {/* Subject */}
-      <input type="text" name="subject" placeholder="Subject" required value={form.subject} onChange={handleChange} className={inputClass} />
+      <div className="input-group"><input type="text" name="subject" placeholder="Subject" required value={form.subject} onChange={handleChange} aria-label="Subject" className={inputClass} /><div className="focus-line" /></div>
 
       {/* Message */}
-      <textarea
-        name="message"
-        placeholder="Tell us about your project"
-        required
-        rows={5}
-        value={form.message}
-        onChange={handleChange}
-        className={`${inputClass} resize-none`}
-      />
+      <div className="input-group">
+        <textarea
+          name="message"
+          placeholder="Tell us about your project"
+          required
+          rows={5}
+          value={form.message}
+          onChange={handleChange}
+          aria-label="Message"
+          className={`${inputClass} resize-none`}
+        />
+        <div className="focus-line" />
+      </div>
 
       {/* 提交 */}
       <div className="flex flex-col items-center gap-4">
-        <button type="submit" disabled={status === 'sending'} className="btn-premium disabled:opacity-50 disabled:cursor-not-allowed">
+        <button type="submit" disabled={status === 'sending'} className="btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed">
           {status === 'sending' ? 'Sending...' : 'Send Message'}
         </button>
-        {status === 'sent' && <span className="text-emerald-400 text-sm font-light">Message sent successfully!</span>}
-        {status === 'error' && <span className="text-red-400 text-sm font-light">Something went wrong. Please try again.</span>}
+        {status === 'error' && <span className="text-red-400 text-sm">Something went wrong. Please try again.</span>}
       </div>
     </form>
   );

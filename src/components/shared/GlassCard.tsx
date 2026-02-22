@@ -1,26 +1,31 @@
-// ─── 玻璃态卡片封装 ───
-// 提取自 globals.css 的 .glass-card 样式，加入可选的交互变体
+// ─── Neural 卡片组件 ───
+// 纯 CSS 驱动，三级: surface (玻璃态) / elevated (实色+上浮) / spotlight (蓝色渐变竖线)
 
 import React from 'react';
 
 interface GlassCardProps {
   children: React.ReactNode;
   className?: string;
-  /** 禁用 hover 抬升效果（用于静态展示场景） */
-  noHover?: boolean;
+  /** 卡片变体 */
+  variant?: 'surface' | 'elevated' | 'spotlight';
   as?: 'div' | 'article' | 'section';
 }
 
 export default function GlassCard({
   children,
   className = '',
-  noHover = false,
+  variant = 'elevated',
   as: Tag = 'div',
 }: GlassCardProps) {
+  // 变体到 CSS class 映射
+  const variantClass = {
+    surface: 'card-surface',
+    elevated: 'card-elevated',
+    spotlight: 'card-spotlight',
+  }[variant];
+
   return (
-    <Tag
-      className={`glass-card rounded-2xl p-8 ${noHover ? 'no-hover' : ''} ${className}`}
-    >
+    <Tag className={`${variantClass} p-6 ${className}`}>
       {children}
     </Tag>
   );

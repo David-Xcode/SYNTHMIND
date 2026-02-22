@@ -11,6 +11,7 @@ import TechStackBadges from '@/components/case-study/TechStackBadges';
 import ResultsSection from '@/components/case-study/ResultsSection';
 import RelatedCaseStudies from '@/components/case-study/RelatedCaseStudies';
 import CTABanner from '@/components/shared/CTABanner';
+import JsonLd from '@/components/shared/JsonLd';
 import { getCaseStudyBySlug, getCaseStudiesByIndustry, getFeaturedCaseStudies, getAllSlugs } from '@/data/case-studies';
 
 interface PageProps {
@@ -29,12 +30,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${cs.title} Case Study | Synthmind`,
     description: cs.tagline,
+    alternates: {
+      canonical: `/case-studies/${slug}`,
+    },
     openGraph: {
       title: `${cs.title} — Built by Synthmind`,
       description: cs.tagline,
-      url: `https://synthmind.ca/case-studies/${slug}`,
-      siteName: 'Synthmind',
-      locale: 'en_CA',
       type: 'article',
     },
   };
@@ -52,8 +53,23 @@ export default async function CaseStudyPage({ params }: PageProps) {
       : getFeaturedCaseStudies()
   ).filter((item) => item.slug !== cs.slug);
 
+  // CreativeWork 结构化数据
+  const caseStudyJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: `${cs.title} Case Study`,
+    description: cs.tagline,
+    url: `https://synthmind.ca/case-studies/${slug}`,
+    author: {
+      '@type': 'Organization',
+      name: 'Synthmind',
+    },
+    keywords: cs.techStack.join(', '),
+  };
+
   return (
     <>
+      <JsonLd data={caseStudyJsonLd} />
       <Breadcrumb
         items={[
           { label: 'Case Studies', href: '/case-studies' },

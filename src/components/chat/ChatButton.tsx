@@ -19,33 +19,24 @@ function getOrCreateSessionId(): string {
   return id;
 }
 
-// 懒加载 Spline 运行时（必须在模块顶层，不能放在组件函数体内）
-const SplineComponent = lazy(() =>
-  import("@splinetool/react-spline").then((mod) => ({
-    default: mod.default,
-  }))
-);
-
-// ─── Spline 场景 URL（替换为你的 Spline 场景） ───
-const SPLINE_SCENE_URL = "";
-
-// ─── CSS Fallback 脉冲按钮 ───
+// ─── 脉冲按钮 ───
 function PulseButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
       aria-label="Open AI chat"
-      className="group relative w-14 h-14 rounded-full bg-[#3498db] text-white
+      className="group relative w-14 h-14 rounded-full bg-accent text-white
                  flex items-center justify-center cursor-pointer
-                 shadow-lg shadow-[#3498db]/30
-                 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#3498db]/40
+                 shadow-lg shadow-accent/30
+                 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-accent/40
                  transition-all duration-300"
     >
       {/* 脉冲光环 */}
-      <span className="absolute inset-0 rounded-full bg-[#3498db] animate-chat-pulse" />
+      <span className="absolute inset-0 rounded-full bg-accent animate-chat-pulse" />
 
       {/* 图标 */}
       <svg
+        aria-hidden="true"
         width="24"
         height="24"
         viewBox="0 0 24 24"
@@ -73,42 +64,6 @@ function PulseButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-// ─── Spline 3D 按钮（当场景 URL 可用时） ───
-function SplineButton({ onClick }: { onClick: () => void }) {
-  const [loadFailed, setLoadFailed] = useState(false);
-
-  // 没有场景 URL 或加载失败 → 使用 fallback
-  if (!SPLINE_SCENE_URL || loadFailed) {
-    return <PulseButton onClick={onClick} />;
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      aria-label="Open AI chat"
-      className="group relative w-16 h-16 cursor-pointer hover:-translate-y-0.5 transition-transform duration-300"
-    >
-      <Suspense fallback={<PulseButton onClick={onClick} />}>
-        <SplineComponent
-          scene={SPLINE_SCENE_URL}
-          onError={() => setLoadFailed(true)}
-        />
-      </Suspense>
-
-      {/* Tooltip */}
-      <span
-        className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap
-                   px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-sm
-                   text-white/90 text-xs border border-white/10
-                   opacity-0 group-hover:opacity-100 transition-all duration-200
-                   pointer-events-none"
-      >
-        Chat with AI
-      </span>
-    </button>
-  );
-}
-
 // ─── 主组件：状态提升容器 ───
 export default function ChatButton() {
   const { open, toggle, close } = useChatOpen();
@@ -126,7 +81,7 @@ export default function ChatButton() {
       {open && (
         <Suspense
           fallback={
-            <div className="w-[400px] h-[600px] rounded-2xl bg-[rgba(26,31,46,0.95)] border border-[rgba(52,152,219,0.3)] flex items-center justify-center">
+            <div className="w-[400px] h-[600px] rounded-2xl bg-[rgba(10,12,18,0.96)] border border-accent/20 flex items-center justify-center">
               <div className="typing-dot" />
               <div className="typing-dot" style={{ animationDelay: "0.15s" }} />
               <div className="typing-dot" style={{ animationDelay: "0.3s" }} />
@@ -143,7 +98,7 @@ export default function ChatButton() {
       )}
 
       {/* 触发按钮 */}
-      {!open && <SplineButton onClick={toggle} />}
+      {!open && <PulseButton onClick={toggle} />}
     </div>
   );
 }

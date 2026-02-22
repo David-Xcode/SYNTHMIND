@@ -1,5 +1,8 @@
 'use client'
 
+// ─── 3D Möbius Hero · Neural ───
+// 蓝色莫比乌斯环 / 降低 bloom / 左对齐文字
+
 import React, { useRef, useMemo, Suspense, useState, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { PerspectiveCamera, Line } from '@react-three/drei'
@@ -26,23 +29,18 @@ function useIsMobile() {
 }
 
 // 莫比乌斯环参数方程
-// x(u,v) = (R + v·cos(u/2)) · cos(u)
-// y(u,v) = (R + v·cos(u/2)) · sin(u)
-// z(u,v) = v · sin(u/2)
 function generateMobiusPoints(
-  R: number,        // 主半径
-  w: number,        // 带宽的一半
-  segments: number, // u 方向的分段数
-  lineCount: number // 平行线数量
+  R: number,
+  w: number,
+  segments: number,
+  lineCount: number
 ): THREE.Vector3[][] {
   const lines: THREE.Vector3[][] = []
 
-  // 生成多条平行线（沿 v 方向分布）
   for (let l = 0; l < lineCount; l++) {
     const v = lineCount === 1 ? 0 : -w + (2 * w * l) / (lineCount - 1)
     const points: THREE.Vector3[] = []
 
-    // 沿 u 方向生成点
     for (let i = 0; i <= segments; i++) {
       const u = (i / segments) * Math.PI * 2
 
@@ -50,7 +48,7 @@ function generateMobiusPoints(
       const y = (R + v * Math.cos(u / 2)) * Math.sin(u)
       const z = v * Math.sin(u / 2)
 
-      points.push(new THREE.Vector3(x, z, y)) // 交换 y 和 z 使环水平放置
+      points.push(new THREE.Vector3(x, z, y))
     }
 
     lines.push(points)
@@ -65,7 +63,7 @@ function MobiusStrip({
   width = 0.8,
   segments = 128,
   lineCount = 5,
-  color = '#C0C0C0',
+  color = '#C0C0C0', // 默认银灰色（Three.js 须硬编码，实际由调用方覆盖）
   lineWidth = 1.5,
   rotation = [0, 0, 0] as [number, number, number]
 }: {
@@ -79,7 +77,6 @@ function MobiusStrip({
 }) {
   const groupRef = useRef<THREE.Group>(null)
 
-  // 生成莫比乌斯环的线条点
   const lines = useMemo(() => {
     return generateMobiusPoints(radius, width, segments, lineCount)
   }, [radius, width, segments, lineCount])
@@ -105,28 +102,19 @@ function Scene({ isMobile }: { isMobile: boolean }) {
   const ring2Ref = useRef<THREE.Group>(null)
   const sceneRef = useRef<THREE.Group>(null)
 
-  // 移动端减少线段数量
   const segments = isMobile ? 64 : 128
   const lineCount = isMobile ? 3 : 5
 
-  // 动画：黄金比例旋转
   useFrame((state) => {
     const time = state.clock.elapsedTime
-
-    // 基础旋转速度
     const baseSpeed = 0.15
 
-    // 环 1：基础速度旋转
     if (ring1Ref.current) {
       ring1Ref.current.rotation.z = time * baseSpeed
     }
-
-    // 环 2：黄金比例速度旋转（更快）
     if (ring2Ref.current) {
       ring2Ref.current.rotation.z = time * baseSpeed * PHI
     }
-
-    // 整体场景缓慢倾斜，增加动态感
     if (sceneRef.current) {
       sceneRef.current.rotation.x = Math.PI / 6 + Math.sin(time * 0.1) * 0.05
       sceneRef.current.rotation.y = time * 0.02
@@ -135,45 +123,42 @@ function Scene({ isMobile }: { isMobile: boolean }) {
 
   return (
     <>
-      {/* 相机设置 */}
       <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={50} />
 
-      {/* 环境光照 */}
       <ambientLight intensity={0.3} />
       <pointLight position={[10, 10, 10]} intensity={0.5} color="#ffffff" />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#3498db" />
+      {/* 注意：Three.js material 不支持 Tailwind token，以下颜色必须硬编码 */}
+      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#4A9FE5" />
 
-      {/* 主场景容器 */}
       <group ref={sceneRef}>
-        {/* 莫比乌斯环 1 - 金属银 */}
+        {/* 环 1 — Synth Blue 主色（= accent-500 #4A9FE5，Three.js 须硬编码） */}
         <group ref={ring1Ref}>
           <MobiusStrip
             radius={3}
             width={0.6}
             segments={segments}
             lineCount={lineCount}
-            color="#4A6278"
+            color="#4A9FE5"
             lineWidth={isMobile ? 2 : 3}
           />
         </group>
 
-        {/* 莫比乌斯环 2 - 深蓝（正交放置） */}
+        {/* 环 2 — 深海灰蓝 #2c3e50（正交，Three.js 须硬编码） */}
         <group ref={ring2Ref} rotation={[Math.PI / 2, 0, 0]}>
           <MobiusStrip
             radius={3}
             width={0.6}
             segments={segments}
             lineCount={lineCount}
-            color="#1A5277"
+            color="#2c3e50"
             lineWidth={isMobile ? 2 : 3}
           />
         </group>
       </group>
 
-      {/* 后处理效果 */}
       <EffectComposer>
         <Bloom
-          intensity={isMobile ? 0.8 : 1.5}
+          intensity={isMobile ? 0.5 : 0.8}
           luminanceThreshold={0.4}
           luminanceSmoothing={0.9}
           mipmapBlur
@@ -187,8 +172,9 @@ function Scene({ isMobile }: { isMobile: boolean }) {
 export default function MobiusHero() {
   const isMobile = useIsMobile()
 
+  // background 须硬编码 = bg-base #080B10（inline style 不支持 Tailwind token）
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-[#060b15] via-[#101c2f] to-[#1b2f49]">
+    <div className="relative w-full h-screen" style={{ background: '#080B10' }}>
       {/* 3D 画布 */}
       <Canvas
         dpr={isMobile ? 1 : [1, 2]}
@@ -204,22 +190,31 @@ export default function MobiusHero() {
         </Suspense>
       </Canvas>
 
-      {/* 覆盖层文字内容 */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-center mt-16">
-          <h1 className="text-7xl md:text-9xl font-extralight tracking-wider">
-            <span className="text-white/80">Synth</span>
-            <span className="text-white font-normal">mind</span>
+      {/* 覆盖层文字 — 左对齐 */}
+      <div className="absolute inset-0 flex items-center pointer-events-none">
+        <div className="ml-8 md:ml-20 lg:ml-32 mt-16">
+          <h1 className="text-display tracking-tighter">
+            <span className="text-txt-primary/80 font-light">Synth</span>
+            <span className="font-display font-semibold text-txt-primary">mind</span>
           </h1>
-          <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mt-8 mb-6" />
-          <p className="text-lg md:text-xl text-white/50 font-light tracking-wider">
+          <div className="w-16 h-px bg-accent/40 mt-6 mb-4" />
+          <p className="text-base md:text-lg text-txt-tertiary font-normal tracking-tight">
             Unleash Human Potential with AI.
           </p>
         </div>
       </div>
 
-      {/* 底部渐变遮罩 */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#252b3b] to-transparent pointer-events-none" />
+      {/* 底部渐变过渡 */}
+      <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-t from-bg-base to-transparent" />
+      </div>
+
+      {/* 滚动指示器 */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
+        <div className="w-5 h-8 rounded-full border border-txt-quaternary/40 flex items-start justify-center p-1.5">
+          <div className="w-0.5 h-2 bg-txt-quaternary rounded-full animate-bounce" />
+        </div>
+      </div>
     </div>
   )
 }

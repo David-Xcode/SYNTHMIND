@@ -11,7 +11,7 @@ interface Props {
  * 轻量 Markdown 渲染：粗体 + 安全链接
  * 不引入 react-markdown，避免依赖膨胀
  */
-function renderContent(text: string) {
+function renderContent(text: string): JSX.Element[] {
   const lines = text.split("\n");
 
   return lines.map((line, lineIdx) => {
@@ -66,7 +66,7 @@ function renderContent(text: string) {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#5dade2] underline underline-offset-2 hover:text-white transition-colors"
+              className="text-accent underline underline-offset-2 hover:text-white transition-colors"
             >
               {linkMatch[1]}
             </a>
@@ -95,7 +95,7 @@ export default function ChatMessage({ message }: Props) {
     <div className={`flex gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* AI 头像 */}
       {!isUser && (
-        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#3498db] flex items-center justify-center text-white text-xs font-bold mt-1">
+        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-accent flex items-center justify-center text-white text-xs font-bold mt-1">
           S
         </div>
       )}
@@ -104,7 +104,7 @@ export default function ChatMessage({ message }: Props) {
       <div
         className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
           isUser
-            ? "bg-[#3498db] text-white rounded-br-md"
+            ? "bg-accent text-white rounded-br-md"
             : "bg-white/10 text-white/90 rounded-bl-md"
         }`}
       >

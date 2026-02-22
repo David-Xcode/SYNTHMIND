@@ -1,9 +1,7 @@
-'use client';
+// ─── 解决方案描述 · Neural ───
+// TextListSection 薄包装
 
-// ─── Synthmind 的解决方案 ───
-
-import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
-import SectionTitle from '@/components/shared/SectionTitle';
+import TextListSection from './TextListSection';
 
 interface SolutionSectionProps {
   solutions: string[];
@@ -11,20 +9,11 @@ interface SolutionSectionProps {
 
 export default function SolutionSection({ solutions }: SolutionSectionProps) {
   return (
-    <section className="py-16 bg-gradient-to-b from-[#252b3b] to-[#1a1f2e] px-4">
-      <div className="max-w-3xl mx-auto">
-        <AnimateOnScroll>
-          <SectionTitle light="The" bold="Solution" />
-        </AnimateOnScroll>
-
-        <div className="space-y-6">
-          {solutions.map((paragraph, index) => (
-            <AnimateOnScroll key={index} delay={index * 100 + 200}>
-              <p className="text-gray-300 font-light leading-relaxed">{paragraph}</p>
-            </AnimateOnScroll>
-          ))}
-        </div>
-      </div>
-    </section>
+    <TextListSection
+      titleLight="The"
+      titleBold="Solution"
+      items={solutions}
+      bgClass="bg-bg-base"
+    />
   );
 }

@@ -189,14 +189,17 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
   return (
     <div
       ref={panelRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="AI Chat"
       className="chat-panel-enter flex flex-col
                  w-[calc(100vw-2rem)] sm:w-[400px]
                  h-[80vh] sm:h-[600px]
                  rounded-2xl overflow-hidden
-                 border border-[rgba(52,152,219,0.3)]
+                 border border-accent/20
                  shadow-2xl shadow-black/40"
       style={{
-        background: "rgba(26, 31, 46, 0.95)",
+        background: "rgba(10, 12, 18, 0.96)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
       }}
@@ -204,7 +207,7 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
       {/* ─── Header ─── */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-[#3498db] flex items-center justify-center text-white text-sm font-bold">
+          <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white text-sm font-bold">
             S
           </div>
           <div>
@@ -235,7 +238,7 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
         {/* 打字指示器 */}
         {isLoading && (
           <div className="flex gap-2">
-            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#3498db] flex items-center justify-center text-white text-xs font-bold">
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-accent flex items-center justify-center text-white text-xs font-bold">
               S
             </div>
             <div className="bg-white/10 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
@@ -268,7 +271,7 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
           rows={1}
           className="flex-1 resize-none rounded-xl px-3.5 py-2.5 text-sm text-white
                      bg-white/5 focus:bg-white/10 border border-white/10
-                     focus:border-[rgba(52,152,219,0.5)] focus:outline-none
+                     focus:border-accent/50 focus:outline-none
                      transition-all duration-200 placeholder:text-white/30
                      max-h-[100px]"
           style={{ minHeight: "40px" }}
@@ -276,10 +279,10 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
         <button
           type="submit"
           disabled={!input.trim() || isLoading}
-          className="flex-shrink-0 w-10 h-10 rounded-xl bg-[#3498db]
+          className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent
                      flex items-center justify-center text-white
                      disabled:opacity-30 disabled:cursor-not-allowed
-                     hover:bg-[#2980b9] transition-all duration-200"
+                     hover:bg-accent-700 transition-all duration-200"
           aria-label="Send message"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

@@ -9,16 +9,6 @@ export interface NavItem {
 
 export const mainNav: NavItem[] = [
   { label: 'About', href: '/about' },
-  {
-    label: 'Industries',
-    href: '#',
-    children: [
-      { label: 'Insurance', href: '/industries/insurance' },
-      { label: 'Real Estate', href: '/industries/real-estate' },
-      { label: 'Accounting & Tax', href: '/industries/accounting-tax' },
-      { label: 'Construction', href: '/industries/construction' },
-    ],
-  },
   { label: 'Case Studies', href: '/case-studies' },
   { label: 'Contact', href: '/contact' },
 ];

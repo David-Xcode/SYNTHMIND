@@ -17,9 +17,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Case Studies — Synthmind',
     description: 'Real solutions built for real businesses.',
-    url: 'https://synthmind.ca/case-studies',
-    siteName: 'Synthmind',
-    locale: 'en_CA',
   },
 };
 

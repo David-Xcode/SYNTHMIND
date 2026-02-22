@@ -15,9 +15,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'About Synthmind',
     description: 'Solo software studio building AI tools for traditional industries.',
-    url: 'https://synthmind.ca/about',
-    siteName: 'Synthmind',
-    locale: 'en_CA',
   },
 };
 

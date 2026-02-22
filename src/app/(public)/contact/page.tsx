@@ -17,9 +17,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contact Synthmind',
     description: 'Book a free consultation for your AI project.',
-    url: 'https://synthmind.ca/contact',
-    siteName: 'Synthmind',
-    locale: 'en_CA',
   },
 };
 

@@ -8,19 +8,19 @@
       "type": "image/x-icon"
     },
     {
-      "src": "webwindo_logo.jpg",
-      "type": "image/jpeg",
+      "src": "synthmind_logo.png",
+      "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "webwindo_logo.jpg",
-      "type": "image/jpeg",
+      "src": "synthmind_logo.png",
+      "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#1A73E8",
-  "background_color": "#ffffff",
+  "theme_color": "#4A9FE5",
+  "background_color": "#080B10",
   "description": "Synthmind - AI solutions to reshape the future"
 }

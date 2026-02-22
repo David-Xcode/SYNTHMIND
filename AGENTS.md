@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+> **Design System Rules:** See [`CLAUDE.md`](./CLAUDE.md) for the complete Foundry design system — typography, color tokens, card system, animation rules, and component usage patterns. All UI implementation MUST follow those rules.
+
 ## 交互与协作规则
 - 所有团队内沟通默认使用中文；代码、变量及文件名保持英文，必要注释统一使用中文，确保阅读观感一致。
 - API Route 需自包含，直接在组件或 Hooks 中结合 React Query 使用，避免抽象出隐藏服务层导致耦合失控。

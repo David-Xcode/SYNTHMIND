@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createRateLimiter, extractIp } from "@/lib/rate-limit";
+import { createRateLimiter, createDailyLimiter, extractIp } from "@/lib/rate-limit";
+import { checkCsrf } from "@/lib/csrf";
 import { createServiceClient } from "@/lib/supabase-server";
 import { extractContactInfo } from "@/lib/extract-contact";
 import { SYSTEM_PROMPT } from "@/lib/chatConstants";
 
 // ── 速率限制：20/min, 150/hr ──
 const limiter = createRateLimiter({ maxPerMinute: 20, maxPerHour: 150 });
+// ── 每 IP 每天最多创建 10 个 session（防止无限 session 滥用 Gemini 配额）──
+const sessionLimiter = createDailyLimiter(10);
 
 // 单 session 消息上限
 const MAX_SESSION_MESSAGES = 200;
@@ -16,6 +19,10 @@ const CONTEXT_WINDOW = 50;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(request: NextRequest) {
+  // CSRF 防护 — 校验 Origin/Referer
+  const csrfError = checkCsrf(request);
+  if (csrfError) return csrfError;
+
   // ── 运行时读取环境变量，缺失则返回 503 ──
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
@@ -86,9 +93,28 @@ export async function POST(request: NextRequest) {
 
     // ── DB 操作：创建 session + 保存 user message + 加载上下文 ──
     let historyMessages: { role: string; content: string }[] = [];
+    // 保存 session 当前计数，供 assistant 回复后统一 +2
+    let sessionMessageCount = 0;
 
     if (db) {
       try {
+        // 检查 session 是否已存在
+        const { data: existingSession } = await db
+          .from("chat_sessions")
+          .select("id")
+          .eq("id", sessionId)
+          .single();
+
+        // 新 session 创建前检查 IP 维度的每日上限
+        if (!existingSession) {
+          if (sessionLimiter.isLimited(ip)) {
+            return NextResponse.json(
+              { error: "Too many new conversations today. Please try again tomorrow." },
+              { status: 429 },
+            );
+          }
+        }
+
         // 确保 session 存在（upsert：首条消息创建，后续消息忽略冲突）
         await db.from("chat_sessions").upsert(
           {
@@ -106,6 +132,8 @@ export async function POST(request: NextRequest) {
           .eq("id", sessionId)
           .single();
 
+        sessionMessageCount = session?.message_count ?? 0;
+
         if (session && session.message_count >= MAX_SESSION_MESSAGES) {
           return NextResponse.json(
             { error: "This conversation has reached its limit. Please start a new chat." },
@@ -113,21 +141,12 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // 保存 user message
+        // 保存 user message（计数延迟到 assistant 回复后统一 +2，避免竞态）
         await db.from("chat_messages").insert({
           session_id: sessionId,
           role: "user",
           content: userMessage,
         });
-
-        // 更新 session 计数和时间戳
-        await db
-          .from("chat_sessions")
-          .update({
-            message_count: (session?.message_count ?? 0) + 1,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", sessionId);
 
         // 从用户消息中提取联系信息，更新 lead 字段
         const contact = extractContactInfo(userMessage);
@@ -205,17 +224,11 @@ export async function POST(request: NextRequest) {
           content: text,
         });
 
-        // 更新消息计数
-        const { data: sess } = await db
-          .from("chat_sessions")
-          .select("message_count")
-          .eq("id", sessionId)
-          .single();
-
+        // 统一更新计数：user + assistant = +2（消除中间态竞态）
         await db
           .from("chat_sessions")
           .update({
-            message_count: (sess?.message_count ?? 0) + 1,
+            message_count: sessionMessageCount + 2,
             updated_at: new Date().toISOString(),
           })
           .eq("id", sessionId);
@@ -228,8 +241,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Chat API error:", error);
 
-    const err = error as Error & { status?: number };
-    const message = err.message || "";
+    const message = error instanceof Error ? error.message : "";
 
     if (message === "AI response timed out") {
       return NextResponse.json(

@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import SiteHeader from '@/components/layout/SiteHeader';
 import SiteFooter from '@/components/layout/SiteFooter';
 import ChatButton from '@/components/chat/ChatButton';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 
 export default function PublicLayout({
   children,
@@ -14,10 +15,18 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <SiteHeader />
-      <main className="min-h-screen">{children}</main>
-      <SiteFooter />
-      <ChatButton />
+      <ErrorBoundary fallback={null}>
+        <SiteHeader />
+      </ErrorBoundary>
+      <main className="min-h-screen">
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </main>
+      <ErrorBoundary fallback={null}>
+        <SiteFooter />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={null}>
+        <ChatButton />
+      </ErrorBoundary>
     </>
   );
 }

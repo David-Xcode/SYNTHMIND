@@ -8,6 +8,7 @@ import IndustryCards from '@/components/home/IndustryCards';
 import FeaturedCaseStudies from '@/components/home/FeaturedCaseStudies';
 import SocialProofBar from '@/components/home/SocialProofBar';
 import CTABanner from '@/components/shared/CTABanner';
+import JsonLd from '@/components/shared/JsonLd';
 
 export const metadata: Metadata = {
   title: 'Synthmind | AI-Powered Software for Traditional Industries',
@@ -17,20 +18,41 @@ export const metadata: Metadata = {
     title: 'Synthmind | AI Solutions That Actually Work',
     description:
       'Solo software studio building AI tools for traditional industries. No corporate fluff — just working software.',
-    url: 'https://synthmind.ca',
-    siteName: 'Synthmind',
-    locale: 'en_CA',
-    type: 'website',
   },
+};
+
+// Organization 结构化数据
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Synthmind',
+  url: 'https://synthmind.ca',
+  logo: 'https://synthmind.ca/synthmind_logo.png',
+  description: 'Solo software studio in Toronto building AI tools for traditional industries.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Toronto',
+    addressRegion: 'ON',
+    addressCountry: 'CA',
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: 'info@synthmind.ca',
+    contactType: 'customer service',
+  },
+  sameAs: [
+    'https://github.com/synthmind',
+  ],
 };
 
 export default function HomePage() {
   return (
     <>
+      <JsonLd data={organizationJsonLd} />
       <HomeHero />
+      <SocialProofBar />
       <IndustryCards />
       <FeaturedCaseStudies />
-      <SocialProofBar />
       <CTABanner headline="Ready to start your AI project?" />
     </>
   );
