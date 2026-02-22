@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { QUICK_REPLIES } from "@/lib/chatConstants";
+import { QUICK_REPLIES } from '@/lib/chatConstants';
 
 interface Props {
   onSelect: (text: string) => void;
@@ -11,6 +11,7 @@ export default function QuickReplies({ onSelect }: Props) {
     <div className="flex flex-wrap gap-2 px-4 pb-2">
       {QUICK_REPLIES.map((text) => (
         <button
+          type="button"
           key={text}
           onClick={() => onSelect(text)}
           className="px-3 py-1.5 text-xs rounded-full border border-accent/20

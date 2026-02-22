@@ -17,14 +17,22 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
   const allItems: BreadcrumbItem[] = [{ label: 'Home', href: '/' }, ...items];
 
   return (
-    <nav aria-label="Breadcrumb" className="pt-24 pb-4 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+    <nav
+      aria-label="Breadcrumb"
+      className="pt-24 pb-4 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto"
+    >
       <ol className="flex items-center gap-1.5 text-sm flex-wrap">
         {allItems.map((item, index) => {
           const isLast = index === allItems.length - 1;
           return (
             <li key={index} className="flex items-center gap-1.5">
               {index > 0 && (
-                <span className="text-txt-quaternary text-xs select-none" aria-hidden="true">/</span>
+                <span
+                  className="text-txt-quaternary text-xs select-none"
+                  aria-hidden="true"
+                >
+                  /
+                </span>
               )}
               {isLast || !item.href ? (
                 <span className="text-txt-tertiary">{item.label}</span>

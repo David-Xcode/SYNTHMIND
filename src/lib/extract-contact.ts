@@ -19,8 +19,8 @@ export function extractContactFromMessages(
   messages: { role: string; content: string }[],
 ) {
   const userText = messages
-    .filter((m) => m.role === "user")
+    .filter((m) => m.role === 'user')
     .map((m) => m.content)
-    .join(" ");
+    .join(' ');
   return extractContactInfo(userText);
 }

@@ -16,7 +16,11 @@ export default function PainPoints({ painPoints }: PainPointsProps) {
     <section className="py-24 bg-bg-surface px-4">
       <div className="max-w-4xl mx-auto">
         <AnimateOnScroll>
-          <SectionTitle light="Common" bold="Challenges" eyebrow="Pain Points" />
+          <SectionTitle
+            light="Common"
+            bold="Challenges"
+            eyebrow="Pain Points"
+          />
         </AnimateOnScroll>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -30,9 +34,13 @@ export default function PainPoints({ painPoints }: PainPointsProps) {
 
                 <div className="relative">
                   <div className="w-9 h-9 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
-                    <span className="font-mono text-sm font-bold text-accent">{index + 1}</span>
+                    <span className="font-mono text-sm font-bold text-accent">
+                      {index + 1}
+                    </span>
                   </div>
-                  <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">{point.title}</h3>
+                  <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
+                    {point.title}
+                  </h3>
                   <p className="text-txt-tertiary text-sm leading-relaxed">
                     {point.description}
                   </p>

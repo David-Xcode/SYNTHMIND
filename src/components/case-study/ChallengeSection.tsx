@@ -7,7 +7,9 @@ interface ChallengeSectionProps {
   challenges: string[];
 }
 
-export default function ChallengeSection({ challenges }: ChallengeSectionProps) {
+export default function ChallengeSection({
+  challenges,
+}: ChallengeSectionProps) {
   return (
     <TextListSection
       titleLight="The"

@@ -1,20 +1,17 @@
-"use client";
+'use client';
 
 import {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
   type FormEvent,
   type KeyboardEvent,
-} from "react";
-import ChatMessage from "./ChatMessage";
-import QuickReplies from "./QuickReplies";
-import type { ChatMessage as ChatMessageType } from "@/lib/chatConstants";
-import {
-  WELCOME_MESSAGE,
-  MAX_DISPLAY_MESSAGES,
-} from "@/lib/chatConstants";
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import type { ChatMessage as ChatMessageType } from '@/lib/chatConstants';
+import { MAX_DISPLAY_MESSAGES, WELCOME_MESSAGE } from '@/lib/chatConstants';
+import ChatMessage from './ChatMessage';
+import QuickReplies from './QuickReplies';
 
 interface Props {
   messages: ChatMessageType[];
@@ -23,8 +20,13 @@ interface Props {
   sessionId: string;
 }
 
-export default function ChatPanel({ messages, setMessages, onClose, sessionId }: Props) {
-  const [input, setInput] = useState("");
+export default function ChatPanel({
+  messages,
+  setMessages,
+  onClose,
+  sessionId,
+}: Props) {
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -37,16 +39,18 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
 
   // 自动滚动到底部
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading, scrollToBottom]);
+  }, [scrollToBottom]);
 
   // 组件卸载时取消进行中的 fetch
   useEffect(() => {
-    return () => { abortRef.current?.abort(); };
+    return () => {
+      abortRef.current?.abort();
+    };
   }, []);
 
   // ── 从 DB 恢复聊天历史（首次打开面板时）──
@@ -60,9 +64,12 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
       .then((data) => {
         if (data.messages && data.messages.length > 0) {
           const restored: ChatMessageType[] = data.messages.map(
-            (m: { role: string; content: string; created_at: string }, i: number) => ({
+            (
+              m: { role: string; content: string; created_at: string },
+              i: number,
+            ) => ({
               id: `history-${i}`,
-              role: m.role as "user" | "assistant",
+              role: m.role as 'user' | 'assistant',
               content: m.content,
               timestamp: new Date(m.created_at).getTime(),
             }),
@@ -84,18 +91,17 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
   // Escape 关闭面板
   useEffect(() => {
     const handler = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
   // 所有显示的消息（含欢迎消息）
-  const displayMessages =
-    messages.length === 0 ? [WELCOME_MESSAGE] : messages;
+  const displayMessages = messages.length === 0 ? [WELCOME_MESSAGE] : messages;
 
   // 是否显示 Quick Replies（仅无用户消息时）
-  const showQuickReplies = !messages.some((m) => m.role === "user");
+  const showQuickReplies = !messages.some((m) => m.role === 'user');
 
   // 发送消息
   const sendMessage = useCallback(
@@ -110,7 +116,7 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
 
       const userMessage: ChatMessageType = {
         id: `user-${Date.now()}`,
-        role: "user",
+        role: 'user',
         content: trimmed,
         timestamp: Date.now(),
       };
@@ -120,14 +126,14 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
         // 客户端最多保留 MAX_DISPLAY_MESSAGES 条
         return next.slice(-MAX_DISPLAY_MESSAGES);
       });
-      setInput("");
+      setInput('');
       setIsLoading(true);
 
       try {
         // 发送单条消息 + sessionId（上下文从 DB 加载，不再传全部历史）
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sessionId,
             message: trimmed,
@@ -138,39 +144,38 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || "Request failed");
+          throw new Error(data.error || 'Request failed');
         }
 
         const aiMessage: ChatMessageType = {
           id: `ai-${Date.now()}`,
-          role: "assistant",
+          role: 'assistant',
           content: data.content,
           timestamp: Date.now(),
         };
 
         setMessages((prev) =>
-          [...prev, aiMessage].slice(-MAX_DISPLAY_MESSAGES)
+          [...prev, aiMessage].slice(-MAX_DISPLAY_MESSAGES),
         );
       } catch (err: unknown) {
-        if ((err as Error).name === "AbortError") return;
+        if ((err as Error).name === 'AbortError') return;
 
         const errorMessage: ChatMessageType = {
           id: `err-${Date.now()}`,
-          role: "assistant",
+          role: 'assistant',
           content:
-            (err as Error).message ||
-            "Something went wrong. Please try again.",
+            (err as Error).message || 'Something went wrong. Please try again.',
           timestamp: Date.now(),
         };
 
         setMessages((prev) =>
-          [...prev, errorMessage].slice(-MAX_DISPLAY_MESSAGES)
+          [...prev, errorMessage].slice(-MAX_DISPLAY_MESSAGES),
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [isLoading, setMessages, sessionId]
+    [isLoading, setMessages, sessionId],
   );
 
   const handleSubmit = (e: FormEvent) => {
@@ -180,7 +185,7 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
 
   // Enter 发送，Shift+Enter 换行
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage(input);
     }
@@ -199,9 +204,9 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
                  border border-accent/20
                  shadow-2xl shadow-black/40"
       style={{
-        background: "rgba(10, 12, 18, 0.96)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
+        background: 'rgba(10, 12, 18, 0.96)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
       }}
     >
       {/* ─── Header ─── */}
@@ -219,11 +224,19 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
           </div>
         </div>
         <button
+          type="button"
           onClick={onClose}
           className="text-white/50 hover:text-white transition-colors p-1"
           aria-label="Close chat"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
@@ -243,8 +256,11 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
             </div>
             <div className="bg-white/10 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
               <span className="typing-dot" />
-              <span className="typing-dot" style={{ animationDelay: "0.15s" }} />
-              <span className="typing-dot" style={{ animationDelay: "0.3s" }} />
+              <span
+                className="typing-dot"
+                style={{ animationDelay: '0.15s' }}
+              />
+              <span className="typing-dot" style={{ animationDelay: '0.3s' }} />
             </div>
           </div>
         )}
@@ -274,7 +290,7 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
                      focus:border-accent/50 focus:outline-none
                      transition-all duration-200 placeholder:text-white/30
                      max-h-[100px]"
-          style={{ minHeight: "40px" }}
+          style={{ minHeight: '40px' }}
         />
         <button
           type="submit"
@@ -285,7 +301,14 @@ export default function ChatPanel({ messages, setMessages, onClose, sessionId }:
                      hover:bg-accent-700 transition-all duration-200"
           aria-label="Send message"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
           </svg>
         </button>

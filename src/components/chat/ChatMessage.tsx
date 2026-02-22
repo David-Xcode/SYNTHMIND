@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ALLOWED_LINK_DOMAINS } from "@/lib/chatConstants";
-import type { ChatMessage as ChatMessageType } from "@/lib/chatConstants";
+import type { ChatMessage as ChatMessageType } from '@/lib/chatConstants';
+import { ALLOWED_LINK_DOMAINS } from '@/lib/chatConstants';
 
 interface Props {
   message: ChatMessageType;
@@ -12,7 +12,7 @@ interface Props {
  * 不引入 react-markdown，避免依赖膨胀
  */
 function renderContent(text: string): JSX.Element[] {
-  const lines = text.split("\n");
+  const lines = text.split('\n');
 
   return lines.map((line, lineIdx) => {
     // 解析行内元素：**bold** 和 [text](url)
@@ -42,7 +42,7 @@ function renderContent(text: string): JSX.Element[] {
         parts.push(
           <strong key={`b-${lineIdx}-${partKey++}`} className="font-semibold">
             {boldMatch[1]}
-          </strong>
+          </strong>,
         );
         remaining = remaining.slice(boldIdx + boldMatch[0].length);
       } else if (linkMatch) {
@@ -69,7 +69,7 @@ function renderContent(text: string): JSX.Element[] {
               className="text-accent underline underline-offset-2 hover:text-white transition-colors"
             >
               {linkMatch[1]}
-            </a>
+            </a>,
           );
         } else {
           // 非白名单域名：只显示文字，不渲染链接
@@ -89,10 +89,10 @@ function renderContent(text: string): JSX.Element[] {
 }
 
 export default function ChatMessage({ message }: Props) {
-  const isUser = message.role === "user";
+  const isUser = message.role === 'user';
 
   return (
-    <div className={`flex gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+    <div className={`flex gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       {/* AI 头像 */}
       {!isUser && (
         <div className="flex-shrink-0 w-7 h-7 rounded-full bg-accent flex items-center justify-center text-white text-xs font-bold mt-1">
@@ -104,8 +104,8 @@ export default function ChatMessage({ message }: Props) {
       <div
         className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
           isUser
-            ? "bg-accent text-white rounded-br-md"
-            : "bg-white/10 text-white/90 rounded-bl-md"
+            ? 'bg-accent text-white rounded-br-md'
+            : 'bg-white/10 text-white/90 rounded-bl-md'
         }`}
       >
         {renderContent(message.content)}

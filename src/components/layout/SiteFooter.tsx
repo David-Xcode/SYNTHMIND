@@ -3,8 +3,8 @@
 // ─── Footer · Neural ───
 // 蓝色分割线 / DM Mono 分类标签 / 冷色链接
 
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import { footerNav } from '@/data/navigation';
 
 export default function SiteFooter() {
@@ -29,7 +29,8 @@ export default function SiteFooter() {
                 />
               </Link>
               <p className="text-txt-quaternary text-sm leading-relaxed">
-                AI-powered software studio building tools that actually work for traditional industries.
+                AI-powered software studio building tools that actually work for
+                traditional industries.
               </p>
             </div>
 

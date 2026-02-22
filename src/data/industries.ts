@@ -43,7 +43,7 @@ export const industries: Industry[] = [
       {
         title: 'Lead Follow-up Gaps',
         description:
-          'After-hours inquiries go unanswered. New leads slip through the cracks because there\'s no system for 24/7 engagement.',
+          "After-hours inquiries go unanswered. New leads slip through the cracks because there's no system for 24/7 engagement.",
       },
     ],
     ctaText: 'Ready to modernize your insurance workflows?',
@@ -53,17 +53,17 @@ export const industries: Industry[] = [
     name: 'Real Estate',
     headline: 'Digital Experiences for Real Estate Developers',
     description:
-      'In real estate, first impressions are everything. Synthmind builds high-performance marketing websites and lead capture systems that match the quality of what you\'re building — from pre-construction launches to established communities.',
+      "In real estate, first impressions are everything. Synthmind builds high-performance marketing websites and lead capture systems that match the quality of what you're building — from pre-construction launches to established communities.",
     painPoints: [
       {
         title: 'Weak Digital Presence',
         description:
-          'Most developer websites are static brochure-ware that don\'t convert. In a market where buyers research online first, a generic site means lost leads.',
+          "Most developer websites are static brochure-ware that don't convert. In a market where buyers research online first, a generic site means lost leads.",
       },
       {
         title: 'Pre-Construction Marketing Gap',
         description:
-          'Selling before the building exists requires compelling digital storytelling. Flyers and PDFs don\'t create the excitement needed to drive registrations.',
+          "Selling before the building exists requires compelling digital storytelling. Flyers and PDFs don't create the excitement needed to drive registrations.",
       },
       {
         title: 'Disconnected Lead Pipelines',

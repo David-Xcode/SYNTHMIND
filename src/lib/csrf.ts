@@ -4,10 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 允许的来源域名（生产 + 本地开发）
-const ALLOWED_ORIGINS = [
-  'https://synthmind.ca',
-  'https://www.synthmind.ca',
-];
+const ALLOWED_ORIGINS = ['https://synthmind.ca', 'https://www.synthmind.ca'];
 
 // 开发环境额外允许 localhost
 if (process.env.NODE_ENV === 'development') {

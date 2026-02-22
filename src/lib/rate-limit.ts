@@ -1,6 +1,6 @@
 // 可复用的内存速率限制器工厂——滑动窗口算法 + 自动清理
 
-import { NextRequest } from "next/server";
+import { NextRequest } from 'next/server';
 
 interface RateLimitConfig {
   maxPerMinute: number;
@@ -16,7 +16,12 @@ interface RateLimitConfig {
  * 对于营销网站的低频表单提交场景，这个精度已经足够。
  */
 export function createRateLimiter(config: RateLimitConfig) {
-  const { maxPerMinute, maxPerHour, cleanupIntervalMs = 300_000, maxMapSize = 10_000 } = config;
+  const {
+    maxPerMinute,
+    maxPerHour,
+    cleanupIntervalMs = 300_000,
+    maxMapSize = 10_000,
+  } = config;
 
   const map = new Map<string, number[]>();
   let lastCleanup = Date.now();
@@ -122,10 +127,10 @@ export function createDailyLimiter(maxPerDay: number) {
  * 优先级：x-real-ip（Vercel 边缘注入，不可伪造）> x-forwarded-for 首位 > "unknown"
  */
 export function extractIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
+  const forwarded = req.headers.get('x-forwarded-for');
   return (
-    req.headers.get("x-real-ip") ??
-    forwarded?.split(",")[0]?.trim() ??
-    "unknown"
+    req.headers.get('x-real-ip') ??
+    forwarded?.split(',')[0]?.trim() ??
+    'unknown'
   );
 }

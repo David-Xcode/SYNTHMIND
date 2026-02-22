@@ -3,10 +3,10 @@
 // ─── 导航头部 · Neural ───
 // 实底滚动态 (无 backdrop-blur) / 蓝色活跃指示器 / DM Sans 导航
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { mainNav } from '@/data/navigation';
 
 export default function SiteHeader() {
@@ -17,7 +17,7 @@ export default function SiteHeader() {
   // 页面切换时关闭菜单
   useEffect(() => {
     setMobileOpen(false);
-  }, [pathname]);
+  }, []);
 
   // 滚动检测
   useEffect(() => {
@@ -72,22 +72,40 @@ export default function SiteHeader() {
           {/* CTA 按钮 */}
           <Link href="/contact" className="btn-primary text-sm px-5 py-2">
             Book a Call
-            <svg className="w-3.5 h-3.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            <svg
+              className="w-3.5 h-3.5"
+              aria-hidden="true"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </Link>
         </div>
 
         {/* 移动端菜单按钮 — CSS 三线 → X 变形动画 */}
         <button
+          type="button"
           className="md:hidden relative w-5 h-5 p-0 text-txt-tertiary hover:text-txt-primary transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
         >
-          <span className={`absolute left-0 w-5 h-px bg-current transition-all duration-300 ease-[var(--ease-out-expo)] ${mobileOpen ? 'top-[10px] rotate-45' : 'top-[4px]'}`} />
-          <span className={`absolute left-0 top-[10px] w-5 h-px bg-current transition-opacity duration-200 ${mobileOpen ? 'opacity-0' : 'opacity-100'}`} />
-          <span className={`absolute left-0 w-5 h-px bg-current transition-all duration-300 ease-[var(--ease-out-expo)] ${mobileOpen ? 'top-[10px] -rotate-45' : 'top-[16px]'}`} />
+          <span
+            className={`absolute left-0 w-5 h-px bg-current transition-all duration-300 ease-[var(--ease-out-expo)] ${mobileOpen ? 'top-[10px] rotate-45' : 'top-[4px]'}`}
+          />
+          <span
+            className={`absolute left-0 top-[10px] w-5 h-px bg-current transition-opacity duration-200 ${mobileOpen ? 'opacity-0' : 'opacity-100'}`}
+          />
+          <span
+            className={`absolute left-0 w-5 h-px bg-current transition-all duration-300 ease-[var(--ease-out-expo)] ${mobileOpen ? 'top-[10px] -rotate-45' : 'top-[16px]'}`}
+          />
         </button>
       </nav>
 

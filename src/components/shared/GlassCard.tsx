@@ -24,9 +24,5 @@ export default function GlassCard({
     spotlight: 'card-spotlight',
   }[variant];
 
-  return (
-    <Tag className={`${variantClass} p-6 ${className}`}>
-      {children}
-    </Tag>
-  );
+  return <Tag className={`${variantClass} p-6 ${className}`}>{children}</Tag>;
 }

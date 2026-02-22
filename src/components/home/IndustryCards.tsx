@@ -28,8 +28,14 @@ export default function IndustryCards() {
 
             return (
               <AnimateOnScroll key={industry.slug} delay={index * 80 + 100}>
-                <Link href={`/industries/${industry.slug}`} className="block h-full rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base">
-                  <GlassCard variant="elevated" className="h-full group cursor-pointer relative overflow-hidden">
+                <Link
+                  href={`/industries/${industry.slug}`}
+                  className="block h-full rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
+                >
+                  <GlassCard
+                    variant="elevated"
+                    className="h-full group cursor-pointer relative overflow-hidden"
+                  >
                     {/* 大号 mono 编号 — 视觉焦点 */}
                     <span className="font-mono text-6xl md:text-7xl font-bold leading-none select-none text-accent/[0.07] group-hover:text-accent/[0.15] transition-colors duration-500">
                       {number}
@@ -45,8 +51,19 @@ export default function IndustryCards() {
                       <span className="inline-flex items-center gap-1.5 text-accent text-sm font-medium group-hover:gap-2.5 transition-all duration-300">
                         Learn more
                         {/* 箭头 — hover 右移 */}
-                        <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        <svg
+                          className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                          aria-hidden="true"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
                         </svg>
                       </span>
                     </div>

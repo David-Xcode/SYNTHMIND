@@ -3,9 +3,9 @@
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
-import SectionTitle from '@/components/shared/SectionTitle';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import CTABanner from '@/components/shared/CTABanner';
+import SectionTitle from '@/components/shared/SectionTitle';
 import { caseStudies } from '@/data/case-studies';
 import CaseStudyFilter from './CaseStudyFilter';
 

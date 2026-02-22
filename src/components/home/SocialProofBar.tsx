@@ -4,8 +4,8 @@
 // 双容器无缝 marquee / JetBrains Mono 标签
 // 4× 重复 → ~4416px 轨道宽度，覆盖 4K (3840px)
 
-import { useMemo } from 'react';
 import Image from 'next/image';
+import { useMemo } from 'react';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import { caseStudies } from '@/data/case-studies';
 
@@ -16,7 +16,9 @@ export default function SocialProofBar() {
   const logos = useMemo(() => {
     const result: typeof caseStudies = [];
     Array.from({ length: REPEAT_COUNT }).forEach(() => {
-      caseStudies.forEach((cs) => result.push(cs));
+      caseStudies.forEach((cs) => {
+        result.push(cs);
+      });
     });
     return result;
   }, []);
@@ -56,7 +58,10 @@ export default function SocialProofBar() {
             ))}
           </div>
           {/* 第二份（无缝循环）— aria-hidden + 空 alt */}
-          <div className="flex items-center gap-16 shrink-0 pr-16" aria-hidden="true">
+          <div
+            className="flex items-center gap-16 shrink-0 pr-16"
+            aria-hidden="true"
+          >
             {logos.map((cs, i) => (
               <div
                 key={`b-${cs.slug}-${i}`}

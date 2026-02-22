@@ -5,8 +5,8 @@
 
 import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
-import type { Industry } from '@/data/industries';
 import { industryIcons } from '@/components/shared/IndustryIcons';
+import type { Industry } from '@/data/industries';
 
 // Neural 行业色映射
 const industryConfig: Record<string, { color: string }> = {
@@ -33,7 +33,9 @@ export default function IndustryHero({ industry }: IndustryHeroProps) {
 
       <div className="relative max-w-4xl mx-auto text-center">
         <AnimateOnScroll>
-          <div className={`inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-accent/[0.14] bg-bg-surface text-xs font-medium ${config.color}`}>
+          <div
+            className={`inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-accent/[0.14] bg-bg-surface text-xs font-medium ${config.color}`}
+          >
             <IconComponent className="w-3.5 h-3.5" />
             {industry.name}
           </div>
@@ -46,8 +48,18 @@ export default function IndustryHero({ industry }: IndustryHeroProps) {
           </p>
           <Link href="/contact" className="btn-primary px-7 py-3">
             Get a Free Assessment
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </Link>
         </AnimateOnScroll>

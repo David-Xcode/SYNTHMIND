@@ -1,10 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createRateLimiter, createDailyLimiter, extractIp } from "@/lib/rate-limit";
-import { checkCsrf } from "@/lib/csrf";
-import { createServiceClient } from "@/lib/supabase-server";
-import { extractContactInfo } from "@/lib/extract-contact";
-import { SYSTEM_PROMPT } from "@/lib/chatConstants";
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { NextRequest, NextResponse } from 'next/server';
+import { SYSTEM_PROMPT } from '@/lib/chatConstants';
+import { checkCsrf } from '@/lib/csrf';
+import { extractContactInfo } from '@/lib/extract-contact';
+import {
+  createDailyLimiter,
+  createRateLimiter,
+  extractIp,
+} from '@/lib/rate-limit';
+import { createServiceClient } from '@/lib/supabase-server';
 
 // ── 速率限制：20/min, 150/hr ──
 const limiter = createRateLimiter({ maxPerMinute: 20, maxPerHour: 150 });
@@ -16,7 +20,8 @@ const MAX_SESSION_MESSAGES = 200;
 // 发给 Gemini 的上下文窗口大小
 const CONTEXT_WINDOW = 50;
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(request: NextRequest) {
   // CSRF 防护 — 校验 Origin/Referer
@@ -26,9 +31,9 @@ export async function POST(request: NextRequest) {
   // ── 运行时读取环境变量，缺失则返回 503 ──
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
-    console.error("Missing env: GOOGLE_GENERATIVE_AI_API_KEY");
+    console.error('Missing env: GOOGLE_GENERATIVE_AI_API_KEY');
     return NextResponse.json(
-      { error: "Service temporarily unavailable." },
+      { error: 'Service temporarily unavailable.' },
       { status: 503 },
     );
   }
@@ -39,7 +44,7 @@ export async function POST(request: NextRequest) {
   try {
     db = createServiceClient();
   } catch {
-    console.warn("Supabase unavailable, running in fallback mode");
+    console.warn('Supabase unavailable, running in fallback mode');
   }
 
   try {
@@ -47,7 +52,9 @@ export async function POST(request: NextRequest) {
     const ip = extractIp(request);
     if (limiter.isRateLimited(ip)) {
       return NextResponse.json(
-        { error: "Too many requests. Please wait a moment before trying again." },
+        {
+          error: 'Too many requests. Please wait a moment before trying again.',
+        },
         { status: 429 },
       );
     }
@@ -57,7 +64,7 @@ export async function POST(request: NextRequest) {
     const rawBody = await request.text();
     if (rawBody.length > MAX_BODY_SIZE) {
       return NextResponse.json(
-        { error: "Request too large." },
+        { error: 'Request too large.' },
         { status: 413 },
       );
     }
@@ -67,26 +74,24 @@ export async function POST(request: NextRequest) {
     try {
       ({ sessionId, message } = JSON.parse(rawBody));
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400 });
     }
 
     // ── 校验 sessionId（UUID 格式）──
-    if (typeof sessionId !== "string" || !UUID_RE.test(sessionId)) {
+    if (typeof sessionId !== 'string' || !UUID_RE.test(sessionId)) {
       return NextResponse.json(
-        { error: "Invalid sessionId." },
+        { error: 'Invalid sessionId.' },
         { status: 400 },
       );
     }
 
     // ── 校验 message ──
-    if (typeof message !== "string" || !message.trim() || message.length > 2000) {
-      return NextResponse.json(
-        { error: "Invalid message." },
-        { status: 400 },
-      );
+    if (
+      typeof message !== 'string' ||
+      !message.trim() ||
+      message.length > 2000
+    ) {
+      return NextResponse.json({ error: 'Invalid message.' }, { status: 400 });
     }
 
     const userMessage = message.trim();
@@ -100,51 +105,58 @@ export async function POST(request: NextRequest) {
       try {
         // 检查 session 是否已存在
         const { data: existingSession } = await db
-          .from("chat_sessions")
-          .select("id")
-          .eq("id", sessionId)
+          .from('chat_sessions')
+          .select('id')
+          .eq('id', sessionId)
           .single();
 
         // 新 session 创建前检查 IP 维度的每日上限
         if (!existingSession) {
           if (sessionLimiter.isLimited(ip)) {
             return NextResponse.json(
-              { error: "Too many new conversations today. Please try again tomorrow." },
+              {
+                error:
+                  'Too many new conversations today. Please try again tomorrow.',
+              },
               { status: 429 },
             );
           }
         }
 
         // 确保 session 存在（upsert：首条消息创建，后续消息忽略冲突）
-        await db.from("chat_sessions").upsert(
+        await db.from('chat_sessions').upsert(
           {
             id: sessionId,
             ip_address: ip,
-            user_agent: request.headers.get("user-agent")?.slice(0, 500) || null,
+            user_agent:
+              request.headers.get('user-agent')?.slice(0, 500) || null,
           },
-          { onConflict: "id", ignoreDuplicates: true },
+          { onConflict: 'id', ignoreDuplicates: true },
         );
 
         // 检查 session 消息数是否超限
         const { data: session } = await db
-          .from("chat_sessions")
-          .select("message_count")
-          .eq("id", sessionId)
+          .from('chat_sessions')
+          .select('message_count')
+          .eq('id', sessionId)
           .single();
 
         sessionMessageCount = session?.message_count ?? 0;
 
         if (session && session.message_count >= MAX_SESSION_MESSAGES) {
           return NextResponse.json(
-            { error: "This conversation has reached its limit. Please start a new chat." },
+            {
+              error:
+                'This conversation has reached its limit. Please start a new chat.',
+            },
             { status: 429 },
           );
         }
 
         // 保存 user message（计数延迟到 assistant 回复后统一 +2，避免竞态）
-        await db.from("chat_messages").insert({
+        await db.from('chat_messages').insert({
           session_id: sessionId,
-          role: "user",
+          role: 'user',
           content: userMessage,
         });
 
@@ -154,15 +166,15 @@ export async function POST(request: NextRequest) {
           const updates: Record<string, string> = {};
           if (contact.email) updates.lead_email = contact.email;
           if (contact.phone) updates.lead_phone = contact.phone;
-          await db.from("chat_sessions").update(updates).eq("id", sessionId);
+          await db.from('chat_sessions').update(updates).eq('id', sessionId);
         }
 
         // 加载最近 N 条消息作为 Gemini 上下文
         const { data: dbMessages } = await db
-          .from("chat_messages")
-          .select("role, content")
-          .eq("session_id", sessionId)
-          .order("id", { ascending: true })
+          .from('chat_messages')
+          .select('role, content')
+          .eq('session_id', sessionId)
+          .order('id', { ascending: true })
           .limit(CONTEXT_WINDOW);
 
         if (dbMessages) {
@@ -170,17 +182,17 @@ export async function POST(request: NextRequest) {
         }
       } catch (dbErr) {
         // DB 故障时降级：用当前消息作为唯一上下文
-        console.error("Supabase DB error:", dbErr);
-        historyMessages = [{ role: "user", content: userMessage }];
+        console.error('Supabase DB error:', dbErr);
+        historyMessages = [{ role: 'user', content: userMessage }];
       }
     } else {
       // 无 DB 时直接用当前消息
-      historyMessages = [{ role: "user", content: userMessage }];
+      historyMessages = [{ role: 'user', content: userMessage }];
     }
 
     // ── 构建 Gemini 请求 ──
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: 'gemini-2.0-flash',
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         maxOutputTokens: 350,
@@ -189,28 +201,32 @@ export async function POST(request: NextRequest) {
 
     // 历史（排除最后一条，最后一条作为 sendMessage 参数）
     const history = historyMessages.slice(0, -1).map((msg) => ({
-      role: msg.role === "user" ? "user" : "model",
+      role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }));
 
     const chat = model.startChat({ history });
 
     // 最后一条消息发送给 AI
-    const lastMsg = historyMessages[historyMessages.length - 1]?.content || userMessage;
+    const lastMsg =
+      historyMessages[historyMessages.length - 1]?.content || userMessage;
 
     // 15 秒超时保护
     const GEMINI_TIMEOUT_MS = 15_000;
     const result = await Promise.race([
       chat.sendMessage(lastMsg),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("AI response timed out")), GEMINI_TIMEOUT_MS),
+        setTimeout(
+          () => reject(new Error('AI response timed out')),
+          GEMINI_TIMEOUT_MS,
+        ),
       ),
     ]);
     const text = result.response.text();
 
     if (!text) {
       return NextResponse.json(
-        { error: "Empty response from AI. Please try again." },
+        { error: 'Empty response from AI. Please try again.' },
         { status: 502 },
       );
     }
@@ -218,46 +234,46 @@ export async function POST(request: NextRequest) {
     // ── 保存 assistant 回复到 DB ──
     if (db) {
       try {
-        await db.from("chat_messages").insert({
+        await db.from('chat_messages').insert({
           session_id: sessionId,
-          role: "assistant",
+          role: 'assistant',
           content: text,
         });
 
         // 统一更新计数：user + assistant = +2（消除中间态竞态）
         await db
-          .from("chat_sessions")
+          .from('chat_sessions')
           .update({
             message_count: sessionMessageCount + 2,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", sessionId);
+          .eq('id', sessionId);
       } catch (dbErr) {
-        console.error("Failed to save assistant message:", dbErr);
+        console.error('Failed to save assistant message:', dbErr);
       }
     }
 
     return NextResponse.json({ content: text.trim() });
   } catch (error) {
-    console.error("Chat API error:", error);
+    console.error('Chat API error:', error);
 
-    const message = error instanceof Error ? error.message : "";
+    const message = error instanceof Error ? error.message : '';
 
-    if (message === "AI response timed out") {
+    if (message === 'AI response timed out') {
       return NextResponse.json(
-        { error: "Response took too long. Please try again." },
+        { error: 'Response took too long. Please try again.' },
         { status: 504 },
       );
     }
 
-    if (message.includes("quota") || message.includes("RATE_LIMIT")) {
+    if (message.includes('quota') || message.includes('RATE_LIMIT')) {
       return NextResponse.json(
-        { error: "Our AI is taking a break. Please try again in a minute." },
+        { error: 'Our AI is taking a break. Please try again in a minute.' },
         { status: 503 },
       );
     }
 
-    if (message.includes("SAFETY") || message.includes("blocked")) {
+    if (message.includes('SAFETY') || message.includes('blocked')) {
       return NextResponse.json(
         {
           error:
@@ -268,7 +284,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
+      { error: 'Something went wrong. Please try again.' },
       { status: 500 },
     );
   }

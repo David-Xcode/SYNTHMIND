@@ -1,6 +1,6 @@
-import type { Metadata } from 'next'
-import { Sora, Manrope, JetBrains_Mono } from 'next/font/google'
-import './globals.css'
+import type { Metadata } from 'next';
+import { JetBrains_Mono, Manrope, Sora } from 'next/font/google';
+import './globals.css';
 
 // Display 字体 — 标题、Hero 大文字 (替代 DM Serif Display)
 const sora = Sora({
@@ -8,14 +8,14 @@ const sora = Sora({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-display',
-})
+});
 
 // 正文/UI 字体 — 几何人文无衬线 (替代 DM Sans)
 const manrope = Manrope({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-body',
-})
+});
 
 // 数据/标签字体 — 编程风格等宽 (替代 DM Mono)
 const jetbrainsMono = JetBrains_Mono({
@@ -23,18 +23,20 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-mono',
-})
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://synthmind.ca'),
   title: 'Synthmind | AI-Powered Software Development & Automation',
-  description: 'Solo software studio building AI tools that actually work. Specializing in workflow automation, legacy system modernization, and custom AI solutions for traditional industries.',
+  description:
+    'Toronto-based AI startup building tools that actually work. Specializing in workflow automation, legacy system modernization, and custom AI solutions for traditional industries.',
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'Synthmind | AI Solutions That Actually Work',
-    description: 'Solo software studio building AI tools for traditional industries. No corporate fluff—just working software.',
+    description:
+      'AI startup building tools for traditional industries. No corporate fluff — just working software.',
     url: 'https://synthmind.ca',
     siteName: 'Synthmind',
     locale: 'en_CA',
@@ -51,21 +53,22 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Synthmind | AI-Powered Software Development',
-    description: 'Solo software studio building AI tools that actually work.',
+    description: 'AI startup building tools that actually work.',
     images: ['/og-image.png'],
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${sora.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-sans antialiased">
-        {children}
-      </body>
+    <html
+      lang="en"
+      className={`${sora.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="font-sans antialiased">{children}</body>
     </html>
-  )
+  );
 }

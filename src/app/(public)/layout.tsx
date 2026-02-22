@@ -3,16 +3,12 @@
 // admin 路由有自己的 layout，不受此影响
 
 import type { ReactNode } from 'react';
-import SiteHeader from '@/components/layout/SiteHeader';
-import SiteFooter from '@/components/layout/SiteFooter';
 import ChatButton from '@/components/chat/ChatButton';
+import SiteFooter from '@/components/layout/SiteFooter';
+import SiteHeader from '@/components/layout/SiteHeader';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 
-export default function PublicLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <ErrorBoundary fallback={null}>

@@ -3,13 +3,13 @@
 // ─── 案例筛选客户端组件 · Neural ───
 // 蓝色滑动指示器 / Neural 行业色 / 无 mouseGlow
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import GlassCard from '@/components/shared/GlassCard';
-import { industries } from '@/data/industries';
 import type { CaseStudy, IndustrySlug } from '@/data/case-studies';
+import { industries } from '@/data/industries';
 
 interface CaseStudyFilterProps {
   caseStudies: CaseStudy[];
@@ -17,10 +17,14 @@ interface CaseStudyFilterProps {
 
 // Neural 行业 badge 色
 const industryBadgeColors: Record<string, string> = {
-  insurance: 'text-industry-insurance bg-industry-insurance/10 border-industry-insurance/20',
-  'real-estate': 'text-industry-realestate bg-industry-realestate/10 border-industry-realestate/20',
-  'accounting-tax': 'text-industry-accounting bg-industry-accounting/10 border-industry-accounting/20',
-  construction: 'text-industry-construction bg-industry-construction/10 border-industry-construction/20',
+  insurance:
+    'text-industry-insurance bg-industry-insurance/10 border-industry-insurance/20',
+  'real-estate':
+    'text-industry-realestate bg-industry-realestate/10 border-industry-realestate/20',
+  'accounting-tax':
+    'text-industry-accounting bg-industry-accounting/10 border-industry-accounting/20',
+  construction:
+    'text-industry-construction bg-industry-construction/10 border-industry-construction/20',
 };
 
 const filters: { label: string; value: IndustrySlug | 'all' }[] = [
@@ -91,8 +95,11 @@ export default function CaseStudyFilter({ caseStudies }: CaseStudyFilterProps) {
 
           {filters.map((filter) => (
             <button
+              type="button"
               key={filter.value}
-              ref={(el) => { if (el) filterRefs.current.set(filter.value, el); }}
+              ref={(el) => {
+                if (el) filterRefs.current.set(filter.value, el);
+              }}
               onClick={() => setActiveFilter(filter.value)}
               className={`relative text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200 ${
                 activeFilter === filter.value
@@ -101,9 +108,13 @@ export default function CaseStudyFilter({ caseStudies }: CaseStudyFilterProps) {
               }`}
             >
               {filter.label}
-              <span className={`ml-1.5 text-xs ${
-                activeFilter === filter.value ? 'text-accent/60' : 'text-txt-quaternary/50'
-              }`}>
+              <span
+                className={`ml-1.5 text-xs ${
+                  activeFilter === filter.value
+                    ? 'text-accent/60'
+                    : 'text-txt-quaternary/50'
+                }`}
+              >
                 {getCounts(filter.value)}
               </span>
             </button>
@@ -116,11 +127,19 @@ export default function CaseStudyFilter({ caseStudies }: CaseStudyFilterProps) {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-reveal"
         >
           {filtered.map((cs, index) => {
-            const badgeColor = cs.industry ? industryBadgeColors[cs.industry] : 'text-txt-tertiary bg-bg-muted border-accent/[0.12]';
+            const badgeColor = cs.industry
+              ? industryBadgeColors[cs.industry]
+              : 'text-txt-tertiary bg-bg-muted border-accent/[0.12]';
             return (
               <AnimateOnScroll key={cs.slug} delay={index * 60}>
-                <Link href={`/case-studies/${cs.slug}`} className="block h-full">
-                  <GlassCard variant="elevated" className="h-full group cursor-pointer">
+                <Link
+                  href={`/case-studies/${cs.slug}`}
+                  className="block h-full"
+                >
+                  <GlassCard
+                    variant="elevated"
+                    className="h-full group cursor-pointer"
+                  >
                     <div className="h-10 mb-5 flex items-center">
                       <Image
                         src={cs.logo}
@@ -131,19 +150,33 @@ export default function CaseStudyFilter({ caseStudies }: CaseStudyFilterProps) {
                       />
                     </div>
 
-                    <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">{cs.title}</h3>
+                    <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
+                      {cs.title}
+                    </h3>
                     <p className="text-txt-tertiary text-sm leading-relaxed mb-4">
                       {cs.tagline}
                     </p>
 
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs px-2.5 py-1 rounded-full border ${badgeColor}`}>
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full border ${badgeColor}`}
+                      >
                         {cs.industryLabel || 'Small Business'}
                       </span>
                       <span className="inline-flex items-center gap-1 text-accent text-sm font-medium group-hover:gap-1.5 transition-all duration-300">
                         View
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
                         </svg>
                       </span>
                     </div>

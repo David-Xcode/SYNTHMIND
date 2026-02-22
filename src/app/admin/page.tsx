@@ -1,14 +1,14 @@
-import { createServiceClient } from "@/lib/supabase-server";
-import { requireAdmin } from "@/lib/admin-auth";
-import type { ChatSessionRow, FormSubmissionRow } from "@/lib/types";
-import AdminDashboardClient from "./AdminDashboardClient";
+import { requireAdmin } from '@/lib/admin-auth';
+import { createServiceClient } from '@/lib/supabase-server';
+import type { ChatSessionRow, FormSubmissionRow } from '@/lib/types';
+import AdminDashboardClient from './AdminDashboardClient';
 
 // 转义 LIKE 通配符 + PostgREST 语法安全字符
 function sanitizeSearch(raw: string): string {
   return raw
     .trim()
-    .replace(/[\\%_]/g, "\\$&")
-    .replace(/[,()]/g, "");
+    .replace(/[\\%_]/g, '\\$&')
+    .replace(/[,()]/g, '');
 }
 
 // Server component：从 DB 加载会话列表或表单提交列表
@@ -22,19 +22,19 @@ export default async function AdminDashboardPage({
   await requireAdmin();
 
   const { q, view, sort } = await searchParams;
-  const activeView = view === "submissions" ? "submissions" : "sessions";
-  const sortAsc = sort === "asc";
+  const activeView = view === 'submissions' ? 'submissions' : 'sessions';
+  const sortAsc = sort === 'asc';
   const db = createServiceClient();
 
   // ── Sessions 视图 ──
-  if (activeView === "sessions") {
+  if (activeView === 'sessions') {
     let query = db
-      .from("chat_sessions")
-      .select("*")
-      .order("updated_at", { ascending: sortAsc })
+      .from('chat_sessions')
+      .select('*')
+      .order('updated_at', { ascending: sortAsc })
       .limit(100);
 
-    if (q && q.trim()) {
+    if (q?.trim()) {
       const safeTerm = sanitizeSearch(q);
       if (safeTerm) {
         query = query.or(
@@ -46,7 +46,7 @@ export default async function AdminDashboardPage({
     const { data: sessions, error } = await query;
 
     if (error) {
-      console.error("Failed to load sessions:", error);
+      console.error('Failed to load sessions:', error);
     }
 
     return (
@@ -54,33 +54,31 @@ export default async function AdminDashboardPage({
         activeView="sessions"
         sessions={(sessions ?? []) as ChatSessionRow[]}
         submissions={[]}
-        initialSearch={q ?? ""}
+        initialSearch={q ?? ''}
         sortAsc={sortAsc}
-        dbError={error ? "Failed to load sessions. Please try again." : null}
+        dbError={error ? 'Failed to load sessions. Please try again.' : null}
       />
     );
   }
 
   // ── Submissions 视图 ──
   let query = db
-    .from("form_submissions")
-    .select("*")
-    .order("created_at", { ascending: sortAsc })
+    .from('form_submissions')
+    .select('*')
+    .order('created_at', { ascending: sortAsc })
     .limit(100);
 
-  if (q && q.trim()) {
+  if (q?.trim()) {
     const safeTerm = sanitizeSearch(q);
     if (safeTerm) {
-      query = query.or(
-        `name.ilike.%${safeTerm}%,email.ilike.%${safeTerm}%`,
-      );
+      query = query.or(`name.ilike.%${safeTerm}%,email.ilike.%${safeTerm}%`);
     }
   }
 
   const { data: submissions, error } = await query;
 
   if (error) {
-    console.error("Failed to load submissions:", error);
+    console.error('Failed to load submissions:', error);
   }
 
   return (
@@ -88,9 +86,9 @@ export default async function AdminDashboardPage({
       activeView="submissions"
       sessions={[]}
       submissions={(submissions ?? []) as FormSubmissionRow[]}
-      initialSearch={q ?? ""}
+      initialSearch={q ?? ''}
       sortAsc={sortAsc}
-      dbError={error ? "Failed to load submissions. Please try again." : null}
+      dbError={error ? 'Failed to load submissions. Please try again.' : null}
     />
   );
 }

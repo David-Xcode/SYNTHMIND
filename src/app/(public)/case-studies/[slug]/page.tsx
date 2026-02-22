@@ -3,16 +3,21 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Breadcrumb from '@/components/layout/Breadcrumb';
 import CaseStudyHero from '@/components/case-study/CaseStudyHero';
 import ChallengeSection from '@/components/case-study/ChallengeSection';
+import RelatedCaseStudies from '@/components/case-study/RelatedCaseStudies';
+import ResultsSection from '@/components/case-study/ResultsSection';
 import SolutionSection from '@/components/case-study/SolutionSection';
 import TechStackBadges from '@/components/case-study/TechStackBadges';
-import ResultsSection from '@/components/case-study/ResultsSection';
-import RelatedCaseStudies from '@/components/case-study/RelatedCaseStudies';
+import Breadcrumb from '@/components/layout/Breadcrumb';
 import CTABanner from '@/components/shared/CTABanner';
 import JsonLd from '@/components/shared/JsonLd';
-import { getCaseStudyBySlug, getCaseStudiesByIndustry, getFeaturedCaseStudies, getAllSlugs } from '@/data/case-studies';
+import {
+  getAllSlugs,
+  getCaseStudiesByIndustry,
+  getCaseStudyBySlug,
+  getFeaturedCaseStudies,
+} from '@/data/case-studies';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -22,7 +27,9 @@ export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const cs = getCaseStudyBySlug(slug);
   if (!cs) return {};

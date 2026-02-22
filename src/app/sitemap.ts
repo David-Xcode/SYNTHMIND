@@ -12,19 +12,41 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // 静态页面
   const staticPages: MetadataRoute.Sitemap = [
-    { url: BASE_URL, lastModified: now, changeFrequency: 'weekly', priority: 1.0 },
-    { url: `${BASE_URL}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/case-studies`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
+    {
+      url: BASE_URL,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 1.0,
+    },
+    {
+      url: `${BASE_URL}/about`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/contact`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/case-studies`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
   ];
 
   // 行业页面
-  const industryPages: MetadataRoute.Sitemap = getAllIndustrySlugs().map((slug) => ({
-    url: `${BASE_URL}/industries/${slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly' as const,
-    priority: 0.8,
-  }));
+  const industryPages: MetadataRoute.Sitemap = getAllIndustrySlugs().map(
+    (slug) => ({
+      url: `${BASE_URL}/industries/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    }),
+  );
 
   // 案例页面
   const caseStudyPages: MetadataRoute.Sitemap = getAllSlugs().map((slug) => ({

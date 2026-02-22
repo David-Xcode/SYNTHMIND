@@ -30,8 +30,12 @@ export default function HomeHero() {
           className="text-display tracking-tight animate-reveal"
           style={{ animationDelay: '0.25s', animationFillMode: 'both' }}
         >
-          <span className="font-sans font-light text-txt-primary">Unleash Human </span>
-          <span className="font-display font-semibold text-txt-primary">Potential</span>
+          <span className="font-sans font-light text-txt-primary">
+            Unleash Human{' '}
+          </span>
+          <span className="font-display font-semibold text-txt-primary">
+            Potential
+          </span>
           <br className="hidden sm:block" />
           <span className="font-sans font-light text-txt-primary"> with </span>
           <span className="font-display font-semibold text-accent">AI.</span>
@@ -49,8 +53,8 @@ export default function HomeHero() {
           style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
         >
           A Toronto-based startup building AI tools that actually work —
-          workflow automation, legacy modernization, and custom solutions
-          for traditional industries.
+          workflow automation, legacy modernization, and custom solutions for
+          traditional industries.
         </p>
 
         {/* CTA 按钮 */}
@@ -58,20 +62,40 @@ export default function HomeHero() {
           className="flex flex-wrap justify-center gap-4 mt-10 animate-reveal"
           style={{ animationDelay: '0.7s', animationFillMode: 'both' }}
         >
-          <Link href="/contact" className="btn-primary text-sm sm:text-base px-7 py-3">
+          <Link
+            href="/contact"
+            className="btn-primary text-sm sm:text-base px-7 py-3"
+          >
             Book a Free Consultation
-            <svg className="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            <svg
+              className="w-4 h-4"
+              aria-hidden="true"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </Link>
-          <Link href="/case-studies" className="btn-secondary text-sm sm:text-base px-7 py-3">
+          <Link
+            href="/case-studies"
+            className="btn-secondary text-sm sm:text-base px-7 py-3"
+          >
             View Our Work
           </Link>
         </div>
       </div>
 
       {/* 底部渐变过渡 */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none" aria-hidden="true">
+      <div
+        className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
+        aria-hidden="true"
+      >
         <div className="absolute inset-0 bg-gradient-to-t from-bg-base to-transparent" />
       </div>
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createServiceClient } from '@/lib/supabase-server';
 import { checkCsrf } from '@/lib/csrf';
+import { createServiceClient } from '@/lib/supabase-server';
 
 // 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
 function getResendClient() {
@@ -23,7 +23,7 @@ function escapeHtml(str: string): string {
 
 // 允许的来源枚举 — 防止客户端注入任意值
 const ALLOWED_SOURCES = ['contact', 'contact-page', 'chat', 'cta'] as const;
-type AllowedSource = typeof ALLOWED_SOURCES[number];
+type AllowedSource = (typeof ALLOWED_SOURCES)[number];
 
 interface ContactFormData {
   name: string;
@@ -38,7 +38,7 @@ const sendCustomerReply = async (
   name: string,
   email: string,
   subject: string,
-  message: string
+  message: string,
 ) => {
   const safeName = escapeHtml(name);
   const safeSubject = escapeHtml(subject);
@@ -47,7 +47,8 @@ const sendCustomerReply = async (
   return await getResendClient().emails.send({
     from: 'Synthmind <noreply@synthmind.ca>',
     to: [email],
-    subject: 'Thank you for contacting Synthmind - We have received your message',
+    subject:
+      'Thank you for contacting Synthmind - We have received your message',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
 
@@ -136,10 +137,13 @@ export async function POST(request: NextRequest) {
   if (csrfError) return csrfError;
 
   try {
-    const { name, email, subject, message, source }: ContactFormData = await request.json();
+    const { name, email, subject, message, source }: ContactFormData =
+      await request.json();
 
     // source 白名单校验 — 非法值降级为默认 'contact'
-    const safeSource: AllowedSource = ALLOWED_SOURCES.includes(source as AllowedSource)
+    const safeSource: AllowedSource = ALLOWED_SOURCES.includes(
+      source as AllowedSource,
+    )
       ? (source as AllowedSource)
       : 'contact';
 
@@ -149,19 +153,25 @@ export async function POST(request: NextRequest) {
     // - full 变体提交全部字段
     // 逻辑：email 必须 + 至少提供 name/subject/message 之一（inline 变体除外，email 足够）
     if (!email) {
-      return NextResponse.json({
-        success: false,
-        error: 'Email is required'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Email is required',
+        },
+        { status: 400 },
+      );
     }
 
     // 验证邮箱格式 — TLD 至少 2 个字符
     const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid email format'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid email format',
+        },
+        { status: 400 },
+      );
     }
 
     // 字段长度校验 — 防止超大 payload 滥用
@@ -171,10 +181,13 @@ export async function POST(request: NextRequest) {
       (subject?.length ?? 0) > FIELD_LIMITS.subject ||
       (message?.length ?? 0) > FIELD_LIMITS.message
     ) {
-      return NextResponse.json({
-        success: false,
-        error: `Field length exceeded: name max ${FIELD_LIMITS.name}, subject max ${FIELD_LIMITS.subject}, message max ${FIELD_LIMITS.message}`
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Field length exceeded: name max ${FIELD_LIMITS.name}, subject max ${FIELD_LIMITS.subject}, message max ${FIELD_LIMITS.message}`,
+        },
+        { status: 400 },
+      );
     }
 
     // ── 写入 Supabase（DB 失败不阻断邮件发送）──
@@ -199,15 +212,29 @@ export async function POST(request: NextRequest) {
     }
 
     // 只发送管理员通知邮件（优先保证你能收到客户留言）
-    const notificationEmail = await sendNotificationEmail(name, email, subject || '', message || '', safeSource);
+    const notificationEmail = await sendNotificationEmail(
+      name,
+      email,
+      subject || '',
+      message || '',
+      safeSource,
+    );
 
     // 尝试发送客户确认邮件（如果失败不影响主要功能）
     let customerEmailSent = false;
     try {
-      const customerEmail = await sendCustomerReply(name || '', email, subject || '', message || '');
+      const customerEmail = await sendCustomerReply(
+        name || '',
+        email,
+        subject || '',
+        message || '',
+      );
       customerEmailSent = !!customerEmail.data;
     } catch (error) {
-      console.warn('Customer reply email failed, but notification email sent successfully:', error);
+      console.warn(
+        'Customer reply email failed, but notification email sent successfully:',
+        error,
+      );
     }
 
     return NextResponse.json({
@@ -215,17 +242,22 @@ export async function POST(request: NextRequest) {
       message: 'Contact form submitted successfully',
       data: {
         customerEmailSent,
-        notificationEmailSent: !!notificationEmail.data
-      }
+        notificationEmailSent: !!notificationEmail.data,
+      },
     });
-
   } catch (error) {
     console.error('Failed to send emails:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to send emails',
-      details: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to send emails',
+        details:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
+      },
+      { status: 500 },
+    );
   }
-} 
+}

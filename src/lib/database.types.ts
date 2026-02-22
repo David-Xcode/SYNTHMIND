@@ -63,11 +63,11 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "chat_messages_session_id_fkey";
-            columns: ["session_id"];
+            foreignKeyName: 'chat_messages_session_id_fkey';
+            columns: ['session_id'];
             isOneToOne: false;
-            referencedRelation: "chat_sessions";
-            referencedColumns: ["id"];
+            referencedRelation: 'chat_sessions';
+            referencedColumns: ['id'];
           },
         ];
       };
@@ -125,11 +125,11 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "form_submissions_session_id_fkey";
-            columns: ["session_id"];
+            foreignKeyName: 'form_submissions_session_id_fkey';
+            columns: ['session_id'];
             isOneToOne: false;
-            referencedRelation: "chat_sessions";
-            referencedColumns: ["id"];
+            referencedRelation: 'chat_sessions';
+            referencedColumns: ['id'];
           },
         ];
       };

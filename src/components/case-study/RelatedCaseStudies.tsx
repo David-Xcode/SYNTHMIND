@@ -3,8 +3,8 @@
 // ─── 相关案例推荐 · Neural ───
 // 蓝色 accent 链接 / 冷色边框
 
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import type { CaseStudy } from '@/data/case-studies';
 
@@ -12,7 +12,9 @@ interface RelatedCaseStudiesProps {
   caseStudies: CaseStudy[];
 }
 
-export default function RelatedCaseStudies({ caseStudies }: RelatedCaseStudiesProps) {
+export default function RelatedCaseStudies({
+  caseStudies,
+}: RelatedCaseStudiesProps) {
   if (caseStudies.length === 0) return null;
 
   // 限制最多 2 个
@@ -45,12 +47,27 @@ export default function RelatedCaseStudies({ caseStudies }: RelatedCaseStudiesPr
 
                   {/* 右侧内容 */}
                   <div className="min-w-0">
-                    <h4 className="text-sm font-medium text-txt-primary mb-0.5 truncate">{cs.title}</h4>
-                    <p className="text-txt-quaternary text-xs mb-2">{cs.industryLabel || 'Small Business'}</p>
+                    <h4 className="text-sm font-medium text-txt-primary mb-0.5 truncate">
+                      {cs.title}
+                    </h4>
+                    <p className="text-txt-quaternary text-xs mb-2">
+                      {cs.industryLabel || 'Small Business'}
+                    </p>
                     <span className="inline-flex items-center gap-1 text-accent text-xs font-medium group-hover:gap-1.5 transition-all duration-300">
                       View
-                      <svg className="w-3 h-3" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      <svg
+                        className="w-3 h-3"
+                        aria-hidden="true"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
                       </svg>
                     </span>
                   </div>

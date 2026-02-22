@@ -29,14 +29,16 @@ function useCountUp(target: number, isVisible: boolean, duration = 1500) {
     const step = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
       // easeOutExpo
-      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      const eased = progress === 1 ? 1 : 1 - 2 ** (-10 * progress);
       setCount(Math.round(eased * target));
       if (progress < 1) {
         rafRef.current = requestAnimationFrame(step);
       }
     };
     rafRef.current = requestAnimationFrame(step);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, [isVisible, target, duration]);
 
   return count;
@@ -49,7 +51,9 @@ function ResultCard({ text }: { text: string }) {
   const stat = extractStat(text);
 
   // 提取纯数字部分用于动画
-  const numericValue = stat ? parseInt(stat.value.replace(/[^0-9]/g, ''), 10) : 0;
+  const numericValue = stat
+    ? parseInt(stat.value.replace(/[^0-9]/g, ''), 10)
+    : 0;
   const suffix = stat ? stat.value.replace(/[0-9,.]*/g, '') : '';
   const animatedNumber = useCountUp(numericValue, isVisible);
 
@@ -57,8 +61,10 @@ function ResultCard({ text }: { text: string }) {
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
-      { threshold: 0.3 }
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true);
+      },
+      { threshold: 0.3 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -69,7 +75,8 @@ function ResultCard({ text }: { text: string }) {
     return (
       <div ref={ref} className="card-elevated p-6 text-center">
         <div className="font-mono text-3xl md:text-4xl font-bold text-accent tracking-tight mb-2">
-          {isVisible ? animatedNumber : 0}{suffix}
+          {isVisible ? animatedNumber : 0}
+          {suffix}
         </div>
         <p className="text-txt-tertiary text-sm">{stat.rest}</p>
       </div>
@@ -99,7 +106,9 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
 
         {/* Stat 卡片网格 */}
         {statsResults.length > 0 && (
-          <div className={`grid gap-4 mb-8 ${statsResults.length >= 3 ? 'grid-cols-2 md:grid-cols-3' : statsResults.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
+          <div
+            className={`grid gap-4 mb-8 ${statsResults.length >= 3 ? 'grid-cols-2 md:grid-cols-3' : statsResults.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}
+          >
             {statsResults.map((result, index) => (
               <AnimateOnScroll key={index} delay={index * 100}>
                 <ResultCard text={result} />

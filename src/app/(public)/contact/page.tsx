@@ -3,10 +3,10 @@
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
-import SectionTitle from '@/components/shared/SectionTitle';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ContactForm from '@/components/shared/ContactForm';
 import JsonLd from '@/components/shared/JsonLd';
+import SectionTitle from '@/components/shared/SectionTitle';
 import FAQAccordion from './FAQAccordion';
 import { faqs } from './faqData';
 
@@ -99,10 +99,15 @@ export default function ContactPage() {
             {/* 右：联系信息 — 主题色图标 */}
             <AnimateOnScroll className="lg:col-span-2" delay={250}>
               <div className="space-y-7">
-                <h3 className="text-base font-medium text-txt-primary mb-5 tracking-tight">Get in Touch</h3>
+                <h3 className="text-base font-medium text-txt-primary mb-5 tracking-tight">
+                  Get in Touch
+                </h3>
 
                 {contactInfo.map((info) => (
-                  <div key={info.label} className="relative flex items-start gap-4 pl-4">
+                  <div
+                    key={info.label}
+                    className="relative flex items-start gap-4 pl-4"
+                  >
                     {/* 左侧蓝色渐变竖线 — 借鉴 .card-spotlight::before */}
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-accent/40 to-accent/10" />
                     <div>
@@ -117,7 +122,9 @@ export default function ContactPage() {
                           {info.value}
                         </a>
                       ) : (
-                        <p className="text-txt-secondary text-sm">{info.value}</p>
+                        <p className="text-txt-secondary text-sm">
+                          {info.value}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -125,7 +132,9 @@ export default function ContactPage() {
 
                 <div className="pt-5 border-t border-[var(--border-default)]">
                   <p className="text-txt-quaternary text-sm leading-relaxed">
-                    David handles all inquiries personally. No sales team, no runaround — you talk directly to the person who will build your project.
+                    Our team handles all inquiries directly. No sales team, no
+                    runaround — you talk to the people who will build your
+                    project.
                   </p>
                 </div>
               </div>

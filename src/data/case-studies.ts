@@ -1,7 +1,11 @@
 // ─── 案例研究数据层 ───
 // 6 个真实客户项目，按行业分类，供模板页和筛选函数使用
 
-export type IndustrySlug = 'insurance' | 'real-estate' | 'accounting-tax' | 'construction';
+export type IndustrySlug =
+  | 'insurance'
+  | 'real-estate'
+  | 'accounting-tax'
+  | 'construction';
 
 export interface CaseStudy {
   slug: string;
@@ -24,7 +28,8 @@ export const caseStudies: CaseStudy[] = [
     // Easy-Sign 面向所有小企业，不属于任何单一行业
     slug: 'easy-sign',
     title: 'Easy-Sign',
-    tagline: 'Affordable e-signature platform built for Canadian small businesses.',
+    tagline:
+      'Affordable e-signature platform built for Canadian small businesses.',
     url: 'https://www.easy-sign.ca/',
     logo: '/product/easy-sign.png',
     challenge: [
@@ -43,7 +48,15 @@ export const caseStudies: CaseStudy[] = [
       'Flat-rate pricing saved businesses 60%+ compared to per-envelope platforms',
       'Trusted by hundreds of small businesses across Canada',
     ],
-    techStack: ['Next.js', 'React', 'TypeScript', 'Node.js', 'PostgreSQL', 'AWS S3', 'PDF.js'],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Node.js',
+      'PostgreSQL',
+      'AWS S3',
+      'PDF.js',
+    ],
     featured: true,
   },
   {
@@ -61,7 +74,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     solution: [
       'Built an AI-powered submission system that automatically validates document completeness, checks formatting against municipality requirements, and flags missing information before submission.',
-      'Developed intelligent document templates that adapt to each municipality\'s requirements, auto-populating fields from project data.',
+      "Developed intelligent document templates that adapt to each municipality's requirements, auto-populating fields from project data.",
       'Created a real-time tracking dashboard for submission status, with automated reminders for pending approvals and resubmissions.',
     ],
     results: [
@@ -70,13 +83,22 @@ export const caseStudies: CaseStudy[] = [
       'Real-time tracking eliminated manual follow-up emails',
       'Scaled across multiple active construction projects simultaneously',
     ],
-    techStack: ['Next.js', 'React', 'TypeScript', 'Gemini AI', 'Node.js', 'PostgreSQL', 'Tailwind CSS'],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Gemini AI',
+      'Node.js',
+      'PostgreSQL',
+      'Tailwind CSS',
+    ],
     featured: true,
   },
   {
     slug: 'onest-insurance',
     title: 'Onest Insurance',
-    tagline: 'Streamlined quote intake and automated policy notification system for insurance brokers.',
+    tagline:
+      'Streamlined quote intake and automated policy notification system for insurance brokers.',
     industry: 'insurance',
     industryLabel: 'Insurance',
     url: 'https://www.onestinsurance.ca/',
@@ -88,7 +110,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     solution: [
       'Built an online quote request platform where clients can submit their insurance needs and personal details directly, replacing manual phone and email intake.',
-      'Developed an automated email notification system that alerts clients when their policy documents are ready, directing them to download from the insurance company\'s portal.',
+      "Developed an automated email notification system that alerts clients when their policy documents are ready, directing them to download from the insurance company's portal.",
       'Streamlined the end-to-end workflow from initial quote request to policy delivery notification, freeing brokers to focus on client advising rather than administrative tasks.',
     ],
     results: [
@@ -97,7 +119,15 @@ export const caseStudies: CaseStudy[] = [
       'Faster turnaround from quote request to client notification',
       'Brokers handle more clients with significantly less administrative overhead',
     ],
-    techStack: ['Next.js', 'React', 'TypeScript', 'Node.js', 'Email Automation', 'Tailwind CSS', 'Vercel'],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Node.js',
+      'Email Automation',
+      'Tailwind CSS',
+      'Vercel',
+    ],
     featured: true,
   },
   {
@@ -124,7 +154,14 @@ export const caseStudies: CaseStudy[] = [
       '24/7 lead capture with intelligent qualification',
       'Seamless handoff from AI to human broker with full context preserved',
     ],
-    techStack: ['Next.js', 'React', 'TypeScript', 'Gemini AI', 'Tailwind CSS', 'Vercel'],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Gemini AI',
+      'Tailwind CSS',
+      'Vercel',
+    ],
     featured: false,
   },
   {
@@ -142,7 +179,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     solution: [
       'Designed and built a premium marketing website with immersive visual storytelling — showcasing the community vision through carefully crafted layouts, renderings, and neighborhood highlights.',
-      'Implemented a lead capture system integrated with the developer\'s sales pipeline, allowing prospective buyers to register interest and receive updates.',
+      "Implemented a lead capture system integrated with the developer's sales pipeline, allowing prospective buyers to register interest and receive updates.",
       'Built with performance-first architecture — fast loading times and SEO optimization to capture organic search traffic for "new homes in Markham" queries.',
     ],
     results: [
@@ -151,7 +188,14 @@ export const caseStudies: CaseStudy[] = [
       'Mobile-first design with 95+ Lighthouse performance score',
       'SEO-optimized for local real estate search queries',
     ],
-    techStack: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Vercel', 'SEO'],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Tailwind CSS',
+      'Vercel',
+      'SEO',
+    ],
     featured: false,
   },
   {
@@ -168,7 +212,7 @@ export const caseStudies: CaseStudy[] = [
       'Most of their client acquisition came from referrals, leaving significant growth potential from online channels untapped.',
     ],
     solution: [
-      'Built a modern, trust-building website that highlights the firm\'s personal approach, credentials, and service specializations — positioning them as accessible experts rather than a faceless firm.',
+      "Built a modern, trust-building website that highlights the firm's personal approach, credentials, and service specializations — positioning them as accessible experts rather than a faceless firm.",
       'Implemented a multi-channel lead generation system: contact forms, service-specific inquiry flows, and a consultation booking mechanism.',
       'Optimized for local SEO targeting "accountant Toronto", "tax services Toronto", and related queries to capture organic search traffic.',
     ],
@@ -178,7 +222,14 @@ export const caseStudies: CaseStudy[] = [
       'Local SEO positioning for key accounting search terms',
       'Mobile-responsive design with professional credibility signals',
     ],
-    techStack: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Vercel', 'SEO'],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Tailwind CSS',
+      'Vercel',
+      'SEO',
+    ],
     featured: false,
   },
 ];

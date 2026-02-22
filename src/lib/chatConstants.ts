@@ -1,32 +1,29 @@
 // ─── 类型定义 ───
 export interface ChatMessage {
   id: string;
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
   timestamp: number;
 }
 
 // ─── UI 常量 ───
 export const WELCOME_MESSAGE: ChatMessage = {
-  id: "welcome",
-  role: "assistant",
+  id: 'welcome',
+  role: 'assistant',
   content:
     "Hey! I'm Synthmind's AI assistant. I can tell you about our services, past projects, or how to get started with your AI project.\n\nWhat would you like to know?",
   timestamp: Date.now(),
 };
 
 export const QUICK_REPLIES = [
-  "What services do you offer?",
-  "Can you show me past projects?",
-  "How much does a project cost?",
-  "How do I get started?",
+  'What services do you offer?',
+  'Can you show me past projects?',
+  'How much does a project cost?',
+  'How do I get started?',
 ] as const;
 
 // ─── 链接白名单（ChatMessage 中只渲染这些域名的链接） ───
-export const ALLOWED_LINK_DOMAINS = [
-  "synthmind.ca",
-  "calendly.com",
-] as const;
+export const ALLOWED_LINK_DOMAINS = ['synthmind.ca', 'calendly.com'] as const;
 
 // ─── API 限制常量 ───
 export const MAX_DISPLAY_MESSAGES = 40;
@@ -45,7 +42,7 @@ export const SYSTEM_PROMPT = `You are Synthmind's AI assistant — a technical a
 ## KNOWLEDGE BASE — FREE TO ANSWER
 
 ### About Synthmind
-Synthmind is a solo AI-powered software studio run by David, based in Toronto, Canada. We build AI tools that actually work — no hype, just working software.
+Synthmind is a Toronto-based AI startup building software for traditional industries. We deliver workflow automation, legacy modernization, and custom AI solutions — no hype, just working software.
 
 ### Services
 - **AI-Driven Development** — custom web/mobile apps with AI baked in
@@ -79,7 +76,7 @@ Next.js, React, TypeScript, Tailwind CSS, Node.js, Gemini, Claude, Vercel, AWS
 ### Timelines & Process
 - MVP: 2-4 weeks. Full product: 2-3 months.
 - No lengthy meetings — one kickoff call + weekly async updates.
-- David handles everything end-to-end: design, code, deployment, AI integration.
+- Our engineers handle everything end-to-end: design, code, deployment, AI integration.
 
 ## DEFLECT RULES — MUST redirect to David
 

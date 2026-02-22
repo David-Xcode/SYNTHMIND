@@ -3,8 +3,8 @@
 // ─── 精选案例展示 · Neural ───
 // 等宽三列 / 统一 accent badge / GlassCard spotlight
 
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import GlassCard from '@/components/shared/GlassCard';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -33,7 +33,11 @@ export default function FeaturedCaseStudies() {
           {featured.map((cs, index) => (
             <AnimateOnScroll key={cs.slug} delay={index * 100 + 100}>
               <Link href={`/case-studies/${cs.slug}`} className="block h-full">
-                <GlassCard variant="spotlight" as="article" className="h-full group cursor-pointer">
+                <GlassCard
+                  variant="spotlight"
+                  as="article"
+                  className="h-full group cursor-pointer"
+                >
                   {/* Logo */}
                   <div className="h-10 mb-5 flex items-center">
                     <Image
@@ -62,8 +66,19 @@ export default function FeaturedCaseStudies() {
                   <div className="mt-5">
                     <span className="inline-flex items-center gap-1.5 text-accent text-sm font-medium group-hover:gap-2.5 transition-all duration-300">
                       View case study
-                      <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      <svg
+                        className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
                       </svg>
                     </span>
                   </div>

@@ -3,14 +3,14 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Breadcrumb from '@/components/layout/Breadcrumb';
+import CaseStudyGrid from '@/components/industry/CaseStudyGrid';
 import IndustryHero from '@/components/industry/IndustryHero';
 import PainPoints from '@/components/industry/PainPoints';
-import CaseStudyGrid from '@/components/industry/CaseStudyGrid';
+import Breadcrumb from '@/components/layout/Breadcrumb';
 import CTABanner from '@/components/shared/CTABanner';
 import JsonLd from '@/components/shared/JsonLd';
-import { getIndustryBySlug, getAllIndustrySlugs } from '@/data/industries';
 import { getCaseStudiesByIndustry } from '@/data/case-studies';
+import { getAllIndustrySlugs, getIndustryBySlug } from '@/data/industries';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -20,7 +20,9 @@ export function generateStaticParams() {
   return getAllIndustrySlugs().map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const industry = getIndustryBySlug(slug);
   if (!industry) return {};

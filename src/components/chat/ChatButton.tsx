@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useRef, lazy, Suspense } from "react";
-import { useChatOpen } from "@/hooks/useChatOpen";
-import type { ChatMessage } from "@/lib/chatConstants";
+import { lazy, Suspense, useRef, useState } from 'react';
+import { useChatOpen } from '@/hooks/useChatOpen';
+import type { ChatMessage } from '@/lib/chatConstants';
 
 // 懒加载 ChatPanel（面板打开时才加载）
-const ChatPanel = lazy(() => import("./ChatPanel"));
+const ChatPanel = lazy(() => import('./ChatPanel'));
 
 // ── Session ID 管理：sessionStorage 持久化，刷新保持 ──
 function getOrCreateSessionId(): string {
-  if (typeof window === "undefined") return crypto.randomUUID();
-  const KEY = "synthmind_chat_session_id";
+  if (typeof window === 'undefined') return crypto.randomUUID();
+  const KEY = 'synthmind_chat_session_id';
   let id = sessionStorage.getItem(KEY);
   if (!id) {
     id = crypto.randomUUID();
@@ -23,6 +23,7 @@ function getOrCreateSessionId(): string {
 function PulseButton({ onClick }: { onClick: () => void }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-label="Open AI chat"
       className="group relative w-14 h-14 rounded-full bg-accent text-white
@@ -83,8 +84,8 @@ export default function ChatButton() {
           fallback={
             <div className="w-[400px] h-[600px] rounded-2xl bg-[rgba(10,12,18,0.96)] border border-accent/20 flex items-center justify-center">
               <div className="typing-dot" />
-              <div className="typing-dot" style={{ animationDelay: "0.15s" }} />
-              <div className="typing-dot" style={{ animationDelay: "0.3s" }} />
+              <div className="typing-dot" style={{ animationDelay: '0.15s' }} />
+              <div className="typing-dot" style={{ animationDelay: '0.3s' }} />
             </div>
           }
         >

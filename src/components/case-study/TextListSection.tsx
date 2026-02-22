@@ -27,7 +27,12 @@ export default function TextListSection({
     <section className={`py-16 ${bgClass} px-4`}>
       <div className="max-w-3xl mx-auto">
         <AnimateOnScroll>
-          <SectionTitle light={titleLight} bold={titleBold} align="left" size="md" />
+          <SectionTitle
+            light={titleLight}
+            bold={titleBold}
+            align="left"
+            size="md"
+          />
         </AnimateOnScroll>
 
         <div className="space-y-4">
@@ -37,7 +42,9 @@ export default function TextListSection({
                 <span className="font-mono text-2xl font-semibold text-accent/20 leading-none pt-0.5">
                   {String(index + 1).padStart(2, '0')}
                 </span>
-                <p className="text-txt-secondary leading-relaxed text-[15px]">{paragraph}</p>
+                <p className="text-txt-secondary leading-relaxed text-[15px]">
+                  {paragraph}
+                </p>
               </div>
             </AnimateOnScroll>
           ))}

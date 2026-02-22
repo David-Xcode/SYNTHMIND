@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
-const CHAT_OPEN_EVENT = "synthmind:chat-open";
+const CHAT_OPEN_EVENT = 'synthmind:chat-open';
 
 /**
  * Chat 开关状态 hook

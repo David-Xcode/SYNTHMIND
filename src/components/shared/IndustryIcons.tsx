@@ -7,7 +7,15 @@ import type { ComponentType, SVGProps } from 'react';
 // 保险: 盾牌 + 心电图脉冲线 — 保障与生命
 function InsuranceIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       {/* 盾牌轮廓 */}
       <path d="M12 2l7.5 3.5v5c0 5.25-3.15 9.5-7.5 11.5C7.65 20 4.5 15.75 4.5 10.5v-5L12 2z" />
       {/* ECG 脉冲线 */}
@@ -19,7 +27,15 @@ function InsuranceIcon(props: SVGProps<SVGSVGElement>) {
 // 房地产: 多层建筑 + 窗户网格 — 几何建筑质感
 function RealEstateIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       {/* 建筑主体 */}
       <rect x="4" y="3" width="10" height="18" rx="1" />
       {/* 附楼 */}
@@ -43,7 +59,15 @@ function RealEstateIcon(props: SVGProps<SVGSVGElement>) {
 // 会计税务: 账本 + 美元符号 — 财务文档
 function AccountingIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       {/* 账本封面 */}
       <path d="M4 4a1 1 0 011-1h10a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
       {/* 书脊装饰 */}
@@ -63,7 +87,15 @@ function AccountingIcon(props: SVGProps<SVGSVGElement>) {
 // 建筑工程: 塔吊 — 几何线条 Neural 美学
 function ConstructionIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       {/* 塔身 (垂直) */}
       <line x1="8" y1="6" x2="8" y2="21" />
       {/* 底座 */}
@@ -85,7 +117,10 @@ function ConstructionIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 // 导出统一映射 — key 匹配 industry.slug
-export const industryIcons: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+export const industryIcons: Record<
+  string,
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
   insurance: InsuranceIcon,
   'real-estate': RealEstateIcon,
   'accounting-tax': AccountingIcon,

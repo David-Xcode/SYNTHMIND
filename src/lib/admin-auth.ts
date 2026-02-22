@@ -1,7 +1,7 @@
-import "server-only";
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { verifyToken, COOKIE_NAME } from "@/lib/hmac";
+import 'server-only';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { COOKIE_NAME, verifyToken } from '@/lib/hmac';
 
 // ── Server Component 二次鉴权：纵深防御，不完全依赖 middleware ──
 export async function requireAdmin() {
@@ -9,6 +9,6 @@ export async function requireAdmin() {
   const token = cookieStore.get(COOKIE_NAME)?.value;
 
   if (!token || !(await verifyToken(token))) {
-    redirect("/admin/login");
+    redirect('/admin/login');
   }
 }

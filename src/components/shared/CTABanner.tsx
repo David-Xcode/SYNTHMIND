@@ -49,8 +49,19 @@ export default function CTABanner({
             className="group inline-flex items-center gap-2 btn-primary text-base px-8 py-3.5"
           >
             <span>{buttonText}</span>
-            <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            <svg
+              className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+              aria-hidden="true"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </Link>
         </AnimateOnScroll>

@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Admin | Synthmind",
+  title: 'Admin | Synthmind',
   robots: { index: false, follow: false },
 };
 

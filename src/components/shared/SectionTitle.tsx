@@ -40,8 +40,10 @@ export default function SectionTitle({
     right: 'text-right',
   }[align];
 
-  const subtitleAlign = align === 'center' ? 'mx-auto' : align === 'right' ? 'ml-auto' : '';
-  const dividerAlign = align === 'center' ? 'mx-auto' : align === 'right' ? 'ml-auto' : '';
+  const subtitleAlign =
+    align === 'center' ? 'mx-auto' : align === 'right' ? 'ml-auto' : '';
+  const dividerAlign =
+    align === 'center' ? 'mx-auto' : align === 'right' ? 'ml-auto' : '';
 
   return (
     <div className={`${alignClass} mb-16`}>
@@ -58,7 +60,9 @@ export default function SectionTitle({
         <div className={`w-16 h-px bg-accent/30 ${dividerAlign} mb-4`} />
       )}
       {subtitle && (
-        <p className={`max-w-2xl mt-4 text-base md:text-lg text-txt-secondary leading-relaxed ${subtitleAlign}`}>
+        <p
+          className={`max-w-2xl mt-4 text-base md:text-lg text-txt-secondary leading-relaxed ${subtitleAlign}`}
+        >
           {subtitle}
         </p>
       )}

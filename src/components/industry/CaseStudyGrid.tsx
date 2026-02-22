@@ -3,8 +3,8 @@
 // ─── 行业案例网格 · Neural ───
 // 去饱和行业色 / 无 mouseGlow / 冷色 tech tag
 
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import GlassCard from '@/components/shared/GlassCard';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -37,7 +37,10 @@ export default function CaseStudyGrid({
           {caseStudies.map((cs, index) => (
             <AnimateOnScroll key={cs.slug} delay={index * 80 + 100}>
               <Link href={`/case-studies/${cs.slug}`} className="block h-full">
-                <GlassCard variant="elevated" className="h-full group cursor-pointer">
+                <GlassCard
+                  variant="elevated"
+                  className="h-full group cursor-pointer"
+                >
                   <div className="h-10 mb-5 flex items-center">
                     <Image
                       src={cs.logo}
@@ -48,7 +51,9 @@ export default function CaseStudyGrid({
                     />
                   </div>
 
-                  <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">{cs.title}</h3>
+                  <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
+                    {cs.title}
+                  </h3>
                   <p className="text-txt-tertiary text-sm leading-relaxed mb-4">
                     {cs.tagline}
                   </p>
@@ -67,8 +72,19 @@ export default function CaseStudyGrid({
 
                   <span className="inline-flex items-center gap-1 text-accent text-sm font-medium group-hover:gap-1.5 transition-all duration-300">
                     View case study
-                    <svg className="w-3.5 h-3.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    <svg
+                      className="w-3.5 h-3.5"
+                      aria-hidden="true"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
                     </svg>
                   </span>
                 </GlassCard>

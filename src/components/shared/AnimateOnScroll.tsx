@@ -36,7 +36,7 @@ export default function AnimateOnScroll({
           setIsVisible(true);
         }
       },
-      { threshold }
+      { threshold },
     );
 
     observer.observe(el);
