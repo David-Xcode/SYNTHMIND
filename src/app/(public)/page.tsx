@@ -8,6 +8,7 @@ import IndustryCards from '@/components/home/IndustryCards';
 import FeaturedCaseStudies from '@/components/home/FeaturedCaseStudies';
 import SocialProofBar from '@/components/home/SocialProofBar';
 import CTABanner from '@/components/shared/CTABanner';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import JsonLd from '@/components/shared/JsonLd';
 
 export const metadata: Metadata = {
@@ -49,11 +50,11 @@ export default function HomePage() {
   return (
     <>
       <JsonLd data={organizationJsonLd} />
-      <HomeHero />
-      <SocialProofBar />
-      <IndustryCards />
-      <FeaturedCaseStudies />
-      <CTABanner headline="Ready to start your AI project?" />
+      <ErrorBoundary fallback={null}><HomeHero /></ErrorBoundary>
+      <ErrorBoundary fallback={null}><SocialProofBar /></ErrorBoundary>
+      <ErrorBoundary fallback={null}><IndustryCards /></ErrorBoundary>
+      <ErrorBoundary fallback={null}><FeaturedCaseStudies /></ErrorBoundary>
+      <ErrorBoundary fallback={null}><CTABanner headline="Ready to start your AI project?" /></ErrorBoundary>
     </>
   );
 }

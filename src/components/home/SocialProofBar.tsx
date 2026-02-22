@@ -1,19 +1,25 @@
 'use client';
 
 // ─── 客户 Logo 展示条 · Neural ───
-// 双容器无缝 marquee / DM Mono 标签
+// 双容器无缝 marquee / JetBrains Mono 标签
+// 4× 重复 → ~4416px 轨道宽度，覆盖 4K (3840px)
 
+import { useMemo } from 'react';
 import Image from 'next/image';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import { caseStudies } from '@/data/case-studies';
 
+const REPEAT_COUNT = 4;
+
 export default function SocialProofBar() {
-  // 7× 重复 logo 列表，单份轨道 ~4400px，覆盖 4K 视口 (3840px)
-  const REPEAT_COUNT = 7;
-  const logos: typeof caseStudies = [];
-  Array.from({ length: REPEAT_COUNT }).forEach(() => {
-    caseStudies.forEach((cs) => logos.push(cs));
-  });
+  // useMemo 避免每次渲染重建数组
+  const logos = useMemo(() => {
+    const result: typeof caseStudies = [];
+    Array.from({ length: REPEAT_COUNT }).forEach(() => {
+      caseStudies.forEach((cs) => result.push(cs));
+    });
+    return result;
+  }, []);
 
   return (
     <section className="py-16 bg-bg-base overflow-hidden">
@@ -30,9 +36,9 @@ export default function SocialProofBar() {
         {/* 右侧渐变遮罩 */}
         <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-l from-bg-base to-transparent z-10 pointer-events-none" />
 
-        {/* 双容器滚动轨道 — w-max 让容器撑满内容宽度，translateX(-50%) 精准移动一份 */}
+        {/* 双容器滚动轨道 */}
         <div className="flex items-center w-max animate-marquee hover:[animation-play-state:paused]">
-          {/* 第一份 — 24 个 logo (~3500-4400px) */}
+          {/* 第一份轨道 */}
           <div className="flex items-center gap-16 shrink-0 pr-16">
             {logos.map((cs, i) => (
               <div
@@ -49,7 +55,7 @@ export default function SocialProofBar() {
               </div>
             ))}
           </div>
-          {/* 第二份 (无缝循环) — 同样 24 个 logo */}
+          {/* 第二份（无缝循环）— aria-hidden + 空 alt */}
           <div className="flex items-center gap-16 shrink-0 pr-16" aria-hidden="true">
             {logos.map((cs, i) => (
               <div
@@ -58,7 +64,7 @@ export default function SocialProofBar() {
               >
                 <Image
                   src={cs.logo}
-                  alt={`${cs.title} logo`}
+                  alt=""
                   width={120}
                   height={36}
                   className="h-8 w-auto object-contain filter brightness-0 invert opacity-50 hover:opacity-80 transition-opacity duration-300"
