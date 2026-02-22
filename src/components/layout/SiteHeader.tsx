@@ -1,14 +1,12 @@
 'use client';
 
-// ─── 多页面导航头部 ───
-// 替代旧的 scroll-based Header，使用 Next.js Link 路由
-// 桌面端：下拉菜单；移动端：汉堡 + 可折叠子菜单
+// ─── 导航头部 · Neural ───
+// 实底滚动态 (无 backdrop-blur) / 蓝色活跃指示器 / DM Sans 导航
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { mainNav } from '@/data/navigation';
 
 export default function SiteHeader() {
@@ -18,7 +16,7 @@ export default function SiteHeader() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  // 页面切换时关闭移动菜单
+  // 页面切换时关闭菜单
   useEffect(() => {
     setMobileOpen(false);
     setIndustriesOpen(false);
@@ -31,10 +29,10 @@ export default function SiteHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 桌面端：点击外部关闭下拉菜单
+  // 点击外部关闭 dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (dropdownRef.current && e.target instanceof Node && !dropdownRef.current.contains(e.target)) {
         setIndustriesOpen(false);
       }
     };
@@ -42,22 +40,18 @@ export default function SiteHeader() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const linkClass = (href: string) => {
-    const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
-    return `transition-colors duration-300 text-sm font-light tracking-wider uppercase ${
-      isActive ? 'text-white' : 'text-white/70 hover:text-white'
-    }`;
-  };
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-out-expo ${
         scrolled || mobileOpen
-          ? 'bg-[#0f1419]/80 backdrop-blur-md shadow-lg shadow-black/10'
-          : ''
+          ? 'bg-bg-base border-b border-[var(--border-default)]'
+          : 'border-b border-transparent'
       }`}
     >
-      <nav className="flex justify-between items-center px-6 md:px-12 py-5">
+      <nav className="flex justify-between items-center px-6 md:px-12 py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
@@ -65,142 +59,178 @@ export default function SiteHeader() {
             alt="Synthmind Logo"
             width={150}
             height={40}
-            className="h-10 w-auto transition-all duration-300 hover:scale-105 opacity-90 hover:opacity-100"
+            className="h-9 w-auto transition-opacity duration-300 opacity-80 hover:opacity-100"
           />
         </Link>
 
         {/* 桌面端导航 */}
-        <div className="hidden md:flex items-center gap-10">
+        <div className="hidden md:flex items-center gap-8">
           {mainNav.map((item) =>
             item.children ? (
               // Industries 下拉菜单
               <div key={item.label} className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIndustriesOpen(!industriesOpen)}
-                  className={`flex items-center gap-1 ${linkClass('/industries')}`}
+                  className={`group flex items-center gap-1.5 text-sm font-normal transition-colors duration-200 ${
+                    isActive('/industries')
+                      ? 'text-txt-primary'
+                      : 'text-txt-tertiary hover:text-txt-primary'
+                  }`}
                   aria-haspopup="true"
                   aria-expanded={industriesOpen}
                 >
                   {item.label}
-                  <ChevronDownIcon
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  <svg
+                    className={`w-3 h-3 transition-transform duration-300 ease-[var(--ease-out-expo)] ${
                       industriesOpen ? 'rotate-180' : ''
                     }`}
-                  />
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
 
-                {industriesOpen && (
-                  <div role="menu" className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-52 bg-[#1a1f2e]/95 backdrop-blur-lg border border-white/10 rounded-xl py-2 shadow-xl shadow-black/20">
+                {/* Dropdown */}
+                <div
+                  role="menu"
+                  className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-52 bg-bg-elevated border border-accent/[0.12] rounded-xl py-1.5 transition-all duration-300 ease-out-expo origin-top ${
+                    industriesOpen
+                      ? 'opacity-100 scale-100 pointer-events-auto'
+                      : 'opacity-0 scale-95 pointer-events-none'
+                  }`}
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,0,0,0.2)' }}
+                >
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      className={`block px-4 py-2.5 text-sm transition-colors duration-150 ${
+                        pathname === child.href
+                          ? 'text-accent bg-accent/[0.08]'
+                          : 'text-txt-secondary hover:text-txt-primary hover:bg-accent/[0.06]'
+                      }`}
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // 普通链接 + 蓝色活跃指示器
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`relative text-sm font-normal transition-colors duration-200 py-1 ${
+                  isActive(item.href)
+                    ? 'text-txt-primary'
+                    : 'text-txt-tertiary hover:text-txt-primary'
+                }`}
+              >
+                {item.label}
+                {/* 底部小圆点指示器 — 蓝色 */}
+                {isActive(item.href) && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
+                )}
+              </Link>
+            )
+          )}
+
+          {/* CTA 按钮 */}
+          <Link href="/contact" className="btn-primary text-sm px-5 py-2">
+            Book a Call
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
+        </div>
+
+        {/* 移动端菜单按钮 — CSS 三线 → X 变形动画 */}
+        <button
+          className="md:hidden relative w-5 h-5 p-0 text-txt-tertiary hover:text-txt-primary transition-colors"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+        >
+          <span className={`absolute left-0 w-5 h-px bg-current transition-all duration-300 ease-[var(--ease-out-expo)] ${mobileOpen ? 'top-[10px] rotate-45' : 'top-[4px]'}`} />
+          <span className={`absolute left-0 top-[10px] w-5 h-px bg-current transition-opacity duration-200 ${mobileOpen ? 'opacity-0' : 'opacity-100'}`} />
+          <span className={`absolute left-0 w-5 h-px bg-current transition-all duration-300 ease-[var(--ease-out-expo)] ${mobileOpen ? 'top-[10px] -rotate-45' : 'top-[16px]'}`} />
+        </button>
+      </nav>
+
+      {/* 移动端导航 */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-400 ease-out-expo ${
+          mobileOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="px-6 py-6 space-y-1 bg-bg-base border-t border-[var(--border-default)]">
+          {mainNav.map((item) =>
+            item.children ? (
+              <div key={item.label}>
+                <button
+                  onClick={() => setIndustriesOpen(!industriesOpen)}
+                  className="flex items-center justify-between w-full text-left text-txt-tertiary hover:text-txt-primary transition-colors text-sm font-normal py-3"
+                  aria-haspopup="true"
+                  aria-expanded={industriesOpen}
+                >
+                  {item.label}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-300 ease-[var(--ease-out-expo)] ${
+                      industriesOpen ? 'rotate-180' : ''
+                    }`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-out-expo ${
+                    industriesOpen ? 'max-h-[200px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="pl-4 space-y-1 mb-2">
                     {item.children.map((child) => (
                       <Link
                         key={child.href}
                         href={child.href}
-                        className={`block px-5 py-2.5 text-sm font-light transition-colors ${
+                        className={`block py-2 text-sm transition-colors duration-150 ${
                           pathname === child.href
-                            ? 'text-[#3498db] bg-[#3498db]/10'
-                            : 'text-white/70 hover:text-white hover:bg-white/5'
+                            ? 'text-accent'
+                            : 'text-txt-quaternary hover:text-txt-secondary'
                         }`}
                       >
                         {child.label}
                       </Link>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
             ) : (
-              <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block w-full text-left text-sm font-normal py-3 transition-colors duration-150 ${
+                  isActive(item.href)
+                    ? 'text-txt-primary'
+                    : 'text-txt-tertiary hover:text-txt-primary'
+                }`}
+              >
                 {item.label}
               </Link>
             )
           )}
 
-          {/* Book a Call CTA */}
-          <Link
-            href="/contact"
-            className="bg-[#3498db] hover:bg-[#2980b9] text-white text-sm font-light px-5 py-2 rounded-lg transition-all duration-300 hover:-translate-y-0.5"
-          >
-            Book a Call &rarr;
-          </Link>
-        </div>
-
-        {/* 移动端菜单按钮 */}
-        <button
-          className="md:hidden p-2"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? (
-            <XMarkIcon className="h-5 w-5 text-white/70" />
-          ) : (
-            <Bars3Icon className="h-5 w-5 text-white/70" />
-          )}
-        </button>
-      </nav>
-
-      {/* 移动端导航 */}
-      {mobileOpen && (
-        <div className="md:hidden">
-          <div className="px-6 py-6 space-y-1 bg-[#0f1419]/90 backdrop-blur-lg border-t border-white/5">
-            {mainNav.map((item) =>
-              item.children ? (
-                <div key={item.label}>
-                  <button
-                    onClick={() => setIndustriesOpen(!industriesOpen)}
-                    className="flex items-center justify-between w-full text-left text-white/70 hover:text-white transition-colors text-sm font-light tracking-wider uppercase py-3"
-                    aria-haspopup="true"
-                    aria-expanded={industriesOpen}
-                  >
-                    {item.label}
-                    <ChevronDownIcon
-                      className={`w-4 h-4 transition-transform duration-200 ${
-                        industriesOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  {industriesOpen && (
-                    <div className="pl-4 space-y-1 mb-2">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={`block py-2 text-sm font-light transition-colors ${
-                            pathname === child.href
-                              ? 'text-[#3498db]'
-                              : 'text-white/50 hover:text-white/80'
-                          }`}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`block w-full text-left transition-colors text-sm font-light tracking-wider uppercase py-3 ${
-                    pathname === item.href ? 'text-white' : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            )}
-
-            {/* 移动端 CTA */}
-            <div className="pt-4 border-t border-white/10">
-              <Link
-                href="/contact"
-                className="block text-center bg-[#3498db] hover:bg-[#2980b9] text-white text-sm font-light px-5 py-3 rounded-lg transition-colors"
-              >
-                Book a Call &rarr;
-              </Link>
-            </div>
+          {/* 移动端 CTA */}
+          <div className="pt-4 border-t border-[var(--border-default)]">
+            <Link
+              href="/contact"
+              className="block text-center btn-primary w-full py-3"
+            >
+              Book a Call
+            </Link>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }
