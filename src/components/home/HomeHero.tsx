@@ -48,7 +48,7 @@ export default function HomeHero() {
           className="text-subtitle text-txt-secondary max-w-xl animate-reveal"
           style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
         >
-          Solo studio in Toronto building AI tools that actually work —
+          A Toronto-based startup building AI tools that actually work —
           workflow automation, legacy modernization, and custom solutions
           for traditional industries.
         </p>
