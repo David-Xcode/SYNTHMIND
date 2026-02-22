@@ -35,6 +35,13 @@ module.exports = {
           tertiary:   '#5C6370',
           quaternary: '#3A404D',
         },
+        /* ── 行业色 ── */
+        industry: {
+          insurance:    '#7B8EC4',
+          realestate:   '#5DAE8B',
+          accounting:   '#E0A85C',
+          construction: '#C47A5A',
+        },
         /* 兼容旧代码 */
         primary: '#4A9FE5',
         dark: '#080B10',

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: 'About Synthmind | AI-Powered Software Studio in Toronto',
   description:
     'Synthmind is a solo AI-powered software studio run by David in Toronto. We build tools that actually work for traditional industries — no hype, just working software.',
+  alternates: { canonical: '/about' },
   openGraph: {
     title: 'About Synthmind',
     description: 'Solo software studio building AI tools for traditional industries.',

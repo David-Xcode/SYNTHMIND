@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: 'Case Studies | Synthmind',
   description:
     'Real AI-powered software solutions built for insurance, real estate, accounting, and construction businesses. See our work.',
+  alternates: { canonical: '/case-studies' },
   openGraph: {
     title: 'Case Studies — Synthmind',
     description: 'Real solutions built for real businesses.',

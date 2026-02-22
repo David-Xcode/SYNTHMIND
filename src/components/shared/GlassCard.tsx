@@ -1,10 +1,10 @@
 // ─── Neural 卡片组件 ───
 // 纯 CSS 驱动，三级: surface (玻璃态) / elevated (实色+上浮) / spotlight (蓝色渐变竖线)
 
-import React from 'react';
+import type { ReactNode } from 'react';
 
 interface GlassCardProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   /** 卡片变体 */
   variant?: 'surface' | 'elevated' | 'spotlight';

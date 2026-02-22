@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: 'Contact Synthmind | Book a Free Consultation',
   description:
     'Get in touch with Synthmind for AI-powered software development. Free consultation for insurance, real estate, accounting, and construction businesses.',
+  alternates: { canonical: '/contact' },
   openGraph: {
     title: 'Contact Synthmind',
     description: 'Book a free consultation for your AI project.',

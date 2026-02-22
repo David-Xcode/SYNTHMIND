@@ -3,7 +3,6 @@
 // ─── Footer · Neural ───
 // 蓝色分割线 / DM Mono 分类标签 / 冷色链接
 
-import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { footerNav } from '@/data/navigation';
