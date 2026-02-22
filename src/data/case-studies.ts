@@ -20,6 +20,8 @@ export interface CaseStudy {
 
 export const caseStudies: CaseStudy[] = [
   {
+    // 跨行业产品 — 故意省略 industry/industryLabel 字段
+    // Easy-Sign 面向所有小企业，不属于任何单一行业
     slug: 'easy-sign',
     title: 'Easy-Sign',
     tagline: 'Affordable e-signature platform built for Canadian small businesses.',

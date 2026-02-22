@@ -24,11 +24,3 @@ export function useChatOpen(initialOpen = false) {
 
   return { open, toggle, close, openChat };
 }
-
-/**
- * 从任意组件触发打开聊天面板
- * 用法：openChatPanel() — 无需 import hook
- */
-export function openChatPanel() {
-  window.dispatchEvent(new CustomEvent(CHAT_OPEN_EVENT));
-}

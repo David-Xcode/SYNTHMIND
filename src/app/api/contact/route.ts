@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServiceClient } from '@/lib/supabase-server';
+import { checkCsrf } from '@/lib/csrf';
 
 // 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
 function getResendClient() {
@@ -20,15 +21,15 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
+// 允许的来源枚举 — 防止客户端注入任意值
+const ALLOWED_SOURCES = ['contact', 'contact-page', 'chat', 'cta'] as const;
+type AllowedSource = typeof ALLOWED_SOURCES[number];
+
 interface ContactFormData {
   name: string;
   email: string;
   subject: string;
   message: string;
-  // 新增可选字段 — 来自增强版联系表单
-  company?: string;
-  industry?: string;
-  budget?: string;
   source?: string;
 }
 
@@ -82,9 +83,6 @@ const sendNotificationEmail = async (
   email: string,
   subject: string,
   message: string,
-  company?: string,
-  industry?: string,
-  budget?: string,
   source?: string,
 ) => {
   const safeName = escapeHtml(name);
@@ -93,7 +91,7 @@ const sendNotificationEmail = async (
 
   return await getResendClient().emails.send({
     from: 'Synthmind <onboarding@resend.dev>',
-    to: ['synthmind.technology@gmail.com'],
+    to: ['info@synthmind.ca'],
     subject: `[Website Contact] New message from ${safeName}`,
     replyTo: email,
     html: `
@@ -109,9 +107,6 @@ const sendNotificationEmail = async (
             <p><strong>Name:</strong> ${safeName}</p>
             <p><strong>Email:</strong> <a href="mailto:${encodeURIComponent(email)}">${escapeHtml(email)}</a></p>
             <p><strong>Subject:</strong> ${safeSubject}</p>
-            ${company ? `<p><strong>Company:</strong> ${escapeHtml(company)}</p>` : ''}
-            ${industry ? `<p><strong>Industry:</strong> ${escapeHtml(industry)}</p>` : ''}
-            ${budget ? `<p><strong>Budget:</strong> ${escapeHtml(budget)}</p>` : ''}
             ${source ? `<p><strong>Source:</strong> ${escapeHtml(source)}</p>` : ''}
             <p><strong>Time:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' })}</p>
           </div>
@@ -136,19 +131,32 @@ const sendNotificationEmail = async (
 };
 
 export async function POST(request: NextRequest) {
-  try {
-    const { name, email, subject, message, company, industry, budget, source }: ContactFormData = await request.json();
+  // CSRF 防护 — 校验 Origin/Referer
+  const csrfError = checkCsrf(request);
+  if (csrfError) return csrfError;
 
-    // 验证必需字段（subject 和 message 可以来自 mini/inline 变体，可选处理）
-    if (!email || (!name && !message && !subject)) {
-      return NextResponse.json({ 
+  try {
+    const { name, email, subject, message, source }: ContactFormData = await request.json();
+
+    // source 白名单校验 — 非法值降级为默认 'contact'
+    const safeSource: AllowedSource = ALLOWED_SOURCES.includes(source as AllowedSource)
+      ? (source as AllowedSource)
+      : 'contact';
+
+    // 验证必需字段
+    // - email 始终必须
+    // - inline 变体只提交 email，mini 变体提交 name + email + message
+    // - full 变体提交全部字段
+    // 逻辑：email 必须 + 至少提供 name/subject/message 之一（inline 变体除外，email 足够）
+    if (!email) {
+      return NextResponse.json({
         success: false,
-        error: 'All fields are required' 
+        error: 'Email is required'
       }, { status: 400 });
     }
 
-    // 验证邮箱格式
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // 验证邮箱格式 — TLD 至少 2 个字符
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json({
         success: false,
@@ -169,8 +177,6 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    console.log('New contact form submission received');
-
     // ── 写入 Supabase（DB 失败不阻断邮件发送）──
     const ip =
       request.headers.get('x-real-ip') ??
@@ -181,7 +187,7 @@ export async function POST(request: NextRequest) {
       const db = createServiceClient();
       // company/industry/budget 在当前 DB schema 中无对应列，不写入
       await db.from('form_submissions').insert({
-        source: source || 'contact',
+        source: safeSource,
         name,
         email,
         subject,
@@ -193,7 +199,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 只发送管理员通知邮件（优先保证你能收到客户留言）
-    const notificationEmail = await sendNotificationEmail(name, email, subject || '', message || '', company, industry, budget, source);
+    const notificationEmail = await sendNotificationEmail(name, email, subject || '', message || '', safeSource);
 
     // 尝试发送客户确认邮件（如果失败不影响主要功能）
     let customerEmailSent = false;

@@ -2,116 +2,254 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════
+   Synthmind "Neural" Design System
+   冷色蓝调 + 清晰几何 = 智能感与科技感
+   ═══════════════════════════════════════════════ */
+
 :root {
-  /* 基础色板 - 来自 Hero */
-  --primary-blue: #3498db;
-  --primary-blue-dark: #2980b9;
-  --primary-blue-light: #5dade2;
+  /* ── 背景层级 (冷色海军黑) ── */
+  --bg-base:      #080B10;
+  --bg-surface:   #0C1017;
+  --bg-elevated:  #111620;
+  --bg-muted:     #181E2A;
 
-  /* 深色背景系列 */
-  --bg-darkest: #0f1419;
-  --bg-dark: #1a1f2e;
-  --bg-medium: #252b3b;
-  --bg-light: #2c3444;
+  /* ── 主色 (Synth Blue) ── */
+  --accent:       #4A9FE5;
+  --accent-hover: #5DAAE9;
+  --accent-muted: rgba(74, 159, 229, 0.12);
+  --accent-subtle: rgba(74, 159, 229, 0.06);
 
-  /* 灰色系列 */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+  /* ── 文字层级 (冷白色调) ── */
+  --text-primary:    #E8ECF0;
+  --text-secondary:  #8E95A0;
+  --text-tertiary:   #5C6370;
+  --text-quaternary: #3A404D;
 
-  /* 语义色彩 */
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --border-color: rgba(75, 85, 99, 0.3);
-  --border-hover: rgba(52, 152, 219, 0.5);
+  /* ── 边框层级 (蓝色调) ── */
+  --border-subtle:  rgba(74, 159, 229, 0.06);
+  --border-default: rgba(74, 159, 229, 0.10);
+  --border-strong:  rgba(74, 159, 229, 0.18);
+  --border-heavy:   rgba(74, 159, 229, 0.25);
+  --border-accent:  rgba(74, 159, 229, 0.40);
 
-  /* 玻璃态效果 */
-  --glass-bg: rgba(26, 31, 46, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  /* ── 语义色 ── */
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --error:   #f87171;
+
+  /* ── 动画缓动 ── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+/* ── 全局基础 ─────────────────────────────── */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: linear-gradient(180deg, var(--bg-darkest) 0%, var(--bg-dark) 50%, var(--bg-medium) 100%);
+  font-family: var(--font-body), 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: var(--bg-base);
   color: var(--text-primary);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 全局玻璃态卡片样式 */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* ── 选中文字样式 (蓝色高亮) ── */
+::selection {
+  background: rgba(74, 159, 229, 0.3);
+  color: #fff;
 }
 
-.glass-card:hover {
-  background: rgba(26, 31, 46, 0.85);
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(52, 152, 219, 0.15);
-}
-
-/* 禁用 hover 抬升效果 — 用于静态展示场景 */
-.glass-card.no-hover:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-/* 高级按钮样式 - 与 glass-card 统一设计语言 */
-.btn-premium {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  color: white;
-  font-weight: 300;
-  padding: 0.75rem 2rem;
-  border-radius: 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-premium:hover {
-  background: rgba(26, 31, 46, 0.85);
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(52, 152, 219, 0.15);
-}
-
-/* 滚动条样式 */
+/* ── 滚动条 (冷色调) ── */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: var(--bg-base);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-blue);
-  border-radius: 5px;
+  background: var(--text-quaternary);
+  border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-blue-light);
+  background: var(--text-tertiary);
 }
 
-/* ═══ Chat 组件动画 ═══ */
+/* ═══════════════════════════════════════════════
+   Neural 三级卡片系统
+   微妙玻璃态 + 蓝色光晕 hover
+   ═══════════════════════════════════════════════ */
 
-/* 面板入场动画 */
+/* Level 1: 半透明底层 + 微妙模糊 */
+.card-surface {
+  background: rgba(12, 16, 23, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  transition: border-color 0.3s var(--ease-out-expo);
+}
+.card-surface:hover {
+  border-color: var(--border-default);
+}
+
+/* Level 2: 标准交互卡片 — hover 上浮 + 蓝色光晕 */
+.card-elevated {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  transition: border-color 0.3s var(--ease-out-expo),
+              transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+.card-elevated:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(74, 159, 229, 0.08);
+}
+
+/* Level 3: 特色卡片 — 左侧蓝色渐变竖线 (hover 延展) */
+.card-spotlight {
+  position: relative;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.3s var(--ease-out-expo),
+              transform 0.3s var(--ease-out-expo),
+              box-shadow 0.3s var(--ease-out-expo);
+}
+.card-spotlight::before {
+  content: '';
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent), rgba(74, 159, 229, 0.2));
+  opacity: 0.6;
+  transition: opacity 0.3s var(--ease-out-expo),
+              top 0.4s var(--ease-out-expo),
+              bottom 0.4s var(--ease-out-expo);
+}
+.card-spotlight:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(74, 159, 229, 0.08);
+}
+.card-spotlight:hover::before {
+  opacity: 1;
+  top: 16px;
+  bottom: 16px;
+}
+
+/* ═══════════════════════════════════════════════
+   按钮系统 — 蓝色渐变 + 光晕
+   ═══════════════════════════════════════════════ */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: linear-gradient(135deg, #4A9FE5, #3488CC);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out-expo);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #5DAAE9, #4A9FE5);
+  box-shadow: 0 4px 12px rgba(74, 159, 229, 0.25);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out-expo);
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  background: rgba(74, 159, 229, 0.08);
+  color: var(--accent-hover);
+}
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* ═══════════════════════════════════════════════
+   蓝色渐变分割线 (中间可见，两端淡出)
+   ═══════════════════════════════════════════════ */
+
+.ruled-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+  border: none;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   Reveal 入场动画 — 数字显现 (opacity + translateY + blur)
+   ═══════════════════════════════════════════════ */
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-reveal {
+  animation: reveal 0.7s var(--ease-out-expo) both;
+}
+
+/* ═══════════════════════════════════════════════
+   Marquee (无限滚动) — 保留
+   ═══════════════════════════════════════════════ */
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 105s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ═══════════════════════════════════════════════
+   Chat 组件动画（保留，accent 引用自动生效）
+   ═══════════════════════════════════════════════ */
+
 .chat-panel-enter {
   animation: chatPanelIn 0.3s ease-out both;
 }
@@ -127,13 +265,12 @@ body {
   }
 }
 
-/* AI 打字指示器 — 三点弹跳 */
 .typing-dot {
   display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--primary-blue);
+  background: var(--accent);
   animation: typingBounce 1.2s ease-in-out infinite;
 }
 
@@ -148,7 +285,6 @@ body {
   }
 }
 
-/* 触发按钮脉冲光环 */
 @keyframes chatPulse {
   0% {
     transform: scale(1);
@@ -164,21 +300,31 @@ body {
   animation: chatPulse 2s ease-out infinite;
 }
 
-/* Chat 消息区域滚动条（更细、更隐蔽） */
+/* ═══════════════════════════════════════════════
+   ScaleIn 动画 — 表单成功态缩放弹入
+   ═══════════════════════════════════════════════ */
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .chat-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
-
 .chat-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .chat-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
 }
-
 .chat-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
-
