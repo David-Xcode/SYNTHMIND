@@ -317,6 +317,28 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
+   ContactForm — focus 下划线动画
+   ═══════════════════════════════════════════════ */
+
+.input-group {
+  position: relative;
+}
+.focus-line {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  height: 1px;
+  background: var(--accent);
+  transition: all 0.3s var(--ease-out-expo);
+  pointer-events: none;
+}
+.input-group:focus-within .focus-line {
+  left: 0;
+  right: 0;
+}
+
+/* ═══════════════════════════════════════════════
    ScaleIn 动画 — 表单成功态缩放弹入
    ═══════════════════════════════════════════════ */
 

@@ -26,9 +26,9 @@ export default function ContactForm({
     subject: '',
     message: '',
   });
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
-    'idle',
-  );
+  const [status, setStatus] = useState<
+    'idle' | 'sending' | 'sent' | 'error' | 'timeout'
+  >('idle');
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -47,18 +47,29 @@ export default function ContactForm({
     const timeout = setTimeout(() => controller.abort(), 10_000);
 
     try {
+      // inline 变体只发送非空字段
+      const payload: Record<string, string> = { source };
+      Object.entries(form).forEach(([key, value]) => {
+        if (value) payload[key] = value;
+      });
+
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, source }),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
 
       if (!res.ok) throw new Error('Failed to send');
       setStatus('sent');
       setForm({ name: '', email: '', subject: '', message: '' });
-    } catch {
-      setStatus('error');
+    } catch (err) {
+      // 区分超时 vs 其他错误
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setStatus('timeout');
+      } else {
+        setStatus('error');
+      }
     } finally {
       clearTimeout(timeout);
     }
@@ -104,6 +115,7 @@ export default function ContactForm({
             required
             value={form.name}
             onChange={handleChange}
+            aria-label="Name"
             className={inputClass}
           />
           <div className="focus-line" />
@@ -116,6 +128,7 @@ export default function ContactForm({
             required
             value={form.email}
             onChange={handleChange}
+            aria-label="Email"
             className={inputClass}
           />
           <div className="focus-line" />
@@ -127,6 +140,7 @@ export default function ContactForm({
             placeholder="How can we help?"
             value={form.message}
             onChange={handleChange}
+            aria-label="Message"
             className={inputClass}
           />
           <div className="focus-line" />
@@ -142,9 +156,11 @@ export default function ContactForm({
               ? 'Sent!'
               : 'Send Message'}
         </button>
-        {status === 'error' && (
+        {(status === 'error' || status === 'timeout') && (
           <p className="text-red-400 text-sm text-center">
-            Something went wrong. Please try again.
+            {status === 'timeout'
+              ? 'Request timed out. Please check your connection and try again.'
+              : 'Something went wrong. Please try again.'}
           </p>
         )}
       </form>
@@ -194,25 +210,6 @@ export default function ContactForm({
   // ─── 完整版 ───
   return (
     <form onSubmit={handleSubmit} className="space-y-7">
-      {/* 每个输入框包装在 input-group 中，实现 focus 下划线动画 */}
-      <style jsx>{`
-        .input-group { position: relative; }
-        .focus-line {
-          position: absolute;
-          bottom: 0;
-          left: 50%;
-          right: 50%;
-          height: 1px;
-          background: var(--accent);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          pointer-events: none;
-        }
-        .input-group:focus-within .focus-line {
-          left: 0;
-          right: 0;
-        }
-      `}</style>
-
       {/* Name + Email */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
         <div className="input-group">
@@ -282,9 +279,11 @@ export default function ContactForm({
         >
           {status === 'sending' ? 'Sending...' : 'Send Message'}
         </button>
-        {status === 'error' && (
+        {(status === 'error' || status === 'timeout') && (
           <span className="text-red-400 text-sm">
-            Something went wrong. Please try again.
+            {status === 'timeout'
+              ? 'Request timed out. Please check your connection and try again.'
+              : 'Something went wrong. Please try again.'}
           </span>
         )}
       </div>

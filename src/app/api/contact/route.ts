@@ -8,6 +8,33 @@ function getResendClient() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
+// ── 简易内存速率限制 — 同一 IP 60 秒内最多 3 次 ──
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX_HITS = 3;
+const rateLimitMap = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(ip) ?? [];
+  // 清除过期记录
+  const recent = timestamps.filter((t) => now - t < RATE_WINDOW_MS);
+  if (recent.length >= RATE_MAX_HITS) return true;
+  recent.push(now);
+  rateLimitMap.set(ip, recent);
+  return false;
+}
+
+// 每 5 分钟清理过期 IP 记录，防止内存泄漏
+// 注意：serverless 环境每次冷启动 map 会重置，此定时器仅对长运行进程有效
+setInterval(() => {
+  const now = Date.now();
+  rateLimitMap.forEach((timestamps, ip) => {
+    const recent = timestamps.filter((t) => now - t < RATE_WINDOW_MS);
+    if (recent.length === 0) rateLimitMap.delete(ip);
+    else rateLimitMap.set(ip, recent);
+  });
+}, 5 * 60_000).unref();
+
 // 字段长度上限
 const FIELD_LIMITS = { name: 100, subject: 200, message: 5000 } as const;
 
@@ -91,9 +118,9 @@ const sendNotificationEmail = async (
   const safeMessage = escapeHtml(message);
 
   return await getResendClient().emails.send({
-    from: 'Synthmind <onboarding@resend.dev>',
+    from: 'Synthmind <noreply@synthmind.ca>',
     to: ['info@synthmind.ca'],
-    subject: `[Website Contact] New message from ${safeName}`,
+    subject: `[Website Contact] New message from ${name.slice(0, FIELD_LIMITS.name).replace(/[\r\n\t]/g, ' ')}`,
     replyTo: email,
     html: `
       <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
@@ -136,6 +163,19 @@ export async function POST(request: NextRequest) {
   const csrfError = checkCsrf(request);
   if (csrfError) return csrfError;
 
+  // 速率限制 — 在解析 body 之前执行
+  const clientIp =
+    request.headers.get('x-real-ip') ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    'unknown';
+
+  if (isRateLimited(clientIp)) {
+    return NextResponse.json(
+      { success: false, error: 'Too many requests. Please try again later.' },
+      { status: 429 },
+    );
+  }
+
   try {
     const { name, email, subject, message, source }: ContactFormData =
       await request.json();
@@ -162,7 +202,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 验证邮箱格式 — TLD 至少 2 个字符
+    // 验证邮箱格式 — TLD 至少 2 个字符，长度不超过 RFC 5321 上限
+    if (email.length > 254) {
+      return NextResponse.json(
+        { success: false, error: 'Email address too long' },
+        { status: 400 },
+      );
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -191,34 +237,38 @@ export async function POST(request: NextRequest) {
     }
 
     // ── 写入 Supabase（DB 失败不阻断邮件发送）──
-    const ip =
-      request.headers.get('x-real-ip') ??
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      'unknown';
-
     try {
       const db = createServiceClient();
-      // company/industry/budget 在当前 DB schema 中无对应列，不写入
       await db.from('form_submissions').insert({
         source: safeSource,
-        name,
+        name: name || '',
         email,
-        subject,
-        message,
-        ip_address: ip,
+        subject: subject || '',
+        message: message || '',
+        ip_address: clientIp,
       });
     } catch (dbErr) {
       console.error('Failed to persist contact form to DB:', dbErr);
     }
 
-    // 只发送管理员通知邮件（优先保证你能收到客户留言）
-    const notificationEmail = await sendNotificationEmail(
-      name,
-      email,
-      subject || '',
-      message || '',
-      safeSource,
-    );
+    // 发送管理员通知邮件（优先保证你能收到客户留言）
+    let notificationEmailSent = false;
+    try {
+      const notificationEmail = await sendNotificationEmail(
+        name || '',
+        email,
+        subject || '',
+        message || '',
+        safeSource,
+      );
+      if (notificationEmail.error) {
+        console.error('Notification email API error:', notificationEmail.error);
+      } else {
+        notificationEmailSent = !!notificationEmail.data;
+      }
+    } catch (notifErr) {
+      console.error('Notification email threw:', notifErr);
+    }
 
     // 尝试发送客户确认邮件（如果失败不影响主要功能）
     let customerEmailSent = false;
@@ -229,12 +279,13 @@ export async function POST(request: NextRequest) {
         subject || '',
         message || '',
       );
-      customerEmailSent = !!customerEmail.data;
-    } catch (error) {
-      console.warn(
-        'Customer reply email failed, but notification email sent successfully:',
-        error,
-      );
+      if (customerEmail.error) {
+        console.error('Customer reply email API error:', customerEmail.error);
+      } else {
+        customerEmailSent = !!customerEmail.data;
+      }
+    } catch (custErr) {
+      console.warn('Customer reply email threw:', custErr);
     }
 
     return NextResponse.json({
@@ -242,7 +293,7 @@ export async function POST(request: NextRequest) {
       message: 'Contact form submitted successfully',
       data: {
         customerEmailSent,
-        notificationEmailSent: !!notificationEmail.data,
+        notificationEmailSent,
       },
     });
   } catch (error) {

@@ -39,7 +39,9 @@ export function checkCsrf(req: NextRequest): NextResponse | null {
     );
   }
 
-  // 无 Origin + 无 Referer：可能是服务器间调用或 curl
-  // 对于营销网站场景放行（依赖 CORS 和 rate-limit 做第一道防线）
-  return null;
+  // 无 Origin + 无 Referer：拒绝 — 浏览器 POST 至少会带其中之一
+  return NextResponse.json(
+    { error: 'Forbidden: missing origin.' },
+    { status: 403 },
+  );
 }
