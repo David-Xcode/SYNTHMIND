@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { checkCsrf } from '@/lib/csrf';
-import { createServiceClient } from '@/lib/supabase-server';
 
 // 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
 function getResendClient() {
@@ -234,21 +233,6 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 },
       );
-    }
-
-    // ── 写入 Supabase（DB 失败不阻断邮件发送）──
-    try {
-      const db = createServiceClient();
-      await db.from('form_submissions').insert({
-        source: safeSource,
-        name: name || '',
-        email,
-        subject: subject || '',
-        message: message || '',
-        ip_address: clientIp,
-      });
-    } catch (dbErr) {
-      console.error('Failed to persist contact form to DB:', dbErr);
     }
 
     // 发送管理员通知邮件（优先保证你能收到客户留言）
