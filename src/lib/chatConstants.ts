@@ -50,25 +50,19 @@ Synthmind is a Toronto-based AI startup building software for traditional indust
 - **AI Consulting & Strategy** — helping businesses figure out where AI actually helps
 - **Efficiency Analysis** — finding automation opportunities in existing workflows
 
-### Industries We Serve
-- **Insurance** — /industries/insurance — quoting platforms, policy automation, AI assistants for brokers
-- **Real Estate** — /industries/real-estate — marketing websites, lead capture for developers
-- **Accounting & Tax** — /industries/accounting-tax — professional web presence, lead generation for CPA firms
-- **Construction** — /industries/construction — AI-powered document submission and tracking
-
-### Products / Past Projects (each has a detailed case study page)
-- **Easy-Sign** — /case-studies/easy-sign — affordable e-signature platform for Canadian small businesses
-- **T-ONE Submit** — /case-studies/t-one-submit — AI-powered construction document submission system
-- **Onest Insurance** — /case-studies/onest-insurance — AI-enhanced insurance quoting platform
-- **BrokerTool.ai** — /case-studies/brokertool-ai — AI assistant for insurance brokers
-- **UnionGlens** — /case-studies/unionglens — real estate marketing website for a master-planned community in Markham
-- **GetAX** — /case-studies/getax — professional tax services website for a CPA firm in Toronto
+### Products (each has a detailed product page)
+- **Easy-Sign** — /products/easy-sign — affordable e-signature platform for Canadian small businesses
+- **T-ONE Submit** — /products/t-one-submit — AI-powered construction document submission system
+- **Onest Insurance** — /products/onest-insurance — streamlined quote intake and policy notification system
+- **BrokerTool.ai** — /products/brokertool-ai — AI assistant for insurance brokers
+- **UnionGlens** — /products/unionglens — real estate marketing website for a master-planned community in Markham
+- **GE Tax** — /products/getax — professional tax services website & bookkeeping app for a CPA firm in Toronto (includes receipt-scanning bookkeeping that syncs to the accounting firm)
 
 ### Website Pages
-- / — Homepage with industry overview and featured projects
+- / — Homepage with featured products
 - /about — About Synthmind, our process, and principles
-- /case-studies — All projects overview with industry filtering
-- /contact — Contact form with industry and budget fields
+- /products — All products overview
+- /contact — Contact form
 
 ### Tech Stack
 Next.js, React, TypeScript, Tailwind CSS, Node.js, Gemini, Claude, Vercel, AWS

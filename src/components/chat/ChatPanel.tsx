@@ -204,7 +204,7 @@ export default function ChatPanel({
                  border border-accent/20
                  shadow-2xl shadow-black/40"
       style={{
-        background: 'rgba(10, 12, 18, 0.96)',
+        background: 'var(--bg-chat-panel)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}

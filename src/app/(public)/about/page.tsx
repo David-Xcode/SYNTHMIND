@@ -4,35 +4,36 @@
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import AnimatedStat from '@/components/shared/AnimatedStat';
 import CTABanner from '@/components/shared/CTABanner';
 import GlassCard from '@/components/shared/GlassCard';
 import SectionTitle from '@/components/shared/SectionTitle';
 
 export const metadata: Metadata = {
-  title: 'About Synthmind | AI Startup for Traditional Industries',
+  title: 'About Synthmind | AI Software Studio',
   description:
-    'Synthmind is a Toronto-based AI startup building software that modernizes traditional industries. We deliver workflow automation, legacy modernization, and custom AI solutions for insurance, real estate, accounting, and construction.',
+    'Synthmind is a Toronto-based AI startup building software that modernizes traditional businesses. We deliver workflow automation, legacy modernization, and custom AI solutions.',
   alternates: { canonical: '/about' },
   openGraph: {
     title: 'About Synthmind',
     description:
-      'Toronto-based AI startup building software for traditional industries.',
+      'Toronto-based AI startup building software that actually works.',
   },
 };
 
 // ── 数据常量 ──
 
 const stats = [
-  { value: '6+', label: 'Projects Delivered', color: 'text-accent' },
-  {
-    value: '4',
-    label: 'Industries We Serve',
-    color: 'text-industry-realestate',
-  },
+  { value: '6+', label: 'Products Delivered', color: 'text-accent' },
   {
     value: '100%',
     label: 'Client Retention',
-    color: 'text-industry-accounting',
+    color: 'text-accent-400',
+  },
+  {
+    value: '2–4 wks',
+    label: 'Average MVP Launch',
+    color: 'text-accent-700',
   },
 ];
 
@@ -63,21 +64,21 @@ const values = [
     title: 'Industry First, Technology Second',
     description:
       'We spend more time understanding your industry than picking frameworks. The right solution starts with deep domain knowledge, not a tech stack.',
-    color: 'text-industry-insurance',
+    color: 'text-accent',
   },
   {
     number: '02',
     title: 'Build With, Not For',
     description:
       'We embed in your team, learn your language, and co-create solutions. You are not outsourcing — you are gaining engineering partners who care about your outcome.',
-    color: 'text-industry-realestate',
+    color: 'text-accent-400',
   },
   {
     number: '03',
     title: 'Ship Working Software',
     description:
       'No decks, no vaporware. Every engagement produces working software you can demo, test, and deploy. We measure progress in releases, not slide counts.',
-    color: 'text-industry-accounting',
+    color: 'text-accent-700',
   },
 ];
 
@@ -186,20 +187,16 @@ export default function AboutPage() {
               </AnimateOnScroll>
             </div>
 
-            {/* 右栏：统计卡片 */}
+            {/* 右栏：统计卡片 — 计数动画 */}
             <AnimateOnScroll delay={200}>
               <div className="space-y-4">
                 {stats.map((stat) => (
-                  <div key={stat.label} className="card-surface p-5 rounded-xl">
-                    <div
-                      className={`font-mono text-2xl font-bold ${stat.color} mb-1`}
-                    >
-                      {stat.value}
-                    </div>
-                    <div className="text-xs text-txt-quaternary">
-                      {stat.label}
-                    </div>
-                  </div>
+                  <AnimatedStat
+                    key={stat.label}
+                    value={stat.value}
+                    label={stat.label}
+                    color={stat.color}
+                  />
                 ))}
               </div>
             </AnimateOnScroll>

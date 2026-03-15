@@ -26,14 +26,6 @@ export default function CaseStudyHero({ caseStudy }: CaseStudyHeroProps) {
                 height={28}
                 className="h-6 w-auto object-contain filter brightness-0 invert opacity-70"
               />
-              {caseStudy.industryLabel && (
-                <>
-                  <div className="w-px h-4 bg-accent/[0.18]" />
-                  <span className="text-xs text-txt-tertiary">
-                    {caseStudy.industryLabel}
-                  </span>
-                </>
-              )}
             </div>
 
             {/* 标题 — Display font */}

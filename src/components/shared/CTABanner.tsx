@@ -1,10 +1,11 @@
 'use client';
 
 // ─── CTA 横幅 · Neural ───
-// 蓝色渐变分割线 + Sora Display 标题
+// 径向光晕背景 + TextReveal 标题 + 蓝色渐变 CTA
 
 import Link from 'next/link';
 import AnimateOnScroll from './AnimateOnScroll';
+import TextReveal from './TextReveal';
 
 interface CTABannerProps {
   headline: string;
@@ -23,17 +24,28 @@ export default function CTABanner({
   href = '/contact',
 }: CTABannerProps) {
   return (
-    <section className="relative py-24 sm:py-32">
+    <section className="relative py-24 sm:py-32 overflow-hidden">
       {/* 上下蓝色渐变分割线 */}
       <div className="absolute top-0 inset-x-0 ruled-line" />
       <div className="absolute bottom-0 inset-x-0 ruled-line" />
 
+      {/* 径向光晕背景 */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(74,159,229,0.04), transparent)',
+        }}
+      />
+
       <div className="relative z-10 max-w-3xl mx-auto text-center px-4">
-        <AnimateOnScroll>
-          <h2 className="font-display font-semibold text-headline tracking-tight text-txt-primary mb-4">
-            {headline}
-          </h2>
-        </AnimateOnScroll>
+        <TextReveal
+          text={headline}
+          as="h2"
+          className="font-display font-semibold text-headline tracking-tight text-txt-primary mb-4"
+          stagger={50}
+        />
 
         {subtitle && (
           <AnimateOnScroll delay={100}>

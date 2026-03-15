@@ -1,13 +1,26 @@
-// ─── 首页 Hero · 纯 CSS 服务端组件 ───
-// 径向渐变光晕背景 + 交错 reveal 入场
-// 不含任何 hooks / 浏览器 API → Server Component
+'use client';
+
+// ─── 首页 Hero · Neural ───
+// 径向渐变光晕 + TextReveal 逐词入场 + LineDrawDivider
+// 视频背景提取到 HomeHeroVideo 组件，通过 ssr: false 动态加载
+// → SSR HTML 中不含 <video> → 微信 WebView 无法修改 → 消除 hydration mismatch
+// 保留 'use client' 因为 next/dynamic ssr:false 必须在 Client Component 中
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import TextReveal from '@/components/shared/TextReveal';
+import LineDrawDivider from '@/components/shared/LineDrawDivider';
+
+// ssr: false — 视频仅在客户端渲染，服务端 HTML 零 <video> 标签
+const HomeHeroVideo = dynamic(() => import('./HomeHeroVideo'), { ssr: false });
 
 export default function HomeHero() {
   return (
     <section className="relative flex flex-col items-center justify-center min-h-screen bg-bg-base overflow-hidden">
-      {/* 背景光晕装饰 — 纯 CSS 径向渐变 */}
+      {/* 视频背景 — 客户端动态加载，SSR 中不存在 */}
+      <HomeHeroVideo />
+
+      {/* 背景光晕装饰 — 在视频之上 */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         {/* 主光晕 — 顶部偏左 */}
         <div className="absolute -top-32 left-1/4 h-[480px] w-[480px] rounded-full bg-accent/[0.04] blur-[120px]" />
@@ -41,21 +54,21 @@ export default function HomeHero() {
           <span className="font-display font-semibold text-accent">AI.</span>
         </h1>
 
-        {/* 蓝色短线 */}
+        {/* 蓝色线条 — 从中心向两端画出 */}
         <div
-          className="w-16 h-px bg-accent/40 mt-6 mb-4 animate-reveal"
+          className="mt-6 mb-4 animate-reveal"
           style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
-        />
-
-        {/* 副标题 */}
-        <p
-          className="text-subtitle text-txt-secondary max-w-xl animate-reveal"
-          style={{ animationDelay: '0.5s', animationFillMode: 'both' }}
         >
-          A Toronto-based startup building AI tools that actually work —
-          workflow automation, legacy modernization, and custom solutions for
-          traditional industries.
-        </p>
+          <LineDrawDivider width={64} delay={600} duration={800} />
+        </div>
+
+        {/* 副标题 — 逐词入场 */}
+        <TextReveal
+          text="A Toronto-based startup building AI tools that actually work — workflow automation, legacy modernization, and custom solutions for traditional industries."
+          className="text-subtitle text-txt-secondary max-w-xl"
+          delay={500}
+          stagger={40}
+        />
 
         {/* CTA 按钮 */}
         <div
@@ -83,7 +96,7 @@ export default function HomeHero() {
             </svg>
           </Link>
           <Link
-            href="/case-studies"
+            href="/products"
             className="btn-secondary text-sm sm:text-base px-7 py-3"
           >
             View Our Work
@@ -99,10 +112,10 @@ export default function HomeHero() {
         <div className="absolute inset-0 bg-gradient-to-t from-bg-base to-transparent" />
       </div>
 
-      {/* 滚动指示器 */}
+      {/* 滚动指示器 — 自定义 scrollPulse 替代 bounce */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
         <div className="w-5 h-8 rounded-full border border-txt-quaternary/40 flex items-start justify-center p-1.5">
-          <div className="w-0.5 h-2 bg-txt-quaternary rounded-full animate-bounce" />
+          <div className="w-0.5 h-2 bg-txt-quaternary rounded-full animate-scroll-pulse" />
         </div>
       </div>
     </section>

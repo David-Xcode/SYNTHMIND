@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import SectionTitle from '@/components/shared/SectionTitle';
+import { useCountUp } from '@/hooks/useCountUp';
 
 interface ResultsSectionProps {
   results: string[];
@@ -16,32 +17,6 @@ function extractStat(text: string): { value: string; rest: string } | null {
   const match = text.match(/^(\d+[\d,.]*[%x×+]?)\s+(.+)/i);
   if (match) return { value: match[1], rest: match[2] };
   return null;
-}
-
-// 数字计数动画 Hook
-function useCountUp(target: number, isVisible: boolean, duration = 1500) {
-  const [count, setCount] = useState(0);
-  const rafRef = useRef<number>();
-
-  useEffect(() => {
-    if (!isVisible) return;
-    const start = performance.now();
-    const step = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      // easeOutExpo
-      const eased = progress === 1 ? 1 : 1 - 2 ** (-10 * progress);
-      setCount(Math.round(eased * target));
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(step);
-      }
-    };
-    rafRef.current = requestAnimationFrame(step);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [isVisible, target, duration]);
-
-  return count;
 }
 
 // 单个成果卡片
@@ -86,7 +61,7 @@ function ResultCard({ text }: { text: string }) {
   // 无数字的 — 复选框列表项
   return (
     <div ref={ref} className="flex items-start gap-3">
-      <span className="w-1.5 h-1.5 rounded-full bg-industry-realestate flex-shrink-0 mt-2" />
+      <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-2" />
       <p className="text-txt-secondary leading-relaxed text-[15px]">{text}</p>
     </div>
   );

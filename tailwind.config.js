@@ -35,16 +35,6 @@ module.exports = {
           tertiary:   '#5C6370',
           quaternary: '#3A404D',
         },
-        /* ── 行业色 ── */
-        industry: {
-          insurance:    '#7B8EC4',
-          realestate:   '#5DAE8B',
-          accounting:   '#E0A85C',
-          construction: '#C47A5A',
-        },
-        /* 兼容旧代码 */
-        primary: '#4A9FE5',
-        dark: '#080B10',
       },
       fontFamily: {
         display: ['var(--font-display)', 'Sora', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
@@ -81,12 +71,22 @@ module.exports = {
         'spring':   'cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       animation: {
-        'reveal':  'reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'reveal':         'reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'scroll-pulse':   'scrollPulse 2s ease-in-out infinite',
+        'scale-in-dot':   'scaleInDot 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both',
       },
       keyframes: {
         reveal: {
           from: { opacity: '0', transform: 'translateY(12px)', filter: 'blur(4px)' },
           to:   { opacity: '1', transform: 'translateY(0)',    filter: 'blur(0)' },
+        },
+        scrollPulse: {
+          '0%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
+          '50%':      { opacity: '0.8', transform: 'translateY(3px)' },
+        },
+        scaleInDot: {
+          from: { transform: 'translateX(-50%) scale(0)' },
+          to:   { transform: 'translateX(-50%) scale(1)' },
         },
       },
     },

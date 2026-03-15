@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#000">
+  <!-- 树冠：三层叠加的三角形，从上到下逐渐变宽，形成松树/杉树轮廓 -->
+  <polygon points="32,4 22,20 42,20" />
+  <polygon points="32,14 18,30 46,30" />
+  <polygon points="32,24 14,40 50,40" />
+  <!-- 树干 -->
+  <rect x="28" y="40" width="8" height="14" rx="1" />
+  <!-- 地面线 -->
+  <rect x="20" y="56" width="24" height="3" rx="1.5" />
+</svg>

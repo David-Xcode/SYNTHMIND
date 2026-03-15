@@ -18,9 +18,7 @@ src/
 │   ├── (public)/          # 所有公共页面 (layout: SiteHeader + SiteFooter + ChatButton)
 │   │   ├── about/
 │   │   ├── contact/
-│   │   ├── case-studies/
-│   │   │   └── [slug]/
-│   │   └── industries/
+│   │   └── products/
 │   │       └── [slug]/
 │   ├── admin/             # 管理后台 (独立 layout)
 │   ├── api/               # API routes (contact, chat)
@@ -28,11 +26,10 @@ src/
 ├── components/
 │   ├── shared/            # 可复用 UI: SectionTitle, GlassCard, AnimateOnScroll, CTABanner, ContactForm
 │   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
-│   ├── home/              # 首页: HomeHero, IndustryCards, FeaturedCaseStudies, SocialProofBar
-│   ├── industry/          # 行业页: IndustryHero, PainPoints, CaseStudyGrid
-│   ├── case-study/        # 案例页: CaseStudyHero, ChallengeSection, SolutionSection, TechStackBadges, ResultsSection, RelatedCaseStudies
+│   ├── home/              # 首页: HomeHero, SocialProofBar
+│   ├── case-study/        # 产品详情页: CaseStudyHero, ChallengeSection, SolutionSection, TechStackBadges, ResultsSection
 │   └── chat/              # 聊天模块: ChatButton, ChatPanel, ChatMessage, QuickReplies
-├── data/                  # TS 常量 (非 CMS): case-studies.ts, industries.ts, navigation.ts
+├── data/                  # TS 常量 (非 CMS): case-studies.ts, navigation.ts
 ├── hooks/                 # 自定义 hooks
 └── lib/                   # 工具函数 & 常量
 ```
@@ -40,7 +37,7 @@ src/
 ### Component Reuse Rules
 - **ALWAYS** check `src/components/shared/` before creating new UI components
 - **ALWAYS** check `src/data/` for existing data constants before hardcoding
-- Page-specific components go in their domain folder (`home/`, `industry/`, `case-study/`)
+- Page-specific components go in their domain folder (`home/`, `case-study/`)
 - Generic reusable components go in `shared/`
 
 ---
@@ -108,14 +105,6 @@ Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 | `text-txt-secondary` | Subtitles, descriptions (#8E95A0) |
 | `text-txt-tertiary` | Captions, metadata (#5C6370) |
 | `text-txt-quaternary` | Disabled text, decorative (#3A404D) |
-
-### Industry Colors
-| Token | Color |
-|-------|-------|
-| `industry-insurance` | #7B8EC4 (desaturated lavender-blue) |
-| `industry-realestate` | #5DAE8B (desaturated teal-green) |
-| `industry-accounting` | #E0A85C (warm amber, unique contrast) |
-| `industry-construction` | #C47A5A (terracotta) |
 
 ### Border CSS Variables (use in inline styles or globals.css)
 ```css

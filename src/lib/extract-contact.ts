@@ -14,13 +14,3 @@ export function extractContactInfo(text: string) {
   };
 }
 
-/** 从消息数组中提取联系信息（只看 user 消息） */
-export function extractContactFromMessages(
-  messages: { role: string; content: string }[],
-) {
-  const userText = messages
-    .filter((m) => m.role === 'user')
-    .map((m) => m.content)
-    .join(' ');
-  return extractContactInfo(userText);
-}

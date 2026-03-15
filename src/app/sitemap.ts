@@ -3,7 +3,6 @@
 
 import type { MetadataRoute } from 'next';
 import { getAllSlugs } from '@/data/case-studies';
-import { getAllIndustrySlugs } from '@/data/industries';
 
 const BASE_URL = 'https://synthmind.ca';
 
@@ -31,30 +30,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${BASE_URL}/case-studies`,
+      url: `${BASE_URL}/products`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.9,
     },
   ];
 
-  // 行业页面
-  const industryPages: MetadataRoute.Sitemap = getAllIndustrySlugs().map(
-    (slug) => ({
-      url: `${BASE_URL}/industries/${slug}`,
-      lastModified: now,
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    }),
-  );
-
-  // 案例页面
-  const caseStudyPages: MetadataRoute.Sitemap = getAllSlugs().map((slug) => ({
-    url: `${BASE_URL}/case-studies/${slug}`,
+  // 产品页面
+  const productPages: MetadataRoute.Sitemap = getAllSlugs().map((slug) => ({
+    url: `${BASE_URL}/products/${slug}`,
     lastModified: now,
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
 
-  return [...staticPages, ...industryPages, ...caseStudyPages];
+  return [...staticPages, ...productPages];
 }

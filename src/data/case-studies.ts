@@ -1,31 +1,20 @@
-// ─── 案例研究数据层 ───
-// 6 个真实客户项目，按行业分类，供模板页和筛选函数使用
-
-export type IndustrySlug =
-  | 'insurance'
-  | 'real-estate'
-  | 'accounting-tax'
-  | 'construction';
+// ─── 产品数据层 ───
+// 7 个真实客户项目，供产品展示页使用
 
 export interface CaseStudy {
   slug: string;
   title: string;
   tagline: string;
-  industry?: IndustrySlug;
-  industryLabel?: string;
   url: string;
   logo: string;
   challenge: string[];
   solution: string[];
   results: string[];
   techStack: string[];
-  featured: boolean;
 }
 
 export const caseStudies: CaseStudy[] = [
   {
-    // 跨行业产品 — 故意省略 industry/industryLabel 字段
-    // Easy-Sign 面向所有小企业，不属于任何单一行业
     slug: 'easy-sign',
     title: 'Easy-Sign',
     tagline:
@@ -57,14 +46,11 @@ export const caseStudies: CaseStudy[] = [
       'AWS S3',
       'PDF.js',
     ],
-    featured: true,
   },
   {
     slug: 't-one-submit',
     title: 'T-ONE Submit',
     tagline: 'AI-powered construction document submission system.',
-    industry: 'construction',
-    industryLabel: 'Construction',
     url: 'https://www.t-onegroup.com/',
     logo: '/product/T_One.png',
     challenge: [
@@ -92,15 +78,13 @@ export const caseStudies: CaseStudy[] = [
       'PostgreSQL',
       'Tailwind CSS',
     ],
-    featured: true,
+
   },
   {
     slug: 'onest-insurance',
     title: 'Onest Insurance',
     tagline:
       'Streamlined quote intake and automated policy notification system for insurance brokers.',
-    industry: 'insurance',
-    industryLabel: 'Insurance',
     url: 'https://www.onestinsurance.ca/',
     logo: '/product/onest-logo-cropped.svg',
     challenge: [
@@ -128,14 +112,12 @@ export const caseStudies: CaseStudy[] = [
       'Tailwind CSS',
       'Vercel',
     ],
-    featured: true,
+
   },
   {
     slug: 'brokertool-ai',
     title: 'BrokerTool.ai',
     tagline: 'AI assistant purpose-built for insurance brokers.',
-    industry: 'insurance',
-    industryLabel: 'Insurance',
     url: 'https://brokertool.ai/',
     logo: '/product/brokertool.png',
     challenge: [
@@ -162,14 +144,12 @@ export const caseStudies: CaseStudy[] = [
       'Tailwind CSS',
       'Vercel',
     ],
-    featured: false,
+
   },
   {
     slug: 'unionglens',
     title: 'UnionGlens',
     tagline: 'Marketing website for a master-planned community in Markham.',
-    industry: 'real-estate',
-    industryLabel: 'Real Estate',
     url: 'https://www.unionglens.com/',
     logo: '/product/unionglens.svg',
     challenge: [
@@ -196,31 +176,32 @@ export const caseStudies: CaseStudy[] = [
       'Vercel',
       'SEO',
     ],
-    featured: false,
+
   },
   {
     slug: 'getax',
-    title: 'GetAX',
-    tagline: 'Professional website for a CPA firm in Toronto.',
-    industry: 'accounting-tax',
-    industryLabel: 'Accounting & Tax',
+    title: 'GE Tax',
+    tagline: 'Professional website & bookkeeping app for a CPA firm in Toronto.',
     url: 'https://www.getax.ca/',
     logo: '/product/getax.png',
     challenge: [
       'A Toronto-based CPA firm needed a professional web presence to attract new clients, but their existing site was outdated and not generating any inbound leads.',
       'Tax and accounting services are commoditized — the firm needed a way to differentiate from larger competitors and convey their personalized approach.',
       'Most of their client acquisition came from referrals, leaving significant growth potential from online channels untapped.',
+      'Clients relied on shoeboxes of paper receipts and manual data entry for bookkeeping — accounting staff spent hours each month chasing down missing records before they could start actual tax work.',
     ],
     solution: [
       "Built a modern, trust-building website that highlights the firm's personal approach, credentials, and service specializations — positioning them as accessible experts rather than a faceless firm.",
       'Implemented a multi-channel lead generation system: contact forms, service-specific inquiry flows, and a consultation booking mechanism.',
       'Optimized for local SEO targeting "accountant Toronto", "tax services Toronto", and related queries to capture organic search traffic.',
+      'Developed a bookkeeping app that lets clients snap photos of receipts, automatically extract transaction details via OCR, and sync records directly to the accounting firm — eliminating manual data entry and reducing back-and-forth.',
     ],
     results: [
       'New professional web presence launched in 2 weeks',
       'Lead generation forms capturing qualified prospects monthly',
       'Local SEO positioning for key accounting search terms',
       'Mobile-responsive design with professional credibility signals',
+      'Receipt-to-ledger time cut from days to minutes with photo-scan bookkeeping',
     ],
     techStack: [
       'Next.js',
@@ -229,8 +210,44 @@ export const caseStudies: CaseStudy[] = [
       'Tailwind CSS',
       'Vercel',
       'SEO',
+      'OCR',
     ],
-    featured: false,
+
+  },
+  {
+    slug: 'woodbine-parkside',
+    title: 'Woodbine Parkside',
+    tagline:
+      'Premium real estate website with AI chat and event booking for luxury freehold homes in Markham.',
+    url: 'https://www.woodbineparkside.ca/',
+    logo: '/product/woodbine-parkside.svg',
+    challenge: [
+      'Traditional real estate websites are static brochure pages — potential buyers cannot interact, ask questions, or book visits online, leading to lost leads outside business hours.',
+      'The luxury freehold market in Markham is highly competitive, and the developer needed a digital presence that conveys premium positioning and stands out from generic builder websites.',
+      'SEO competition for real estate keywords in the GTA is intense, requiring professional optimization to rank organically against established portals.',
+    ],
+    solution: [
+      'Designed and built a premium real estate website with a dark, luxurious aesthetic that reflects the high-end positioning of the Woodbine Parkside development.',
+      'Integrated an AI Chat System providing 24/7 intelligent customer service — answering buyer questions about floor plans, pricing, community features, and availability in real time.',
+      'Built an Event Booking System that allows prospective buyers to schedule private viewings and community events online, with automated email confirmations.',
+      'Implemented comprehensive SEO optimization targeting local real estate search queries to drive organic traffic and qualified buyer leads.',
+    ],
+    results: [
+      '24/7 AI-powered buyer engagement — no inquiry goes unanswered',
+      'Online event booking reduced manual scheduling overhead by 80%',
+      'Premium dark-theme design elevated brand perception among luxury buyers',
+      'SEO-optimized for competitive Markham real estate search terms',
+    ],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Tailwind CSS',
+      'AI Chat',
+      'Vercel',
+      'SEO',
+    ],
+
   },
 ];
 
@@ -238,14 +255,6 @@ export const caseStudies: CaseStudy[] = [
 
 export function getCaseStudyBySlug(slug: string): CaseStudy | undefined {
   return caseStudies.find((cs) => cs.slug === slug);
-}
-
-export function getCaseStudiesByIndustry(industry: IndustrySlug): CaseStudy[] {
-  return caseStudies.filter((cs) => cs.industry === industry);
-}
-
-export function getFeaturedCaseStudies(): CaseStudy[] {
-  return caseStudies.filter((cs) => cs.featured);
 }
 
 export function getAllSlugs(): string[] {

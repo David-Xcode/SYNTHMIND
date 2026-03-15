@@ -34,7 +34,7 @@ export default function TechStackBadges({ techStack }: TechStackBadgesProps) {
     <section className="py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <AnimateOnScroll>
-          <h3 className="font-mono text-xs text-txt-quaternary uppercase tracking-eyebrow font-medium mb-6 text-center">
+          <h3 className="font-mono text-xs text-accent uppercase tracking-eyebrow font-medium mb-6 text-center">
             Built With
           </h3>
           <div className="flex flex-wrap justify-center gap-2.5">

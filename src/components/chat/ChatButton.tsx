@@ -1,22 +1,20 @@
 'use client';
 
-import { lazy, Suspense, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useChatOpen } from '@/hooks/useChatOpen';
 import type { ChatMessage } from '@/lib/chatConstants';
 
 // 懒加载 ChatPanel（面板打开时才加载）
 const ChatPanel = lazy(() => import('./ChatPanel'));
 
-// ── Session ID 管理：sessionStorage 持久化，刷新保持 ──
-function getOrCreateSessionId(): string {
-  if (typeof window === 'undefined') return crypto.randomUUID();
-  const KEY = 'synthmind_chat_session_id';
-  let id = sessionStorage.getItem(KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    sessionStorage.setItem(KEY, id);
-  }
-  return id;
+// ── UUID v4 生成（兼容旧版 Safari / 微信 WebView）──
+function generateUUID(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  // 设置 version 4 和 variant bits
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 // ─── 脉冲按钮 ───
@@ -70,16 +68,29 @@ export default function ChatButton() {
   const { open, toggle, close } = useChatOpen();
   // 消息状态在这里持有 — 关闭面板不丢失历史
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  // sessionId 用 ref 避免每次渲染重新生成
-  const sessionIdRef = useRef<string | null>(null);
-  if (!sessionIdRef.current) {
-    sessionIdRef.current = getOrCreateSessionId();
-  }
+  const [sessionId, setSessionId] = useState('');
+
+  // 仅在客户端初始化 sessionId — 避免 SSR/client 值不一致导致 hydration mismatch
+  useEffect(() => {
+    const KEY = 'synthmind_chat_session_id';
+    let id: string | null = null;
+    try {
+      id = sessionStorage.getItem(KEY);
+      if (!id) {
+        id = generateUUID();
+        sessionStorage.setItem(KEY, id);
+      }
+    } catch {
+      // sessionStorage 不可用时（隐私模式等）回退到内存 UUID
+      id = generateUUID();
+    }
+    setSessionId(id);
+  }, []);
 
   return (
     <div className="fixed right-4 bottom-4 sm:right-6 sm:bottom-6 z-50 flex flex-col items-end gap-3">
       {/* Chat 面板 */}
-      {open && (
+      {open && sessionId && (
         <Suspense
           fallback={
             <div className="w-[400px] h-[600px] rounded-2xl bg-[rgba(10,12,18,0.96)] border border-accent/20 flex items-center justify-center">
@@ -93,7 +104,7 @@ export default function ChatButton() {
             messages={messages}
             setMessages={setMessages}
             onClose={close}
-            sessionId={sessionIdRef.current}
+            sessionId={sessionId}
           />
         </Suspense>
       )}
