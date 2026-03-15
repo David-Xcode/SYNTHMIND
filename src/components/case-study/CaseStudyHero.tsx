@@ -25,6 +25,7 @@ export default function CaseStudyHero({ caseStudy }: CaseStudyHeroProps) {
                 width={100}
                 height={28}
                 className="h-6 w-auto object-contain filter brightness-0 invert opacity-70"
+                suppressHydrationWarning
               />
             </div>
 

@@ -43,6 +43,7 @@ export default function SiteHeader() {
             width={150}
             height={40}
             className="h-9 w-auto transition-all duration-300 opacity-80 hover:opacity-100 hover:drop-shadow-accent"
+            suppressHydrationWarning
           />
         </Link>
 

@@ -83,6 +83,7 @@ export default function ProductsPage() {
                         width={120}
                         height={36}
                         className="h-8 w-auto object-contain filter brightness-0 invert opacity-50 group-hover:opacity-90 transition-opacity duration-300"
+                        suppressHydrationWarning
                       />
                     </div>
 

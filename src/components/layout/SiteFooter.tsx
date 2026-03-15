@@ -1,6 +1,6 @@
 // ─── Footer · Neural ───
 // 极简居中堆叠：ruled-line 收尾 + logo + nav + 版权
-// Server Component — 无 hooks，无需 hydration
+// Server Component — 无 hooks；Image 仍需 suppressHydrationWarning (next/image 是 CC)
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -22,6 +22,7 @@ export default function SiteFooter() {
             width={120}
             height={32}
             className="h-7 w-auto opacity-50 hover:opacity-80 transition-opacity duration-300"
+            suppressHydrationWarning
           />
         </Link>
 

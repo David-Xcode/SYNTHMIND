@@ -46,6 +46,7 @@ export default function SocialProofBar() {
                   width={120}
                   height={36}
                   className="h-8 w-auto object-contain filter brightness-0 invert opacity-30 hover:opacity-80 hover:drop-shadow-accent transition-all duration-300"
+                  suppressHydrationWarning
                 />
               </Link>
             ))}
@@ -68,6 +69,7 @@ export default function SocialProofBar() {
                   width={120}
                   height={36}
                   className="h-8 w-auto object-contain filter brightness-0 invert opacity-30 hover:opacity-80 hover:drop-shadow-accent transition-all duration-300"
+                  suppressHydrationWarning
                 />
               </Link>
             ))}

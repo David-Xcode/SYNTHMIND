@@ -1,9 +1,9 @@
 'use client';
 
 // ─── Hero 视频背景 · Neural ───
-// 提取自 HomeHero — 双视频暗场过渡背景
-// 通过 next/dynamic ssr: false 加载，SSR HTML 中不含 <video>
-// → 微信 WebView 无法在 hydration 前修改 video 属性 → 消除 hydration mismatch
+// 双视频暗场过渡：cosmic-threads（金色球体）→ hero-bg（网格动画）→ 循环
+// 不使用 HTML loop 属性，状态机自行控制播放顺序和时机
+// 每次进入展示 phase 时 currentTime=0 → 保证视频从头播放，避免闪帧
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -23,14 +23,6 @@ export default function HomeHeroVideo() {
   // 第二视频是否已就绪（canplaythrough），未就绪前停留在 phase 0
   const [ready, setReady] = useState(false);
 
-  // 主动触发第一个视频播放（兼容微信 WebView / 旧版 iOS Safari）
-  useEffect(() => {
-    const video = videoARef.current;
-    if (video) {
-      video.play().catch(() => {});
-    }
-  }, []);
-
   // 延迟加载第二个视频，用 canplaythrough 事件判断就绪
   useEffect(() => {
     const video = videoBRef.current;
@@ -41,7 +33,7 @@ export default function HomeHeroVideo() {
 
     // 延迟设置 src，避免与首屏视频争带宽
     const timer = setTimeout(() => {
-      video.src = '/cosmic-threads.mp4';
+      video.src = '/hero-bg.mp4';
       video.load();
     }, 2000);
 
@@ -70,25 +62,32 @@ export default function HomeHeroVideo() {
     return () => clearTimeout(timer);
   }, [phase, ready]);
 
-  // 非活跃视频暂停播放，活跃视频恢复播放 — 节省解码资源
-  // 淡出阶段(phase 1/3)：延迟暂停，等 CSS 过渡结束再 pause，避免冻帧
+  // 播放控制：进入展示 phase 时 reset 到开头再播放，淡出阶段延迟暂停
   useEffect(() => {
     const a = videoARef.current;
     const b = videoBRef.current;
 
     if (phase === 0) {
-      a?.play().catch(() => {});
+      // 视频A从头播放，暂停B
+      if (a) {
+        a.currentTime = 0;
+        a.play().catch(() => {});
+      }
       b?.pause();
     } else if (phase === 1) {
       // 视频A正在淡出，等淡出完成再暂停A（避免冻帧）
       const t = setTimeout(() => a?.pause(), FADE_DURATION);
       return () => clearTimeout(t);
     } else if (phase === 2) {
-      b?.play().catch(() => {});
+      // 视频B从头播放，暂停A
+      if (b) {
+        b.currentTime = 0;
+        b.play().catch(() => {});
+      }
       a?.pause();
     } else {
-      // phase 3: 视频B正在淡出，启动A准备淡入，等淡出完成再暂停B
-      a?.play().catch(() => {});
+      // phase 3: 视频B正在淡出，等淡出完成再暂停B
+      // 不提前 play 视频A — 等 phase 0 再 play，配合 currentTime=0 从头开始
       const t = setTimeout(() => b?.pause(), FADE_DURATION);
       return () => clearTimeout(t);
     }
@@ -100,26 +99,24 @@ export default function HomeHeroVideo() {
 
   return (
     <>
-      {/* 视频 A — hero-bg (1.9M)，立即加载 */}
+      {/* 视频 A — cosmic-threads 金色球体 (2.9M)，首先展示 */}
       <video
         ref={videoARef}
         autoPlay
         muted
-        loop
         playsInline
         preload="auto"
-        poster="/hero-bg-poster.jpg"
+        poster="/cosmic-threads-poster.jpg"
         className={`absolute inset-0 w-full h-full object-cover pointer-events-none motion-reduce:hidden transition-opacity duration-[2000ms] ease-in-out ${videoAOpacity}`}
         aria-hidden="true"
       >
-        <source src="/hero-bg.mp4" type="video/mp4" />
+        <source src="/cosmic-threads.mp4" type="video/mp4" />
       </video>
 
-      {/* 视频 B — cosmic-threads (9.3M)，延迟加载 */}
+      {/* 视频 B — hero-bg 网格动画 (1.9M)，延迟加载 */}
       <video
         ref={videoBRef}
         muted
-        loop
         playsInline
         preload="none"
         className={`absolute inset-0 w-full h-full object-cover pointer-events-none motion-reduce:hidden transition-opacity duration-[2000ms] ease-in-out ${videoBOpacity}`}

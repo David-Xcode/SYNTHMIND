@@ -70,6 +70,16 @@ export default function RootLayout({
       className={`${sora.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-sans antialiased" suppressHydrationWarning>
+        {/* 微信 WebView 兼容性修复 — MutationObserver 实时拦截 */}
+        {/* 微信会在 DOM 解析期间修改元素属性(style/class)，早于 React hydration */}
+        {/* MutationObserver 在文档解析最早期注册，实时捕获并恢复微信对 img/video 的修改 */}
+        {/* 检查 style.color !== 'transparent' 防止修正操作触发无限循环 */}
+        {/* 8s 后自动断开 — hydration 通常 <3s 完成 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(!/MicroMessenger/i.test(navigator.userAgent))return;var f=function(i){if(i.tagName==='IMG'&&i.style.color!=='transparent')i.style.color='transparent'};var o=new MutationObserver(function(l){l.forEach(function(m){if(m.type==='attributes'){f(m.target)}else if(m.type==='childList'){m.addedNodes.forEach(function(n){if(n.nodeType===1){f(n);n.querySelectorAll&&n.querySelectorAll('img').forEach(f)}})}})});o.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});setTimeout(function(){o.disconnect()},8000)}catch(e){}})();`,
+          }}
+        />
         {children}
       </body>
     </html>
