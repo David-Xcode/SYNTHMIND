@@ -46,10 +46,10 @@ export default function SiteFooter() {
             &copy; {new Date().getFullYear()} Synthmind. Toronto, Canada.
           </p>
           <a
-            href="mailto:info@synthmind.ca"
+            href="mailto:David.wang@synthmind.ca"
             className="inline-block text-txt-quaternary hover:text-accent text-xs transition-colors duration-200"
           >
-            info@synthmind.ca
+            David.wang@synthmind.ca
           </a>
         </div>
       </div>

@@ -1,6 +1,6 @@
 // ─── 首页（重新设计）───
 // 从单页滚动布局重构为 Lead Generation 着陆页
-// SiteHeader + SiteFooter + ChatButton 由 (public)/layout.tsx 提供
+// SiteHeader + SiteFooter 由 (public)/layout.tsx 提供
 
 import type { Metadata } from 'next';
 import HomeHero from '@/components/home/HomeHero';
@@ -36,7 +36,7 @@ const organizationJsonLd = {
   },
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'info@synthmind.ca',
+    email: 'David.wang@synthmind.ca',
     contactType: 'customer service',
   },
   sameAs: ['https://github.com/synthmind'],

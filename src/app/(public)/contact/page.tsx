@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 const contactInfo = [
   {
     label: 'Email',
-    value: 'info@synthmind.ca',
-    href: 'mailto:info@synthmind.ca',
+    value: 'David.wang@synthmind.ca',
+    href: 'mailto:David.wang@synthmind.ca',
   },
   {
     label: 'Location',
@@ -44,7 +44,7 @@ const contactJsonLd = [
     '@type': 'LocalBusiness',
     name: 'Synthmind',
     url: 'https://synthmind.ca',
-    email: 'info@synthmind.ca',
+    email: 'David.wang@synthmind.ca',
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Toronto',

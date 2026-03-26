@@ -48,7 +48,7 @@ function escapeHtml(str: string): string {
 }
 
 // 允许的来源枚举 — 防止客户端注入任意值
-const ALLOWED_SOURCES = ['contact', 'contact-page', 'chat', 'cta'] as const;
+const ALLOWED_SOURCES = ['contact', 'contact-page', 'cta'] as const;
 type AllowedSource = (typeof ALLOWED_SOURCES)[number];
 
 interface ContactFormData {
@@ -118,7 +118,7 @@ const sendNotificationEmail = async (
 
   return await getResendClient().emails.send({
     from: 'Synthmind <noreply@synthmind.ca>',
-    to: ['info@synthmind.ca'],
+    to: ['David.wang@synthmind.ca'],
     subject: `[Website Contact] New message from ${name.slice(0, FIELD_LIMITS.name).replace(/[\r\n\t]/g, ' ')}`,
     replyTo: email,
     html: `
@@ -132,7 +132,7 @@ const sendNotificationEmail = async (
           <div style="background-color: #f8f9ff; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #4A9FE5;">
             <h2 style="color: #4A9FE5; margin: 0 0 20px 0; font-size: 20px;">Contact Information</h2>
             <p><strong>Name:</strong> ${safeName}</p>
-            <p><strong>Email:</strong> <a href="mailto:${encodeURIComponent(email)}">${escapeHtml(email)}</a></p>
+            <p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>
             <p><strong>Subject:</strong> ${safeSubject}</p>
             ${source ? `<p><strong>Source:</strong> ${escapeHtml(source)}</p>` : ''}
             <p><strong>Time:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' })}</p>
@@ -146,7 +146,7 @@ const sendNotificationEmail = async (
           </div>
 
           <div style="margin-top: 30px; text-align: center;">
-            <a href="mailto:${encodeURIComponent(email)}?subject=Re: ${encodeURIComponent(subject)}"
+            <a href="mailto:${escapeHtml(email)}?subject=Re: ${encodeURIComponent(subject || '')}"
                style="display: inline-block; background: linear-gradient(135deg, #4A9FE5, #3488CC); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">
               Reply to Customer
             </a>
