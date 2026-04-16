@@ -60,7 +60,10 @@ export default function ContactForm({
         signal: controller.signal,
       });
 
-      if (!res.ok) throw new Error('Failed to send');
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to send');
+      }
       setStatus('sent');
       setForm({ name: '', email: '', subject: '', message: '' });
     } catch (err) {

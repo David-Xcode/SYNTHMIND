@@ -235,8 +235,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 检查 RESEND_API_KEY 是否配置 — 缺失时提前失败，不静默吞错误
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
+      return NextResponse.json(
+        { success: false, error: 'Email service is not configured' },
+        { status: 503 },
+      );
+    }
+
     // 发送管理员通知邮件（优先保证你能收到客户留言）
     let notificationEmailSent = false;
+    let notificationError: string | null = null;
     try {
       const notificationEmail = await sendNotificationEmail(
         name || '',
@@ -246,11 +256,13 @@ export async function POST(request: NextRequest) {
         safeSource,
       );
       if (notificationEmail.error) {
+        notificationError = JSON.stringify(notificationEmail.error);
         console.error('Notification email API error:', notificationEmail.error);
       } else {
         notificationEmailSent = !!notificationEmail.data;
       }
     } catch (notifErr) {
+      notificationError = (notifErr as Error).message;
       console.error('Notification email threw:', notifErr);
     }
 
@@ -270,6 +282,19 @@ export async function POST(request: NextRequest) {
       }
     } catch (custErr) {
       console.warn('Customer reply email threw:', custErr);
+    }
+
+    // 通知邮件是核心功能 — 如果发不出去，告诉前端失败
+    if (!notificationEmailSent) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to send your message. Please try again or email us directly.',
+          details:
+            process.env.NODE_ENV === 'development' ? notificationError : undefined,
+        },
+        { status: 502 },
+      );
     }
 
     return NextResponse.json({
