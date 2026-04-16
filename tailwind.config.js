@@ -2,7 +2,6 @@
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
-    "./public/index.html",
   ],
   theme: {
     extend: {
@@ -53,15 +52,6 @@ module.exports = {
         tighter: '-0.04em',
         tight:   '-0.02em',
         eyebrow: '0.08em',
-      },
-      boxShadow: {
-        'card-surface':       '0 0 0 1px rgba(0,0,0,0.2)',
-        'card-elevated':      '0 1px 3px rgba(0,0,0,0.2)',
-        'card-elevated-hover':'0 4px 16px rgba(74, 159, 229, 0.08)',
-        'btn-primary':        'none',
-        'btn-primary-hover':  '0 4px 12px rgba(74, 159, 229, 0.25)',
-        /* ── Accent drop-shadow (logo hover) ── */
-        'glow-accent':       '0 0 8px rgba(74, 159, 229, 0.15)',
       },
       dropShadow: {
         'accent': '0 0 8px rgba(74, 159, 229, 0.15)',
