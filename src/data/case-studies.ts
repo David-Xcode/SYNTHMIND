@@ -249,6 +249,42 @@ export const caseStudies: CaseStudy[] = [
     ],
 
   },
+  {
+    slug: 'kingshaven',
+    title: 'Kingshaven',
+    tagline:
+      "Full-stack marketing website for Ontario's first agri-community of freehold towns.",
+    url: 'https://www.kingshavenuppermarkham.ca',
+    logo: '/product/kingshaven.png',
+    challenge: [
+      'The Kingsmen Group was launching an entirely new category — an "agri-community" of freehold towns — and needed more than a static brochure page. Selling the concept required a complete marketing site: design, layered content, lead capture, email, and SEO all working together from day one.',
+      'The pre-construction buyer journey is long — understand the concept, compare home types, check commute and schools, then register. Content had to be organized into multiple deep pages rather than crammed into one, so each buyer could quickly find what they cared about.',
+      'As a brand-new name in the highly competitive GTA pre-construction market, the site needed professional SEO and structured data from launch to surface cleanly on Google and build organic traffic.',
+    ],
+    solution: [
+      'Designed and built a complete 6-page marketing site (Home, Homes, Location, Features, About, VIP Register) on a dedicated "Modern Meadow" design system — self-hosted fonts, a custom brand palette, and Framer Motion motion design — explaining the agri-community concept, all five home types (A–E), commute, schools, and farm-to-table lifestyle.',
+      'Drove the entire site from a single source-of-truth data file — the same data powers the page UI, the AI assistant knowledge base, and the SEO structured data, so home specs, pricing, and community details stay in sync everywhere and one edit propagates site-wide.',
+      'Integrated a Google Gemini-powered bilingual (English & 中文) AI assistant alongside a VIP registration flow, with Resend email automation (confirmation + lead routing to sales) and CASL-compliant consent — turning the site from a brochure into a qualified lead-capture tool.',
+      'Engineered production-grade SEO and delivery: JSON-LD structured data (Organization, Place, FAQPage, Breadcrumb), sitemap, and Open Graph cards, hardened with CSP/HSTS security headers and API rate limiting — shipped ready to go live.',
+    ],
+    results: [
+      'Full 6-page marketing site delivered end to end — design system, content, AI, and SEO',
+      'Single source-of-truth data keeps the site, AI assistant, and SEO in perfect sync',
+      'Bilingual AI assistant (English & 中文) answering buyer questions 24/7',
+      'VIP registration with Resend email automation and CASL-compliant lead capture',
+      'JSON-LD structured data and Open Graph for rich, branded Google search results',
+    ],
+    techStack: [
+      'Next.js',
+      'React',
+      'TypeScript',
+      'Tailwind CSS',
+      'Framer Motion',
+      'Google Gemini',
+      'Resend',
+      'SEO',
+    ],
+  },
 ];
 
 // ─── 查询函数 ───
