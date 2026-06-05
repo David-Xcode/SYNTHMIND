@@ -31,3 +31,6 @@ yarn-error.log*
 
 # claude code (local plans & config)
 .claude/
+
+# next.js auto-generated — rewritten between .next/types & .next/dev/types on every dev/build (avoid churn)
+next-env.d.ts
