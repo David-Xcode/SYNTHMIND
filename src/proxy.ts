@@ -15,7 +15,9 @@ function addSecurityHeaders(response: NextResponse) {
   return response;
 }
 
-export async function middleware(_req: NextRequest) {
+// Next.js 16: middleware 约定已更名为 proxy（nodejs runtime，不支持 edge）
+// 本函数仅设置安全响应头，无 edge 专属依赖，迁移零风险
+export async function proxy(_req: NextRequest) {
   return addSecurityHeaders(NextResponse.next());
 }
 

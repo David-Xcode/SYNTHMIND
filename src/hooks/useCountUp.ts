@@ -12,7 +12,8 @@ import { useEffect, useRef, useState } from 'react';
  */
 export function useCountUp(target: number, isVisible: boolean, duration = 1500) {
   const [count, setCount] = useState(0);
-  const rafRef = useRef<number>();
+  // React 19: useRef 不再支持零参数调用，需显式传入初始值
+  const rafRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!isVisible) return;
