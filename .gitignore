@@ -28,3 +28,6 @@ yarn-error.log*
 
 # playwright mcp
 .playwright-mcp/
+
+# claude code (local plans & config)
+.claude/
