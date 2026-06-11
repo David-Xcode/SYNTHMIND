@@ -8,21 +8,16 @@
    ═══════════════════════════════════════════════ */
 
 :root {
-  /* ── 背景层级 (冷色海军黑) ── */
+  /* ── 背景层级 (冷色海军黑) — 仅保留 CSS 内实际引用的层级，Tailwind 类走 tailwind.config.js ── */
   --bg-base: #080b10;
-  --bg-surface: #0c1017;
   --bg-elevated: #111620;
-  --bg-muted: #181e2a;
 
   /* ── 主色 (Synth Blue) ── */
   --accent: #4a9fe5;
   --accent-hover: #5daae9;
-  --accent-muted: rgba(74, 159, 229, 0.12);
-  --accent-subtle: rgba(74, 159, 229, 0.06);
 
   /* ── 文字层级 (冷白色调) ── */
   --text-primary: #e8ecf0;
-  --text-secondary: #8e95a0;
   --text-tertiary: #5c6370;
   --text-quaternary: #3a404d;
 
@@ -31,16 +26,9 @@
   --border-default: rgba(74, 159, 229, 0.1);
   --border-strong: rgba(74, 159, 229, 0.18);
   --border-heavy: rgba(74, 159, 229, 0.25);
-  --border-accent: rgba(74, 159, 229, 0.4);
-
-  /* ── 语义色 ── */
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --error: #f87171;
 
   /* ── 动画缓动 ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ── 全局基础 ─────────────────────────────── */
@@ -220,12 +208,16 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   Reveal 入场动画 — 数字显现 (opacity + translateY + blur)
-   keyframes 定义在 tailwind.config.js，此处仅声明 CSS class
+   径向光晕背景 — PageHero / CTABanner 共用
+   --glow-y 控制垂直焦点位置（PageHero 30%，CTABanner 50%）
    ═══════════════════════════════════════════════ */
 
-.animate-reveal {
-  animation: reveal 0.7s var(--ease-out-expo) both;
+.hero-glow {
+  background: radial-gradient(
+    ellipse 60% 40% at 50% var(--glow-y, 30%),
+    rgba(74, 159, 229, 0.04),
+    transparent
+  );
 }
 
 /* ═══════════════════════════════════════════════

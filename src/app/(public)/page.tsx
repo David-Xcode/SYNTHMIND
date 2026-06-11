@@ -7,6 +7,7 @@ import HomeHero from '@/components/home/HomeHero';
 import SocialProofBar from '@/components/home/SocialProofBar';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import JsonLd from '@/components/shared/JsonLd';
+import { CONTACT_EMAIL, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Synthmind | AI-Powered Software Studio',
@@ -24,8 +25,8 @@ const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Synthmind',
-  url: 'https://synthmind.ca',
-  logo: 'https://synthmind.ca/synthmind_logo.png',
+  url: SITE_URL,
+  logo: `${SITE_URL}/synthmind_logo.png`,
   description:
     'Toronto-based AI startup building software for traditional industries.',
   address: {
@@ -36,7 +37,7 @@ const organizationJsonLd = {
   },
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'David.wang@synthmind.ca',
+    email: CONTACT_EMAIL,
     contactType: 'customer service',
   },
   sameAs: ['https://github.com/synthmind'],

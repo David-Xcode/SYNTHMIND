@@ -1,5 +1,6 @@
 // ─── 产品数据层 ───
-// 7 个真实客户项目，供产品展示页使用
+// 5 个软件产品案例，供产品展示页与详情页使用
+// 地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens）见 real-estate.ts
 
 export interface CaseStudy {
   slug: string;
@@ -78,7 +79,6 @@ export const caseStudies: CaseStudy[] = [
       'PostgreSQL',
       'Tailwind CSS',
     ],
-
   },
   {
     slug: 'onest-insurance',
@@ -112,7 +112,6 @@ export const caseStudies: CaseStudy[] = [
       'Tailwind CSS',
       'Vercel',
     ],
-
   },
   {
     slug: 'brokertool-ai',
@@ -144,39 +143,6 @@ export const caseStudies: CaseStudy[] = [
       'Tailwind CSS',
       'Vercel',
     ],
-
-  },
-  {
-    slug: 'unionglens',
-    title: 'UnionGlens',
-    tagline: 'Marketing website for a master-planned community in Markham.',
-    url: 'https://www.unionglens.com/',
-    logo: '/product/unionglens.svg',
-    challenge: [
-      'A new master-planned community in Markham needed a digital presence that could showcase the development vision and capture buyer interest before construction began.',
-      'The developer needed to convey premium positioning and community lifestyle through the website, competing against established builders with larger marketing budgets.',
-      'Traditional real estate websites are static brochure-ware — the developer wanted something that felt modern and would stand out to potential buyers.',
-    ],
-    solution: [
-      'Designed and built a premium marketing website with immersive visual storytelling — showcasing the community vision through carefully crafted layouts, renderings, and neighborhood highlights.',
-      "Implemented a lead capture system integrated with the developer's sales pipeline, allowing prospective buyers to register interest and receive updates.",
-      'Built with performance-first architecture — fast loading times and SEO optimization to capture organic search traffic for "new homes in Markham" queries.',
-    ],
-    results: [
-      'Launched pre-construction marketing presence in under 3 weeks',
-      'Lead capture integrated directly with sales pipeline',
-      'Mobile-first design with 95+ Lighthouse performance score',
-      'SEO-optimized for local real estate search queries',
-    ],
-    techStack: [
-      'Next.js',
-      'React',
-      'TypeScript',
-      'Tailwind CSS',
-      'Vercel',
-      'SEO',
-    ],
-
   },
   {
     slug: 'getax',
@@ -211,78 +177,6 @@ export const caseStudies: CaseStudy[] = [
       'Vercel',
       'SEO',
       'OCR',
-    ],
-
-  },
-  {
-    slug: 'woodbine-parkside',
-    title: 'Woodbine Parkside',
-    tagline:
-      'Premium real estate website with AI chat and event booking for luxury freehold homes in Markham.',
-    url: 'https://www.woodbineparkside.ca/',
-    logo: '/product/woodbine-parkside.svg',
-    challenge: [
-      'Traditional real estate websites are static brochure pages — potential buyers cannot interact, ask questions, or book visits online, leading to lost leads outside business hours.',
-      'The luxury freehold market in Markham is highly competitive, and the developer needed a digital presence that conveys premium positioning and stands out from generic builder websites.',
-      'SEO competition for real estate keywords in the GTA is intense, requiring professional optimization to rank organically against established portals.',
-    ],
-    solution: [
-      'Designed and built a premium real estate website with a dark, luxurious aesthetic that reflects the high-end positioning of the Woodbine Parkside development.',
-      'Integrated an AI Chat System providing 24/7 intelligent customer service — answering buyer questions about floor plans, pricing, community features, and availability in real time.',
-      'Built an Event Booking System that allows prospective buyers to schedule private viewings and community events online, with automated email confirmations.',
-      'Implemented comprehensive SEO optimization targeting local real estate search queries to drive organic traffic and qualified buyer leads.',
-    ],
-    results: [
-      '24/7 AI-powered buyer engagement — no inquiry goes unanswered',
-      'Online event booking reduced manual scheduling overhead by 80%',
-      'Premium dark-theme design elevated brand perception among luxury buyers',
-      'SEO-optimized for competitive Markham real estate search terms',
-    ],
-    techStack: [
-      'Next.js',
-      'React',
-      'TypeScript',
-      'Tailwind CSS',
-      'AI Chat',
-      'Vercel',
-      'SEO',
-    ],
-
-  },
-  {
-    slug: 'kingshaven',
-    title: 'Kingshaven',
-    tagline:
-      "Full-stack marketing website for Ontario's first agri-community of freehold towns.",
-    url: 'https://www.kingshavenuppermarkham.ca',
-    logo: '/product/kingshaven.png',
-    challenge: [
-      'The Kingsmen Group was launching an entirely new category — an "agri-community" of freehold towns — and needed more than a static brochure page. Selling the concept required a complete marketing site: design, layered content, lead capture, email, and SEO all working together from day one.',
-      'The pre-construction buyer journey is long — understand the concept, compare home types, check commute and schools, then register. Content had to be organized into multiple deep pages rather than crammed into one, so each buyer could quickly find what they cared about.',
-      'As a brand-new name in the highly competitive GTA pre-construction market, the site needed professional SEO and structured data from launch to surface cleanly on Google and build organic traffic.',
-    ],
-    solution: [
-      'Designed and built a complete 6-page marketing site (Home, Homes, Location, Features, About, VIP Register) on a dedicated "Modern Meadow" design system — self-hosted fonts, a custom brand palette, and Framer Motion motion design — explaining the agri-community concept, all five home types (A–E), commute, schools, and farm-to-table lifestyle.',
-      'Drove the entire site from a single source-of-truth data file — the same data powers the page UI, the AI assistant knowledge base, and the SEO structured data, so home specs, pricing, and community details stay in sync everywhere and one edit propagates site-wide.',
-      'Integrated a Google Gemini-powered bilingual (English & 中文) AI assistant alongside a VIP registration flow, with Resend email automation (confirmation + lead routing to sales) and CASL-compliant consent — turning the site from a brochure into a qualified lead-capture tool.',
-      'Engineered production-grade SEO and delivery: JSON-LD structured data (Organization, Place, FAQPage, Breadcrumb), sitemap, and Open Graph cards, hardened with CSP/HSTS security headers and API rate limiting — shipped ready to go live.',
-    ],
-    results: [
-      'Full 6-page marketing site delivered end to end — design system, content, AI, and SEO',
-      'Single source-of-truth data keeps the site, AI assistant, and SEO in perfect sync',
-      'Bilingual AI assistant (English & 中文) answering buyer questions 24/7',
-      'VIP registration with Resend email automation and CASL-compliant lead capture',
-      'JSON-LD structured data and Open Graph for rich, branded Google search results',
-    ],
-    techStack: [
-      'Next.js',
-      'React',
-      'TypeScript',
-      'Tailwind CSS',
-      'Framer Motion',
-      'Google Gemini',
-      'Resend',
-      'SEO',
     ],
   },
 ];

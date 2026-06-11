@@ -3,8 +3,8 @@
 // ─── 计数动画统计卡片 · Neural ───
 // 用于 About 页面 stats 数字的动画效果
 
-import { useEffect, useRef, useState } from 'react';
 import { useCountUp } from '@/hooks/useCountUp';
+import { useIntersectionVisible } from '@/hooks/useIntersectionVisible';
 
 interface AnimatedStatProps {
   value: string;
@@ -13,21 +13,7 @@ interface AnimatedStatProps {
 }
 
 export default function AnimatedStat({ value, label, color }: AnimatedStatProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
-      },
-      { threshold: 0.3 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const { ref, isVisible } = useIntersectionVisible<HTMLDivElement>();
 
   // 提取纯数字部分用于动画
   const numericValue = parseInt(value.replace(/[^0-9]/g, ''), 10);

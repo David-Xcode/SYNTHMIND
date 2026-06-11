@@ -8,8 +8,10 @@
 
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import TextReveal from '@/components/shared/TextReveal';
+import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
+import Eyebrow from '@/components/shared/Eyebrow';
 import LineDrawDivider from '@/components/shared/LineDrawDivider';
+import TextReveal from '@/components/shared/TextReveal';
 
 // ssr: false — 视频仅在客户端渲染，服务端 HTML 零 <video> 标签
 const HomeHeroVideo = dynamic(() => import('./HomeHeroVideo'), { ssr: false });
@@ -31,12 +33,12 @@ export default function HomeHero() {
       {/* 内容区 */}
       <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-3xl">
         {/* 眉标 */}
-        <span
-          className="font-mono text-xs font-medium uppercase tracking-eyebrow text-accent mb-6 animate-reveal"
+        <div
+          className="mb-6 animate-reveal"
           style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
         >
-          AI-Powered Software Studio
-        </span>
+          <Eyebrow>AI-Powered Software Studio</Eyebrow>
+        </div>
 
         {/* 标题 */}
         <h1
@@ -59,7 +61,7 @@ export default function HomeHero() {
           className="mt-6 mb-4 animate-reveal"
           style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
         >
-          <LineDrawDivider width={64} delay={600} duration={800} />
+          <LineDrawDivider delay={600} />
         </div>
 
         {/* 副标题 — 逐词入场 */}
@@ -80,20 +82,7 @@ export default function HomeHero() {
             className="btn-primary text-sm sm:text-base px-7 py-3"
           >
             Book a Free Consultation
-            <svg
-              className="w-4 h-4"
-              aria-hidden="true"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
+            <ArrowRightIcon />
           </Link>
           <Link
             href="/products"

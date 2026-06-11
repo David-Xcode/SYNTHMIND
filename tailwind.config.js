@@ -6,18 +6,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        /* ── 主色阶 (Synth Blue) ── */
+        /* ── 主色阶 (Synth Blue) — 仅保留实际使用的三档 ── */
         accent: {
-          50:  '#EBF4FD',
-          100: '#CEE3F9',
-          200: '#A3CCF3',
-          300: '#78B5ED',
           400: '#5DAAE9',
-          500: '#4A9FE5',
-          600: '#3488CC',
           700: '#2870AB',
-          800: '#1E5A8A',
-          900: '#14436A',
           DEFAULT: '#4A9FE5',
         },
         /* ── 背景层级 (冷色海军黑) ── */
@@ -25,7 +17,6 @@ module.exports = {
           base:     '#080B10',
           surface:  '#0C1017',
           elevated: '#111620',
-          muted:    '#181E2A',
         },
         /* ── 文字层级 (冷白色调) ── */
         txt: {
@@ -38,7 +29,6 @@ module.exports = {
       fontFamily: {
         display: ['var(--font-display)', 'Sora', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
         sans:    ['var(--font-body)', 'Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        serif:   ['var(--font-display)', 'Sora', '-apple-system', 'sans-serif'],  /* 向后兼容 font-serif → font-display */
         mono:    ['var(--font-mono)', 'JetBrains Mono', 'Menlo', 'Monaco', 'monospace'],
       },
       fontSize: {
@@ -49,7 +39,6 @@ module.exports = {
         'subtitle': ['clamp(1.125rem, 2vw, 1.5rem)', { lineHeight: '1.4',  letterSpacing: '-0.01em' }],
       },
       letterSpacing: {
-        tighter: '-0.04em',
         tight:   '-0.02em',
         eyebrow: '0.08em',
       },
@@ -58,7 +47,6 @@ module.exports = {
       },
       transitionTimingFunction: {
         'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
-        'spring':   'cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       animation: {
         'reveal':         'reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both',

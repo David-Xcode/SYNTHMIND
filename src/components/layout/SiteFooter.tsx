@@ -5,6 +5,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { footerNav } from '@/data/navigation';
+import { CONTACT_EMAIL } from '@/lib/constants';
 
 export default function SiteFooter() {
   return (
@@ -46,10 +47,10 @@ export default function SiteFooter() {
             &copy; {new Date().getFullYear()} Synthmind. Toronto, Canada.
           </p>
           <a
-            href="mailto:David.wang@synthmind.ca"
+            href={`mailto:${CONTACT_EMAIL}`}
             className="inline-block text-txt-quaternary hover:text-accent text-xs transition-colors duration-200"
           >
-            David.wang@synthmind.ca
+            {CONTACT_EMAIL}
           </a>
         </div>
       </div>

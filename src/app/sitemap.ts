@@ -3,8 +3,7 @@
 
 import type { MetadataRoute } from 'next';
 import { getAllSlugs } from '@/data/case-studies';
-
-const BASE_URL = 'https://synthmind.ca';
+import { SITE_URL as BASE_URL } from '@/lib/constants';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

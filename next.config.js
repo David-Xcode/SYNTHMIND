@@ -5,6 +5,10 @@ const nextConfig = {
       // 路由重命名：case-studies → products
       { source: '/case-studies', destination: '/products', permanent: true },
       { source: '/case-studies/:slug', destination: '/products/:slug', permanent: true },
+      // 地产盘详情页已合并为 /products 页内的 Real Estate 模块
+      { source: '/products/unionglens', destination: '/products#real-estate', permanent: true },
+      { source: '/products/woodbine-parkside', destination: '/products#real-estate', permanent: true },
+      { source: '/products/kingshaven', destination: '/products#real-estate', permanent: true },
       // 已删除路由：industries → products 列表页
       // 旧 slug (insurance, real-estate, accounting-tax, construction) 无对应 product，统一到列表页
       { source: '/industries', destination: '/products', permanent: true },

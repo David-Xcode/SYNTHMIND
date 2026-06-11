@@ -1,25 +1,16 @@
 'use client';
 
-// ─── 可复用联系表单 v2 ───
+// ─── 联系表单 v2 ───
 // 蓝色中心展开 focus 下划线 / 成功态变换动画
+// 此前的 mini/inline 变体全站零调用，已删除 — 仅保留完整表单
 
 import React, { useState } from 'react';
-
-type FormVariant = 'full' | 'mini' | 'inline';
-
-interface ContactFormProps {
-  variant?: FormVariant;
-  source?: string;
-}
 
 // 带 focus 动画的输入框样式
 const inputClass =
   'w-full bg-transparent border-0 border-b border-accent/[0.10] px-0 py-3 text-txt-primary placeholder-txt-quaternary focus:outline-none text-sm transition-colors duration-300';
 
-export default function ContactForm({
-  variant = 'full',
-  source = 'contact',
-}: ContactFormProps) {
+export default function ContactForm() {
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -31,9 +22,7 @@ export default function ContactForm({
   >('idle');
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -47,16 +36,10 @@ export default function ContactForm({
     const timeout = setTimeout(() => controller.abort(), 10_000);
 
     try {
-      // inline 变体只发送非空字段
-      const payload: Record<string, string> = { source };
-      Object.entries(form).forEach(([key, value]) => {
-        if (value) payload[key] = value;
-      });
-
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...form, source: 'contact-page' }),
         signal: controller.signal,
       });
 
@@ -77,98 +60,6 @@ export default function ContactForm({
       clearTimeout(timeout);
     }
   };
-
-  // ─── 内联版：仅邮箱 + 按钮 ───
-  if (variant === 'inline') {
-    return (
-      <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto">
-        <input
-          type="email"
-          name="email"
-          placeholder="Your email"
-          required
-          value={form.email}
-          onChange={handleChange}
-          className="flex-1 bg-accent/[0.04] border border-accent/[0.08] rounded-lg px-4 py-3 text-txt-primary placeholder-txt-quaternary text-sm focus:outline-none focus:border-accent/50 transition-colors"
-        />
-        <button
-          type="submit"
-          disabled={status === 'sending'}
-          className="btn-primary px-6 py-3 disabled:opacity-50 whitespace-nowrap"
-        >
-          {status === 'sending'
-            ? 'Sending...'
-            : status === 'sent'
-              ? 'Sent!'
-              : 'Get Started'}
-        </button>
-      </form>
-    );
-  }
-
-  // ─── 迷你版 ───
-  if (variant === 'mini') {
-    return (
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="input-group">
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            required
-            value={form.name}
-            onChange={handleChange}
-            aria-label="Name"
-            className={inputClass}
-          />
-          <div className="focus-line" />
-        </div>
-        <div className="input-group">
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            required
-            value={form.email}
-            onChange={handleChange}
-            aria-label="Email"
-            className={inputClass}
-          />
-          <div className="focus-line" />
-        </div>
-        <div className="input-group">
-          <input
-            type="text"
-            name="message"
-            placeholder="How can we help?"
-            value={form.message}
-            onChange={handleChange}
-            aria-label="Message"
-            className={inputClass}
-          />
-          <div className="focus-line" />
-        </div>
-        <button
-          type="submit"
-          disabled={status === 'sending'}
-          className="w-full btn-primary disabled:opacity-50"
-        >
-          {status === 'sending'
-            ? 'Sending...'
-            : status === 'sent'
-              ? 'Sent!'
-              : 'Send Message'}
-        </button>
-        {(status === 'error' || status === 'timeout') && (
-          <p className="text-red-400 text-sm text-center">
-            {status === 'timeout'
-              ? 'Request timed out. Please check your connection and try again.'
-              : 'Something went wrong. Please try again.'}
-          </p>
-        )}
-      </form>
-    );
-  }
 
   // ─── 成功态 ───
   if (status === 'sent') {
@@ -210,7 +101,6 @@ export default function ContactForm({
     );
   }
 
-  // ─── 完整版 ───
   return (
     <form onSubmit={handleSubmit} className="space-y-7">
       {/* Name + Email */}

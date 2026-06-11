@@ -7,6 +7,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ContactForm from '@/components/shared/ContactForm';
 import JsonLd from '@/components/shared/JsonLd';
 import SectionTitle from '@/components/shared/SectionTitle';
+import { CONTACT_EMAIL, SITE_URL } from '@/lib/constants';
 import FAQAccordion from './FAQAccordion';
 import { faqs } from './faqData';
 
@@ -24,8 +25,8 @@ export const metadata: Metadata = {
 const contactInfo = [
   {
     label: 'Email',
-    value: 'David.wang@synthmind.ca',
-    href: 'mailto:David.wang@synthmind.ca',
+    value: CONTACT_EMAIL,
+    href: `mailto:${CONTACT_EMAIL}`,
   },
   {
     label: 'Location',
@@ -43,8 +44,8 @@ const contactJsonLd = [
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'Synthmind',
-    url: 'https://synthmind.ca',
-    email: 'David.wang@synthmind.ca',
+    url: SITE_URL,
+    email: CONTACT_EMAIL,
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Toronto',
@@ -93,7 +94,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
             {/* 左：完整表单 */}
             <AnimateOnScroll className="lg:col-span-3" delay={100}>
-              <ContactForm variant="full" source="contact-page" />
+              <ContactForm />
             </AnimateOnScroll>
 
             {/* 右：联系信息 — 主题色图标 */}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { JetBrains_Mono, Manrope, Sora } from 'next/font/google';
+import { SITE_URL } from '@/lib/constants';
 import './globals.css';
 
 // Display 字体 — 标题、Hero 大文字 (替代 DM Serif Display)
@@ -26,7 +27,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://synthmind.ca'),
+  metadataBase: new URL(SITE_URL),
   title: 'Synthmind | AI-Powered Software Development & Automation',
   description:
     'Toronto-based AI startup building tools that actually work. Specializing in workflow automation, legacy system modernization, and custom AI solutions for traditional industries.',
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     title: 'Synthmind | AI Solutions That Actually Work',
     description:
       'AI startup building tools for traditional industries. No corporate fluff — just working software.',
-    url: 'https://synthmind.ca',
+    url: SITE_URL,
     siteName: 'Synthmind',
     locale: 'en_CA',
     type: 'website',

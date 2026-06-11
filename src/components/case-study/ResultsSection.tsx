@@ -3,10 +3,10 @@
 // ─── 项目成果 · Neural ───
 // DM Mono stat 数字 / 蓝色数字 / 计数动画
 
-import { useEffect, useRef, useState } from 'react';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { useCountUp } from '@/hooks/useCountUp';
+import { useIntersectionVisible } from '@/hooks/useIntersectionVisible';
 
 interface ResultsSectionProps {
   results: string[];
@@ -21,8 +21,7 @@ function extractStat(text: string): { value: string; rest: string } | null {
 
 // 单个成果卡片
 function ResultCard({ text }: { text: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const { ref, isVisible } = useIntersectionVisible<HTMLDivElement>();
   const stat = extractStat(text);
 
   // 提取纯数字部分用于动画
@@ -31,19 +30,6 @@ function ResultCard({ text }: { text: string }) {
     : 0;
   const suffix = stat ? stat.value.replace(/[0-9,.]*/g, '') : '';
   const animatedNumber = useCountUp(numericValue, isVisible);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
-      },
-      { threshold: 0.3 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   if (stat) {
     // 有数字指标的 — 大号 stat 卡片, DM Mono 数字
@@ -62,7 +48,7 @@ function ResultCard({ text }: { text: string }) {
   return (
     <div ref={ref} className="flex items-start gap-3">
       <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-2" />
-      <p className="text-txt-secondary leading-relaxed text-[15px]">{text}</p>
+      <p className="text-txt-secondary leading-relaxed text-base">{text}</p>
     </div>
   );
 }

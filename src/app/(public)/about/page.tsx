@@ -6,7 +6,9 @@ import Breadcrumb from '@/components/layout/Breadcrumb';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import AnimatedStat from '@/components/shared/AnimatedStat';
 import CTABanner from '@/components/shared/CTABanner';
+import Eyebrow from '@/components/shared/Eyebrow';
 import GlassCard from '@/components/shared/GlassCard';
+import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 
 export const metadata: Metadata = {
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
 // ── 数据常量 ──
 
 const stats = [
-  { value: '6+', label: 'Products Delivered', color: 'text-accent' },
+  { value: '9+', label: 'Products Delivered', color: 'text-accent' },
   {
     value: '100%',
     label: 'Client Retention',
@@ -111,43 +113,12 @@ export default function AboutPage() {
       <Breadcrumb items={[{ label: 'About' }]} />
 
       {/* ── Section 1: Hero — Mission Statement ── */}
-      <section className="relative pt-8 pb-24 px-4 overflow-hidden">
-        {/* 微妙径向光晕背景 */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 60% 40% at 50% 30%, rgba(74,159,229,0.04), transparent)',
-          }}
-        />
-
-        <div className="relative max-w-3xl mx-auto text-center">
-          <AnimateOnScroll>
-            <span className="font-mono text-xs font-medium uppercase tracking-eyebrow text-accent">
-              OUR MISSION
-            </span>
-          </AnimateOnScroll>
-
-          <AnimateOnScroll delay={100}>
-            <h1 className="mt-6 text-display leading-tight">
-              <span className="font-sans font-light text-txt-primary">
-                Traditional Industries Deserve{' '}
-              </span>
-              <span className="font-display font-semibold text-accent">
-                Modern Software.
-              </span>
-            </h1>
-          </AnimateOnScroll>
-
-          <AnimateOnScroll delay={200}>
-            <p className="mt-6 text-subtitle text-txt-secondary leading-relaxed max-w-2xl mx-auto">
-              Synthmind is a Toronto-based AI startup. We build software that
-              modernizes how insurance, real estate, accounting, and
-              construction companies operate — no hype, just working tools.
-            </p>
-          </AnimateOnScroll>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="OUR MISSION"
+        light="Traditional Industries Deserve"
+        bold="Modern Software."
+        subtitle="Synthmind is a Toronto-based AI startup. We build software that modernizes how insurance, real estate, accounting, and construction companies operate — no hype, just working tools."
+      />
 
       {/* ── Section 2: Why We Exist — 行业问题 + 公司数据 ── */}
       <section className="relative py-24 bg-bg-surface px-4">
@@ -215,9 +186,7 @@ export default function AboutPage() {
             {solutions.map((solution, index) => (
               <AnimateOnScroll key={solution.title} delay={index * 80 + 100}>
                 <GlassCard variant="spotlight" className="h-full">
-                  <span className="font-mono text-xs font-medium uppercase tracking-eyebrow text-accent">
-                    {solution.eyebrow}
-                  </span>
+                  <Eyebrow>{solution.eyebrow}</Eyebrow>
                   <h3 className="mt-3 font-display font-semibold text-lg text-txt-primary tracking-tight">
                     {solution.title}
                   </h3>

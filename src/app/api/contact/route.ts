@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { CONTACT_EMAIL } from '@/lib/constants';
 import { checkCsrf } from '@/lib/csrf';
 
 // 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
@@ -118,7 +119,7 @@ const sendNotificationEmail = async (
 
   return await getResendClient().emails.send({
     from: 'Synthmind <noreply@synthmind.ca>',
-    to: ['David.wang@synthmind.ca'],
+    to: [CONTACT_EMAIL],
     subject: `[Website Contact] New message from ${name.slice(0, FIELD_LIMITS.name).replace(/[\r\n\t]/g, ' ')}`,
     replyTo: email,
     html: `

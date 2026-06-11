@@ -4,7 +4,8 @@
 // 每个词依次 fade-in + translateY(8px) + blur(2px)
 // 与 "digital emergence" 主题一致，stagger 40ms/词
 
-import { useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useIntersectionVisible } from '@/hooks/useIntersectionVisible';
 
 interface TextRevealProps {
   text: string;
@@ -24,25 +25,7 @@ export default function TextReveal({
   delay = 0,
   as: Tag = 'p',
 }: TextRevealProps) {
-  const ref = useRef<HTMLElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const { ref, isVisible } = useIntersectionVisible<HTMLElement>(0.1);
 
   const words = text.split(' ');
 

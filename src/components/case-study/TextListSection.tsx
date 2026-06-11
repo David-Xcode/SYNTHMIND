@@ -42,7 +42,7 @@ export default function TextListSection({
                 <span className="font-mono text-2xl font-semibold text-accent/20 leading-none pt-0.5">
                   {String(index + 1).padStart(2, '0')}
                 </span>
-                <p className="text-txt-secondary leading-relaxed text-[15px]">
+                <p className="text-txt-secondary leading-relaxed text-base">
                   {paragraph}
                 </p>
               </div>

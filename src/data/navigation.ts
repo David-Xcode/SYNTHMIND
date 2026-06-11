@@ -1,7 +1,7 @@
 // ─── 导航结构常量 ───
 // SiteHeader 和 SiteFooter 共用，单一来源
 
-export interface NavItem {
+interface NavItem {
   label: string;
   href: string;
 }
@@ -12,10 +12,7 @@ export const mainNav: NavItem[] = [
   { label: 'Contact', href: '/contact' },
 ];
 
+// footer 与主导航链接一致，直接复用，避免两份数组漂移
 export const footerNav = {
-  company: [
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Products', href: '/products' },
-  ],
+  company: mainNav,
 };

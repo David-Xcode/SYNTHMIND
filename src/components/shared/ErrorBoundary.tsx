@@ -8,7 +8,7 @@ import React, { Component, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
-  /** 自定义错误 UI，不传则使用默认样式 */
+  /** 自定义错误 UI；传 null 表示出错时什么都不渲染；不传则使用默认样式 */
   fallback?: ReactNode;
 }
 
@@ -32,7 +32,8 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback;
+      // 用 !== undefined 而非 truthy 判断 — fallback={null} 的语义是"出错时不渲染"
+      if (this.props.fallback !== undefined) return this.props.fallback;
 
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">

@@ -11,6 +11,7 @@ import TechStackBadges from '@/components/case-study/TechStackBadges';
 import Breadcrumb from '@/components/layout/Breadcrumb';
 import JsonLd from '@/components/shared/JsonLd';
 import { getAllSlugs, getCaseStudyBySlug } from '@/data/case-studies';
+import { SITE_URL } from '@/lib/constants';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -52,7 +53,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
     '@type': 'CreativeWork',
     name: cs.title,
     description: cs.tagline,
-    url: `https://synthmind.ca/products/${slug}`,
+    url: `${SITE_URL}/products/${slug}`,
     author: {
       '@type': 'Organization',
       name: 'Synthmind',

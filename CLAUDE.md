@@ -15,30 +15,44 @@
 ```
 src/
 ├── app/
-│   ├── (public)/          # 所有公共页面 (layout: SiteHeader + SiteFooter + ChatButton)
+│   ├── (public)/          # 所有公共页面 (layout: SiteHeader + SiteFooter)
 │   │   ├── about/
 │   │   ├── contact/
 │   │   └── products/
-│   │       └── [slug]/
-│   ├── admin/             # 管理后台 (独立 layout)
-│   ├── api/               # API routes (contact, chat)
+│   │       └── [slug]/    # 软件产品详情页 (地产盘无详情页，见 Real Estate 模块)
+│   ├── api/               # API routes (仅 contact)
+│   ├── sitemap.ts / robots.ts
 │   └── layout.tsx         # 根 layout: html/body/globals.css/metadata ONLY
 ├── components/
-│   ├── shared/            # 可复用 UI: SectionTitle, GlassCard, AnimateOnScroll, CTABanner, ContactForm
+│   ├── shared/            # 可复用 UI: SectionTitle, GlassCard, AnimateOnScroll, CTABanner,
+│   │                      #   ContactForm, PageHero, Eyebrow, ArrowRightIcon, AnimatedStat,
+│   │                      #   TextReveal, LineDrawDivider, ErrorBoundary, JsonLd
 │   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
-│   ├── home/              # 首页: HomeHero, SocialProofBar
-│   ├── case-study/        # 产品详情页: CaseStudyHero, ChallengeSection, SolutionSection, TechStackBadges, ResultsSection
-│   └── chat/              # 聊天模块: ChatButton, ChatPanel, ChatMessage, QuickReplies
-├── data/                  # TS 常量 (非 CMS): case-studies.ts, navigation.ts
-├── hooks/                 # 自定义 hooks
-└── lib/                   # 工具函数 & 常量
+│   ├── home/              # 首页: HomeHero, HomeHeroVideo, SocialProofBar
+│   ├── products/          # 产品页: RealEstateShowcase (地产营销站统一模块)
+│   └── case-study/        # 产品详情页: CaseStudyHero, ChallengeSection, SolutionSection,
+│                          #   TextListSection, TechStackBadges, ResultsSection
+├── data/                  # TS 常量 (非 CMS): case-studies.ts (5 软件产品),
+│                          #   real-estate.ts (4 地产营销站), navigation.ts
+├── hooks/                 # useCountUp, useIntersectionVisible
+├── lib/                   # constants.ts (SITE_URL/CONTACT_EMAIL), csrf.ts,
+│                          #   tech-brand-colors.ts (品牌色 hex 唯一豁免区)
+└── proxy.ts               # Next 16 middleware 约定 (安全 header)
 ```
 
 ### Component Reuse Rules
 - **ALWAYS** check `src/components/shared/` before creating new UI components
 - **ALWAYS** check `src/data/` for existing data constants before hardcoding
-- Page-specific components go in their domain folder (`home/`, `case-study/`)
+- **NEVER** hardcode the site URL or contact email — import `SITE_URL` / `CONTACT_EMAIL` from `src/lib/constants.ts`
+- Page-specific components go in their domain folder (`home/`, `products/`, `case-study/`)
 - Generic reusable components go in `shared/`
+
+### Real Estate Module — IMPORTANT
+地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens）**不再有独立详情页**：
+- 数据层：`src/data/real-estate.ts`（`RealEstateSite` 接口）
+- 展示：`/products` 页内的 `<RealEstateShowcase />`（`id="real-estate"` 锚点），卡片外链真实站点
+- 旧详情页 slug 在 `next.config.js` 中 301 到 `/products#real-estate`
+- 新增地产盘 = 在 `real-estate.ts` 加一条 + logo 放 `public/product/`；新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
 
 ---
 
@@ -52,15 +66,12 @@ Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 | Manrope | `font-sans` | Everything else (default body font) | Default — no class needed on body |
 | JetBrains Mono | `font-mono` | Eyebrow labels, stat numbers, process step numbers | **NEVER for paragraphs or headings** |
 
-> **Note:** `font-serif` is aliased to `font-display` in tailwind.config.js for backward compatibility, but prefer `font-display` in new code.
-
 ### Typography Patterns
 
-**Eyebrow labels:**
+**Eyebrow labels** — ALWAYS use the shared component (never inline the class string):
 ```jsx
-<span className="font-mono text-xs font-medium uppercase tracking-eyebrow text-accent">
-  LABEL TEXT
-</span>
+import Eyebrow from '@/components/shared/Eyebrow';
+<Eyebrow>LABEL TEXT</Eyebrow>
 ```
 
 **Section headings (via SectionTitle):**
@@ -69,6 +80,8 @@ Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 <span className="font-sans font-light">Our</span>{' '}
 <span className="font-display font-semibold">Approach</span>
 ```
+
+**Page heroes** — about/products 风格的页头统一用 `<PageHero eyebrow light bold subtitle />`。
 
 **Responsive font sizes** (use Tailwind tokens, NOT arbitrary values):
 - `text-display` — hero titles (clamp 2.5rem → 4.5rem)
@@ -82,13 +95,16 @@ Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 
 **CRITICAL:** Always use Tailwind tokens from `tailwind.config.js`. Never write raw hex values.
 
+**唯一豁免：** 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
+
 ### Accent Scale (Synth Blue)
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `accent` / `accent-500` | #4A9FE5 | Primary accent, buttons, links |
+| `accent` | #4A9FE5 | Primary accent, buttons, links |
 | `accent-400` | #5DAAE9 | Hover states |
 | `accent-700` | #2870AB | Dark accent |
-| `accent-50` → `accent-900` | Full scale | Available but rarely needed |
+
+> 色阶只保留这三档。需要透明度用 opacity modifier：`bg-accent/10`、`border-accent/30`、`text-accent/50`。
 
 ### Background Layers (冷色海军黑)
 | Token | Hex | Usage |
@@ -96,7 +112,6 @@ Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 | `bg-bg-base` | #080B10 | Page background |
 | `bg-bg-surface` | #0C1017 | Card surface (lightest card) |
 | `bg-bg-elevated` | #111620 | Standard card background |
-| `bg-bg-muted` | #181E2A | Hover states, subtle fills |
 
 ### Text Layers (冷白色调)
 | Token | Usage |
@@ -112,11 +127,10 @@ Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 --border-default: rgba(74, 159, 229, 0.10)   /* 默认 */
 --border-strong:  rgba(74, 159, 229, 0.18)   /* hover */
 --border-heavy:   rgba(74, 159, 229, 0.25)   /* 强调 */
---border-accent:  rgba(74, 159, 229, 0.40)   /* 高亮 */
 ```
 
-### Accent Opacity Helpers
-For Tailwind opacity modifiers on accent: `bg-accent/10`, `border-accent/30`, `text-accent/50`
+### Radial Glow
+页头/CTA 的径向光晕用 globals.css 的 `.hero-glow` class（`--glow-y` 控制垂直位置），不要内联 radial-gradient。
 
 ---
 
@@ -132,7 +146,7 @@ import GlassCard from '@/components/shared/GlassCard';
 <GlassCard variant="spotlight">...</GlassCard>  // 特色 — 左侧蓝色渐变竖线
 ```
 
-Props: `variant`, `className`, `as` ('div' | 'article' | 'section')
+Props: `variant`, `className`。内边距固定 `p-6` — 需要自定义 padding 时直接用 `.card-surface` / `.card-elevated` CSS 类（如 AnimatedStat、FAQAccordion）。
 
 ### Card Rules — IMPORTANT
 - **Surface** cards use `backdrop-filter: blur(8px)` with semi-transparent background
@@ -170,7 +184,9 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 ))}
 ```
 
-Props: `delay` (ms), `threshold` (0-1), `duration` (ms, default 700)
+Props: `delay` (ms), `className`。触发阈值与时长为固定值（threshold 0.1 / 700ms）。
+
+可见性触发逻辑统一走 `useIntersectionVisible` hook（`src/hooks/`）— 不要在组件里手写 IntersectionObserver。
 
 ### FORBIDDEN Animations
 These have been explicitly removed from the design system. **DO NOT** add them back:
@@ -182,11 +198,10 @@ These have been explicitly removed from the design system. **DO NOT** add them b
 - ❌ `particle` effects
 
 ### ALLOWED Animations
-- ✅ `reveal` — opacity + translateY + blur scroll entrance (via AnimateOnScroll)
+- ✅ `reveal` — opacity + translateY + blur scroll entrance (via AnimateOnScroll / `animate-reveal` utility)
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
-- ✅ `chatPanelIn` — chat panel entrance
-- ✅ `typingBounce` — chat typing indicator dots
-- ✅ `chatPulse` — chat button pulse ring
+- ✅ `scaleIn` — 表单成功态缩放弹入
+- ✅ `scroll-pulse` / `scale-in-dot` — 滚动指示器
 - ✅ `translateY(-2px)` on card hover
 - ✅ `box-shadow` subtle blue glow on card/button hover
 - ✅ `border-color` transitions on card/button hover
@@ -213,6 +228,7 @@ Two button styles defined in `globals.css`. Use CSS classes directly:
 - Active: `transform: scale(0.98)` only
 - Border radius: `10px` (`rounded-[10px]` equivalent)
 - Font: `text-sm font-semibold` (primary) / `text-sm font-medium` (secondary)
+- 按钮内右箭头用 `<ArrowRightIcon />` 共享组件，不要内联 SVG
 
 ---
 
@@ -241,8 +257,6 @@ import SectionTitle from '@/components/shared/SectionTitle';
   bold="Deliver"                   // Sora font-semibold
   subtitle="Description text..."   // 副标题 (可选)
   size="lg"                        // lg | md | sm
-  align="left"                     // center | left | right
-  divider                          // 蓝色短线 (可选)
+  align="left"                     // center | left
 />
 ```
-
