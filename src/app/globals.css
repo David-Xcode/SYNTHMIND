@@ -18,8 +18,8 @@
 
   /* ── 文字层级 (冷白色调) ── */
   --text-primary: #e8ecf0;
-  --text-tertiary: #5c6370;
-  --text-quaternary: #3a404d;
+  --text-tertiary: #868e9c;
+  --text-quaternary: #606876;
 
   /* ── 边框层级 (蓝色调) ── */
   --border-subtle: rgba(74, 159, 229, 0.06);

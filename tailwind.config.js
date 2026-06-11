@@ -21,9 +21,9 @@ module.exports = {
         /* ── 文字层级 (冷白色调) ── */
         txt: {
           primary:    '#E8ECF0',
-          secondary:  '#8E95A0',
-          tertiary:   '#5C6370',
-          quaternary: '#3A404D',
+          secondary:  '#A6AEBA',
+          tertiary:   '#868E9C',
+          quaternary: '#606876',
         },
       },
       fontFamily: {

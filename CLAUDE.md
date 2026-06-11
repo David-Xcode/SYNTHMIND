@@ -117,9 +117,9 @@ import Eyebrow from '@/components/shared/Eyebrow';
 | Token | Usage |
 |-------|-------|
 | `text-txt-primary` | Headings, primary body text (#E8ECF0) |
-| `text-txt-secondary` | Subtitles, descriptions (#8E95A0) |
-| `text-txt-tertiary` | Captions, metadata (#5C6370) |
-| `text-txt-quaternary` | Disabled text, decorative (#3A404D) |
+| `text-txt-secondary` | Subtitles, descriptions (#A6AEBA) |
+| `text-txt-tertiary` | Captions, metadata (#868E9C) |
+| `text-txt-quaternary` | Disabled text, decorative (#606876) |
 
 ### Border CSS Variables (use in inline styles or globals.css)
 ```css
