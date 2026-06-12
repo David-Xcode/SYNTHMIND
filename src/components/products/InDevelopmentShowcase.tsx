@@ -4,6 +4,7 @@
 // CSIO 身份用纯文字 chip + 官方名录外链（无 logo 资产授权，文字声明更合规可验证）
 
 import Link from 'next/link';
+import CsioMemberBadge from '@/components/products/CsioMemberBadge';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
 import GlassCard from '@/components/shared/GlassCard';
@@ -42,9 +43,7 @@ export default function InDevelopmentShowcase() {
           <GlassCard variant="spotlight">
             {/* CSIO 会员徽章行 */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <span className="font-mono text-xs font-medium uppercase tracking-eyebrow text-accent bg-accent/10 border border-accent/25 rounded-md px-2.5 py-1">
-                CSIO Member
-              </span>
+              <CsioMemberBadge />
               <a
                 href={CSIO_DIRECTORY_URL}
                 target="_blank"

@@ -1,10 +1,12 @@
 // ─── 产品总览页 · Neural ───
-// 两段式结构：软件产品网格（进详情页）+ 地产营销站统一模块（外链真实站点）
+// 三段式结构：软件产品网格（进详情页，含开发中产品 teaser 卡）
+// + 地产营销站统一模块（外链真实站点）+ 开发中产品详述（CSIO 会员背书）
 
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import Breadcrumb from '@/components/layout/Breadcrumb';
+import CsioMemberBadge from '@/components/products/CsioMemberBadge';
 import InDevelopmentShowcase from '@/components/products/InDevelopmentShowcase';
 import RealEstateShowcase from '@/components/products/RealEstateShowcase';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
@@ -87,6 +89,40 @@ export default function ProductsPage() {
                 </Link>
               </AnimateOnScroll>
             ))}
+
+            {/* 第 6 卡 — 开发中产品 teaser，补齐网格空角，锚点跳到页底 InDevelopmentShowcase */}
+            <AnimateOnScroll delay={caseStudies.length * 80 + 100}>
+              <Link
+                href="#in-development"
+                className="block h-full"
+                aria-label="Learn more about our in-development brokerage platform"
+              >
+                <GlassCard
+                  variant="spotlight"
+                  className="h-full group cursor-pointer flex flex-col"
+                >
+                  <div className="h-10 mb-5 flex items-center">
+                    <CsioMemberBadge />
+                  </div>
+
+                  <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
+                    AI-Driven Brokerage Platform
+                  </h3>
+                  <p className="text-txt-tertiary text-sm leading-relaxed mb-4">
+                    Brokerage management system for Ontario insurance brokerages
+                    — designed around industry data standards.
+                  </p>
+
+                  <div className="mt-auto flex items-center justify-end">
+                    <span className="inline-flex items-center gap-1 text-accent text-sm font-medium group-hover:gap-1.5 transition-all duration-300">
+                      In development
+                      {/* 下箭头 — 页内锚点语义，区别于详情页的右箭头 */}
+                      <ArrowRightIcon className="w-3.5 h-3.5 rotate-90" />
+                    </span>
+                  </div>
+                </GlassCard>
+              </Link>
+            </AnimateOnScroll>
           </div>
         </div>
       </section>
