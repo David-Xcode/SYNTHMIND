@@ -40,6 +40,12 @@ const organizationJsonLd = {
     email: CONTACT_EMAIL,
     contactType: 'customer service',
   },
+  // CSIO 会员身份 — 与 /products 的 InDevelopmentShowcase 模块对应
+  memberOf: {
+    '@type': 'Organization',
+    name: 'CSIO — Centre for Study of Insurance Operations',
+    url: 'https://csio.com',
+  },
   sameAs: ['https://github.com/synthmind'],
 };
 

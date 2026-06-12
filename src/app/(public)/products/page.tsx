@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import Breadcrumb from '@/components/layout/Breadcrumb';
+import InDevelopmentShowcase from '@/components/products/InDevelopmentShowcase';
 import RealEstateShowcase from '@/components/products/RealEstateShowcase';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
@@ -92,6 +93,9 @@ export default function ProductsPage() {
 
       {/* ── 地产营销站统一模块 ── */}
       <RealEstateShowcase />
+
+      {/* ── 开发中产品 · CSIO 会员背书 ── */}
+      <InDevelopmentShowcase />
     </>
   );
 }
