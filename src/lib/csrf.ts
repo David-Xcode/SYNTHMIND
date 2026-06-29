@@ -4,8 +4,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SITE_URL } from '@/lib/constants';
 
-// 允许的来源域名（生产 + 本地开发）
-const ALLOWED_ORIGINS = [SITE_URL, 'https://www.synthmind.ca'];
+// 允许的来源域名（www 主域 + apex 兜底，生产 + 本地开发）
+const ALLOWED_ORIGINS = [SITE_URL, 'https://synthmind.ca'];
 
 // 开发环境额外允许 localhost
 if (process.env.NODE_ENV === 'development') {

@@ -2,4 +2,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://synthmind.ca/sitemap.xml
+Sitemap: https://www.synthmind.ca/sitemap.xml
