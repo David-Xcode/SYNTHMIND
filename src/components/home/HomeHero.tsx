@@ -6,8 +6,8 @@
 // → SSR HTML 中不含 <video> → 微信 WebView 无法修改 → 消除 hydration mismatch
 // 保留 'use client' 因为 next/dynamic ssr:false 必须在 Client Component 中
 
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
 import Eyebrow from '@/components/shared/Eyebrow';
 import LineDrawDivider from '@/components/shared/LineDrawDivider';
@@ -40,11 +40,10 @@ export default function HomeHero() {
           <Eyebrow>AI-Powered Software Studio</Eyebrow>
         </div>
 
-        {/* 标题 */}
-        <h1
-          className="text-display tracking-tight animate-reveal"
-          style={{ animationDelay: '0.25s', animationFillMode: 'both' }}
-        >
+        {/* 标题 — LCP 元素：首帧即满不透明渲染，不加 animate-reveal 入场动画。
+            reveal 从 opacity:0 起步 + 0.25s 延迟会让浏览器推迟计入 LCP（典型反模式）。
+            入场动效保留在 eyebrow / divider / 副标题 / CTA 等非 LCP 元素上。 */}
+        <h1 className="text-display tracking-tight">
           <span className="font-sans font-light text-txt-primary">
             Unleash Human{' '}
           </span>

@@ -12,19 +12,35 @@ interface AnimatedStatProps {
   color: string;
 }
 
-export default function AnimatedStat({ value, label, color }: AnimatedStatProps) {
+export default function AnimatedStat({
+  value,
+  label,
+  color,
+}: AnimatedStatProps) {
   const { ref, isVisible } = useIntersectionVisible<HTMLDivElement>();
 
-  // 提取纯数字部分用于动画
-  const numericValue = parseInt(value.replace(/[^0-9]/g, ''), 10);
-  const suffix = value.replace(/[0-9]/g, '');
+  // 仅当值形如「开头整数 + 纯非数字后缀」（如 '9+'、'100%'、'1,000+'）时做计数动画。
+  // 区间或含多组数字的值（如 '2–4 wks'）若强行去掉非数字会把 '2' 和 '4' 拼成 '24'，
+  // 渲染出错误的 '24– wks'——这类值直接原样输出，不做动画。
+  const numberMatch = value.match(/^(\d[\d,]*)(\D*)$/);
+  const numericValue = numberMatch
+    ? parseInt(numberMatch[1].replace(/,/g, ''), 10)
+    : 0;
+  const suffix = numberMatch ? numberMatch[2] : '';
+  // hook 必须无条件调用以保证 hooks 调用顺序稳定
   const animatedNumber = useCountUp(numericValue, isVisible, 1200);
 
   return (
     <div ref={ref} className="card-surface p-5 rounded-xl">
       <div className={`font-mono text-2xl font-bold ${color} mb-1`}>
-        {isVisible ? animatedNumber : 0}
-        {suffix}
+        {numberMatch ? (
+          <>
+            {isVisible ? animatedNumber : 0}
+            {suffix}
+          </>
+        ) : (
+          value
+        )}
       </div>
       <div className="text-xs text-txt-quaternary">{label}</div>
     </div>

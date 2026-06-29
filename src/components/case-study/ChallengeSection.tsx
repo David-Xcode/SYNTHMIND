@@ -11,6 +11,10 @@ export default function ChallengeSection({
   challenges,
 }: ChallengeSectionProps) {
   return (
-    <TextListSection titleLight="The" titleBold="Challenge" items={challenges} />
+    <TextListSection
+      titleLight="The"
+      titleBold="Challenge"
+      items={challenges}
+    />
   );
 }

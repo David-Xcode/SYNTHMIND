@@ -34,7 +34,9 @@ export default function SectionTitle({
   }[size];
 
   return (
-    <div className={`${align === 'center' ? 'text-center' : 'text-left'} mb-16`}>
+    <div
+      className={`${align === 'center' ? 'text-center' : 'text-left'} mb-16`}
+    >
       {eyebrow && <Eyebrow className="inline-block mb-4">{eyebrow}</Eyebrow>}
       <h2 className={`${headingClass} text-txt-primary mb-4`}>
         <span className="font-sans font-light">{light}</span>{' '}

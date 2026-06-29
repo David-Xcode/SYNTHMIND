@@ -5,3 +5,22 @@
 export const SITE_URL = 'https://www.synthmind.ca';
 
 export const CONTACT_EMAIL = 'David.wang@synthmind.ca';
+
+// Open Graph 基础字段 — 单一数据源
+// Next 的 metadata 合并是「同名键整块覆盖」而非深合并：每个 page 的 openGraph
+// 只写 title/description 会把根 layout 的 image/url/siteName/locale 全部清掉。
+// 故每页都 spread 此基底，仅覆写 title/description（详情页另覆写 type/url）。
+export const BASE_OPEN_GRAPH = {
+  siteName: 'Synthmind',
+  locale: 'en_CA',
+  type: 'website' as const,
+  url: SITE_URL,
+  images: [
+    {
+      url: '/og-image.png',
+      width: 1024,
+      height: 541,
+      alt: 'Synthmind — AI-Powered Software Development',
+    },
+  ],
+};

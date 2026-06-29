@@ -282,9 +282,17 @@ body {
    ═══════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
+    /* 无障碍减少动画重置：!important 必须，用以压过遍布各处的 Tailwind 动画/过渡 utility（如 duration-[2000ms]）。
+       通配符选择器特异性极低，无 !important 会被任何 class/inline 动画覆盖，破坏 prefers-reduced-motion 特性。 */
+    /* biome-ignore lint/complexity/noImportantStyles: a11y reduced-motion reset must override utility durations */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: a11y reduced-motion reset must override utility durations */
     transition-duration: 0.01ms !important;
   }
-  video { display: none; }
+  video {
+    display: none;
+  }
 }

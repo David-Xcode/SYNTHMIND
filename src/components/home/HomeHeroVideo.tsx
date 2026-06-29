@@ -49,10 +49,10 @@ export default function HomeHeroVideo() {
     if (!ready && phase === 0) return;
 
     const durations = [
-      DISPLAY_DURATION,              // phase 0: 视频A展示 8s
-      FADE_DURATION + DARK_PAUSE,    // phase 1: 淡出 2s + 暗场 0.5s
-      DISPLAY_DURATION,              // phase 2: 视频B展示 8s
-      FADE_DURATION + DARK_PAUSE,    // phase 3: 淡出 2s + 暗场 0.5s
+      DISPLAY_DURATION, // phase 0: 视频A展示 8s
+      FADE_DURATION + DARK_PAUSE, // phase 1: 淡出 2s + 暗场 0.5s
+      DISPLAY_DURATION, // phase 2: 视频B展示 8s
+      FADE_DURATION + DARK_PAUSE, // phase 3: 淡出 2s + 暗场 0.5s
     ];
 
     const timer = setTimeout(() => {
@@ -100,6 +100,8 @@ export default function HomeHeroVideo() {
   return (
     <>
       {/* 视频 A — cosmic-threads 金色球体 (2.9M)，首先展示 */}
+      {/* 纯装饰背景视频：无 controls 故不可聚焦、pointer-events-none 不可交互，aria-hidden 正确地将其移出 a11y 树 */}
+      {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: decorative background video has no controls — not focusable */}
       <video
         ref={videoARef}
         autoPlay
@@ -114,6 +116,7 @@ export default function HomeHeroVideo() {
       </video>
 
       {/* 视频 B — hero-bg 网格动画 (1.9M)，延迟加载 */}
+      {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: decorative background video has no controls — not focusable */}
       <video
         ref={videoBRef}
         muted

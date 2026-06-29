@@ -11,7 +11,7 @@ import TechStackBadges from '@/components/case-study/TechStackBadges';
 import Breadcrumb from '@/components/layout/Breadcrumb';
 import JsonLd from '@/components/shared/JsonLd';
 import { getAllSlugs, getCaseStudyBySlug } from '@/data/case-studies';
-import { SITE_URL } from '@/lib/constants';
+import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -35,9 +35,11 @@ export async function generateMetadata({
       canonical: `/products/${slug}`,
     },
     openGraph: {
+      ...BASE_OPEN_GRAPH,
       title: `${cs.title} — Built by Synthmind`,
       description: cs.tagline,
       type: 'article',
+      url: `${SITE_URL}/products/${slug}`,
     },
   };
 }
@@ -65,10 +67,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
     <>
       <JsonLd data={caseStudyJsonLd} />
       <Breadcrumb
-        items={[
-          { label: 'Products', href: '/products' },
-          { label: cs.title },
-        ]}
+        items={[{ label: 'Products', href: '/products' }, { label: cs.title }]}
       />
       <CaseStudyHero caseStudy={cs} />
       <ChallengeSection challenges={cs.challenge} />

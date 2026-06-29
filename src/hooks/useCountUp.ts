@@ -10,7 +10,11 @@ import { useEffect, useRef, useState } from 'react';
  * @param isVisible 是否可见（触发动画）
  * @param duration 动画持续时间（ms），默认 1500
  */
-export function useCountUp(target: number, isVisible: boolean, duration = 1500) {
+export function useCountUp(
+  target: number,
+  isVisible: boolean,
+  duration = 1500,
+) {
   const [count, setCount] = useState(0);
   // React 19: useRef 不再支持零参数调用，需显式传入初始值
   const rafRef = useRef<number | undefined>(undefined);

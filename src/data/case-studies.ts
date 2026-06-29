@@ -147,7 +147,8 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'getax',
     title: 'GE Tax',
-    tagline: 'Professional website & bookkeeping app for a CPA firm in Toronto.',
+    tagline:
+      'Professional website & bookkeeping app for a CPA firm in Toronto.',
     url: 'https://www.getax.ca/',
     logo: '/product/getax.png',
     challenge: [

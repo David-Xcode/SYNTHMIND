@@ -7,13 +7,14 @@ import HomeHero from '@/components/home/HomeHero';
 import SocialProofBar from '@/components/home/SocialProofBar';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import JsonLd from '@/components/shared/JsonLd';
-import { CONTACT_EMAIL, SITE_URL } from '@/lib/constants';
+import { BASE_OPEN_GRAPH, CONTACT_EMAIL, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Synthmind | AI-Powered Software Studio',
   description:
     'Toronto-based AI startup building tools that actually work. Workflow automation, legacy modernization, and custom AI solutions.',
   openGraph: {
+    ...BASE_OPEN_GRAPH,
     title: 'Synthmind | AI Solutions That Actually Work',
     description:
       'AI startup building tools that actually work. No corporate fluff — just working software.',

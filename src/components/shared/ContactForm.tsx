@@ -4,7 +4,7 @@
 // 蓝色中心展开 focus 下划线 / 成功态变换动画
 // 此前的 mini/inline 变体全站零调用，已删除 — 仅保留完整表单
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 // 带 focus 动画的输入框样式
 const inputClass =
@@ -20,6 +20,13 @@ export default function ContactForm() {
   const [status, setStatus] = useState<
     'idle' | 'sending' | 'sent' | 'error' | 'timeout'
   >('idle');
+  const successRef = useRef<HTMLDivElement>(null);
+
+  // 成功后把焦点移到状态卡片：原焦点在已卸载的提交按钮上会丢失，
+  // 移焦同时让屏幕阅读器（role="status"）播报发送成功
+  useEffect(() => {
+    if (status === 'sent') successRef.current?.focus();
+  }, [status]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -64,8 +71,13 @@ export default function ContactForm() {
   // ─── 成功态 ───
   if (status === 'sent') {
     return (
+      // biome-ignore lint/a11y/useSemanticElements: <output> only permits phrasing content; this status card holds block children (h3/button), so role="status" on a div is the correct ARIA pattern
       <div
-        className="card-elevated p-8 text-center"
+        ref={successRef}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        className="card-elevated p-8 text-center focus:outline-none"
         style={{ animation: 'scaleIn 0.5s cubic-bezier(0.16,1,0.3,1)' }}
       >
         <div className="w-14 h-14 rounded-full bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center mx-auto mb-5">
@@ -168,12 +180,13 @@ export default function ContactForm() {
         <button
           type="submit"
           disabled={status === 'sending'}
+          aria-busy={status === 'sending'}
           className="btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {status === 'sending' ? 'Sending...' : 'Send Message'}
         </button>
         {(status === 'error' || status === 'timeout') && (
-          <span className="text-red-400 text-sm">
+          <span role="alert" className="text-red-400 text-sm">
             {status === 'timeout'
               ? 'Request timed out. Please check your connection and try again.'
               : 'Something went wrong. Please try again.'}

@@ -3,13 +3,14 @@
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
-import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import AnimatedStat from '@/components/shared/AnimatedStat';
+import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import CTABanner from '@/components/shared/CTABanner';
 import Eyebrow from '@/components/shared/Eyebrow';
 import GlassCard from '@/components/shared/GlassCard';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
+import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'About Synthmind | AI Software Studio',
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
     'Synthmind is a Toronto-based AI startup building software that modernizes traditional businesses. We deliver workflow automation, legacy modernization, and custom AI solutions.',
   alternates: { canonical: '/about' },
   openGraph: {
+    ...BASE_OPEN_GRAPH,
+    url: `${SITE_URL}/about`,
     title: 'About Synthmind',
     description:
       'Toronto-based AI startup building software that actually works.',

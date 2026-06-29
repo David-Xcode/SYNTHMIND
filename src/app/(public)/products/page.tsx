@@ -15,6 +15,7 @@ import GlassCard from '@/components/shared/GlassCard';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { caseStudies } from '@/data/case-studies';
+import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Products | Synthmind',
@@ -22,6 +23,8 @@ export const metadata: Metadata = {
     'AI-powered software products and real estate marketing sites built for real businesses. See our work.',
   alternates: { canonical: '/products' },
   openGraph: {
+    ...BASE_OPEN_GRAPH,
+    url: `${SITE_URL}/products`,
     title: 'Products — Synthmind',
     description: 'Real solutions built for real businesses.',
   },

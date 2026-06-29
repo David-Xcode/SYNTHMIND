@@ -290,9 +290,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Failed to send your message. Please try again or email us directly.',
+          error:
+            'Failed to send your message. Please try again or email us directly.',
           details:
-            process.env.NODE_ENV === 'development' ? notificationError : undefined,
+            process.env.NODE_ENV === 'development'
+              ? notificationError
+              : undefined,
         },
         { status: 502 },
       );

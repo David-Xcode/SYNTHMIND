@@ -28,7 +28,10 @@ export default function SiteFooter() {
         </Link>
 
         {/* 导航链接 */}
-        <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-5 mt-6">
+        <nav
+          aria-label="Footer"
+          className="flex flex-wrap items-center justify-center gap-5 mt-6"
+        >
           {footerNav.company.map((link) => (
             <Link
               key={link.href}

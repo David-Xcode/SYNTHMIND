@@ -6,8 +6,9 @@ import Breadcrumb from '@/components/layout/Breadcrumb';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ContactForm from '@/components/shared/ContactForm';
 import JsonLd from '@/components/shared/JsonLd';
+import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
-import { CONTACT_EMAIL, SITE_URL } from '@/lib/constants';
+import { BASE_OPEN_GRAPH, CONTACT_EMAIL, SITE_URL } from '@/lib/constants';
 import FAQAccordion from './FAQAccordion';
 import { faqs } from './faqData';
 
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
     'Get in touch with Synthmind for AI-powered software development. Free consultation for insurance, real estate, accounting, and construction businesses.',
   alternates: { canonical: '/contact' },
   openGraph: {
+    ...BASE_OPEN_GRAPH,
+    url: `${SITE_URL}/contact`,
     title: 'Contact Synthmind',
     description: 'Book a free consultation for your AI project.',
   },
@@ -75,18 +78,13 @@ export default function ContactPage() {
       ))}
       <Breadcrumb items={[{ label: 'Contact' }]} />
 
-      {/* Hero */}
-      <section className="pt-8 pb-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <AnimateOnScroll>
-            <SectionTitle
-              light="Let's"
-              bold="Talk"
-              subtitle="Have a question or ready to start your AI project? Drop us a message."
-            />
-          </AnimateOnScroll>
-        </div>
-      </section>
+      {/* Hero — 统一用 PageHero（渲染 <h1>，与 about/products 对齐；此前用 SectionTitle 只有 <h2>，全站唯一缺 h1 的页） */}
+      <PageHero
+        eyebrow="GET IN TOUCH"
+        light="Let's"
+        bold="Talk"
+        subtitle="Have a question or ready to start your AI project? Drop us a message."
+      />
 
       {/* 表单 + 联系信息 双栏布局 */}
       <section className="pb-20 px-4">
