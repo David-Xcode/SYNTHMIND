@@ -249,7 +249,10 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {processSteps.map((step, index) => (
               <AnimateOnScroll key={step.title} delay={index * 80 + 100}>
-                <div className="relative card-surface p-6 rounded-xl h-full">
+                <GlassCard
+                  variant="surface"
+                  className="relative rounded-xl h-full"
+                >
                   {/* 大号水印编号 */}
                   <span className="absolute top-3 right-4 font-mono text-5xl font-bold text-txt-quaternary/15 leading-none select-none">
                     {String(index + 1).padStart(2, '0')}
@@ -266,7 +269,7 @@ export default function AboutPage() {
                       {step.description}
                     </p>
                   </div>
-                </div>
+                </GlassCard>
               </AnimateOnScroll>
             ))}
           </div>

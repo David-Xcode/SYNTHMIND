@@ -4,6 +4,7 @@
 
 import Image from 'next/image';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import Eyebrow from '@/components/shared/Eyebrow';
 import GlassCard from '@/components/shared/GlassCard';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { realEstateSites } from '@/data/real-estate';
@@ -55,9 +56,9 @@ export default function RealEstateShowcase() {
                   <h3 className="text-base font-medium text-txt-primary tracking-tight">
                     {site.name}
                   </h3>
-                  <p className="mt-1 font-mono text-xs uppercase tracking-eyebrow text-txt-quaternary">
+                  <Eyebrow tone="quaternary" className="block mt-1">
                     {site.location}
-                  </p>
+                  </Eyebrow>
 
                   <p className="mt-3 text-txt-tertiary text-sm leading-relaxed">
                     {site.description}

@@ -55,9 +55,12 @@ export default function FAQAccordion({ faqs }: FAQAccordionProps) {
                 </span>
               </button>
 
-              {/* 可折叠内容区 — 使用 grid rows 实现 smooth height */}
+              {/* 可折叠内容区 — 使用 grid rows 实现 smooth height。
+                  折叠时用 inert 移出 a11y 树（屏幕阅读器不再读到收起的答案），
+                  inert 不设 display:none，故高度动画保持流畅 */}
               <section
                 id={panelId}
+                inert={!isOpen}
                 className="grid transition-all duration-300 ease-out-expo"
                 style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
               >

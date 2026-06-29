@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ContactForm from '@/components/shared/ContactForm';
+import Eyebrow from '@/components/shared/Eyebrow';
 import JsonLd from '@/components/shared/JsonLd';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -110,9 +111,9 @@ export default function ContactPage() {
                     {/* 左侧蓝色渐变竖线 — 借鉴 .card-spotlight::before */}
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-accent/40 to-accent/10" />
                     <div>
-                      <p className="font-mono text-txt-quaternary text-xs font-medium uppercase tracking-eyebrow mb-0.5">
+                      <Eyebrow tone="quaternary" className="block mb-0.5">
                         {info.label}
-                      </p>
+                      </Eyebrow>
                       {info.href ? (
                         <a
                           href={info.href}

@@ -53,6 +53,7 @@ export default function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive(item.href) ? 'page' : undefined}
               className={`relative text-sm font-normal transition-colors duration-200 py-1 ${
                 isActive(item.href)
                   ? 'text-txt-primary'

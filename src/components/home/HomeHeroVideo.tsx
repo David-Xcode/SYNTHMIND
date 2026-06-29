@@ -23,6 +23,15 @@ export default function HomeHeroVideo() {
   // 第二视频是否已就绪（canplaythrough），未就绪前停留在 phase 0
   const [ready, setReady] = useState(false);
 
+  // 尊重「减少动画」偏好：挂载前用 JS 检测，命中则整组件 return null，
+  // 两个 <video> 都不挂载 → 不触发 preload/autoplay 下载（约 5MB）。
+  // 比仅靠 CSS display:none（视觉隐藏但仍下载）彻底。组件经 ssr:false 仅客户端渲染，window 必定存在
+  const [reducedMotion] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+
   // 延迟加载第二个视频，用 canplaythrough 事件判断就绪
   useEffect(() => {
     const video = videoBRef.current;
@@ -45,6 +54,8 @@ export default function HomeHeroVideo() {
 
   // 状态机推进：每个 phase 对应一个 setTimeout，依赖变化自动清理
   useEffect(() => {
+    // 减少动画偏好：不启动轮播计时器
+    if (reducedMotion) return;
     // 视频B未就绪时，停留在 phase 0 不轮播
     if (!ready && phase === 0) return;
 
@@ -60,7 +71,7 @@ export default function HomeHeroVideo() {
     }, durations[phase]);
 
     return () => clearTimeout(timer);
-  }, [phase, ready]);
+  }, [phase, ready, reducedMotion]);
 
   // 播放控制：进入展示 phase 时 reset 到开头再播放，淡出阶段延迟暂停
   useEffect(() => {
@@ -92,6 +103,9 @@ export default function HomeHeroVideo() {
       return () => clearTimeout(t);
     }
   }, [phase]);
+
+  // 减少动画偏好：不渲染任何 <video>（须在所有 hook 之后以保证 hooks 调用顺序稳定）
+  if (reducedMotion) return null;
 
   // 视频透明度：仅在对应展示 phase 时可见
   const videoAOpacity = phase === 0 ? 'opacity-[0.15]' : 'opacity-0';

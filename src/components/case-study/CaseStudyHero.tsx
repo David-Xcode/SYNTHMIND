@@ -1,7 +1,6 @@
-'use client';
-
 // ─── 案例详情页头部 · Neural ───
 // 无行业色渐变光球 / 蓝色边框 badge / 干净背景
+// Server Component：自身无 hooks/事件，交互全在 client 叶子（AnimateOnScroll）
 
 import Image from 'next/image';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';

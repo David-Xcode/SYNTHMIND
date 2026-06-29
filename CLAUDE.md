@@ -95,7 +95,9 @@ import Eyebrow from '@/components/shared/Eyebrow';
 
 **CRITICAL:** Always use Tailwind tokens from `tailwind.config.js`. Never write raw hex values.
 
-**唯一豁免：** 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
+**豁免：**
+- 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
+- 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
 
 ### Accent Scale (Synth Blue)
 | Token | Hex | Usage |

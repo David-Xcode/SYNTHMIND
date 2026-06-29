@@ -7,6 +7,7 @@ import Link from 'next/link';
 import CsioMemberBadge from '@/components/products/CsioMemberBadge';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
+import Eyebrow from '@/components/shared/Eyebrow';
 import GlassCard from '@/components/shared/GlassCard';
 import SectionTitle from '@/components/shared/SectionTitle';
 
@@ -73,9 +74,9 @@ export default function InDevelopmentShowcase() {
             <h3 className="text-title font-display font-semibold text-txt-primary tracking-tight">
               AI-Driven Brokerage Management Platform
             </h3>
-            <p className="mt-1 font-mono text-xs uppercase tracking-eyebrow text-txt-quaternary">
+            <Eyebrow tone="quaternary" className="block mt-1">
               Ontario, Canada
-            </p>
+            </Eyebrow>
 
             <div className="mt-4 max-w-3xl space-y-3">
               <p className="text-txt-secondary text-sm leading-relaxed">

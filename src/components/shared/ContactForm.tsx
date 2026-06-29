@@ -126,6 +126,7 @@ export default function ContactForm() {
             value={form.name}
             onChange={handleChange}
             aria-label="Name"
+            autoComplete="name"
             className={inputClass}
           />
           <div className="focus-line" />
@@ -139,6 +140,7 @@ export default function ContactForm() {
             value={form.email}
             onChange={handleChange}
             aria-label="Email"
+            autoComplete="email"
             className={inputClass}
           />
           <div className="focus-line" />

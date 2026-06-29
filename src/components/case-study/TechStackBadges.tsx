@@ -14,9 +14,11 @@ export default function TechStackBadges({ techStack }: TechStackBadgesProps) {
     <section className="py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <AnimateOnScroll>
-          <h3 className="mb-6 text-center">
+          {/* h2 而非 h3：本块是与 Challenge/Solution/Results 平级的顶层 section，
+              视觉小标样式由内层 Eyebrow 控制，标题级别只用于正确的文档大纲 */}
+          <h2 className="mb-6 text-center">
             <Eyebrow>Built With</Eyebrow>
-          </h3>
+          </h2>
           <div className="flex flex-wrap justify-center gap-2.5">
             {techStack.map((tech) => {
               const brandColor = TECH_BRAND_COLORS[tech];

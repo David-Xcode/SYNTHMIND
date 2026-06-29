@@ -1,6 +1,5 @@
-'use client';
-
 // ─── CTA 横幅 · Neural ───
+// Server Component：自身无 hooks/事件，交互全在 client 叶子（AnimateOnScroll/TextReveal）
 // 径向光晕背景 + TextReveal 标题 + 蓝色渐变 CTA
 
 import Link from 'next/link';

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { CONTACT_EMAIL } from '@/lib/constants';
+import {
+  BRAND_ACCENT,
+  BRAND_ACCENT_DARK,
+  CONTACT_EMAIL,
+} from '@/lib/constants';
 import { checkCsrf } from '@/lib/csrf';
 
 // 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
@@ -79,7 +83,7 @@ const sendCustomerReply = async (
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
 
-        <div style="background: linear-gradient(135deg, #4A9FE5, #3488CC); padding: 30px; text-align: center; color: white;">
+        <div style="background: linear-gradient(135deg, ${BRAND_ACCENT}, ${BRAND_ACCENT_DARK}); padding: 30px; text-align: center; color: white;">
           <h1 style="margin: 0; font-size: 28px; font-weight: 300;">Synthmind</h1>
           <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Reshaping the Future with AI</p>
         </div>
@@ -89,15 +93,15 @@ const sendCustomerReply = async (
 
           <p style="color: #333; line-height: 1.6; margin: 0 0 25px 0;">Thank you for reaching out to Synthmind! We have received your message and truly appreciate your interest in our AI solutions.</p>
 
-          <div style="background-color: #f8f9ff; border-left: 4px solid #4A9FE5; padding: 20px; margin: 25px 0;">
-            <p style="color: #4A9FE5; font-weight: bold; margin: 0 0 15px 0;">Your Message Summary</p>
+          <div style="background-color: #f8f9ff; border-left: 4px solid ${BRAND_ACCENT}; padding: 20px; margin: 25px 0;">
+            <p style="color: ${BRAND_ACCENT}; font-weight: bold; margin: 0 0 15px 0;">Your Message Summary</p>
             <p style="margin: 0 0 10px 0; color: #555;"><strong>Subject:</strong> ${safeSubject}</p>
             <p style="margin: 0; color: #333;"><strong>Message:</strong></p>
             <p style="margin: 10px 0 0 0; color: #333; line-height: 1.5;">${safeMessage}</p>
           </div>
 
           <p style="color: #333; margin: 20px 0 0 0;">Best regards,</p>
-          <p style="color: #4A9FE5; font-weight: bold; margin: 5px 0 0 0;">The Synthmind Team</p>
+          <p style="color: ${BRAND_ACCENT}; font-weight: bold; margin: 5px 0 0 0;">The Synthmind Team</p>
         </div>
 
       </div>
@@ -124,14 +128,14 @@ const sendNotificationEmail = async (
     replyTo: email,
     html: `
       <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #4A9FE5, #3488CC); padding: 30px; text-align: center; color: white;">
+        <div style="background: linear-gradient(135deg, ${BRAND_ACCENT}, ${BRAND_ACCENT_DARK}); padding: 30px; text-align: center; color: white;">
           <h1 style="margin: 0; font-size: 24px; font-weight: 600;">New Website Contact Form Submission</h1>
           <p style="margin: 10px 0 0 0; opacity: 0.9;">from synthmind.ca</p>
         </div>
 
         <div style="background-color: white; padding: 30px; border: 1px solid #e8eaed;">
-          <div style="background-color: #f8f9ff; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #4A9FE5;">
-            <h2 style="color: #4A9FE5; margin: 0 0 20px 0; font-size: 20px;">Contact Information</h2>
+          <div style="background-color: #f8f9ff; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid ${BRAND_ACCENT};">
+            <h2 style="color: ${BRAND_ACCENT}; margin: 0 0 20px 0; font-size: 20px;">Contact Information</h2>
             <p><strong>Name:</strong> ${safeName}</p>
             <p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>
             <p><strong>Subject:</strong> ${safeSubject}</p>
@@ -148,7 +152,7 @@ const sendNotificationEmail = async (
 
           <div style="margin-top: 30px; text-align: center;">
             <a href="mailto:${escapeHtml(email)}?subject=Re: ${encodeURIComponent(subject || '')}"
-               style="display: inline-block; background: linear-gradient(135deg, #4A9FE5, #3488CC); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">
+               style="display: inline-block; background: linear-gradient(135deg, ${BRAND_ACCENT}, ${BRAND_ACCENT_DARK}); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">
               Reply to Customer
             </a>
           </div>
@@ -164,10 +168,11 @@ export async function POST(request: NextRequest) {
   if (csrfError) return csrfError;
 
   // 速率限制 — 在解析 body 之前执行
-  const clientIp =
-    request.headers.get('x-real-ip') ??
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'unknown';
+  // 仅用 x-real-ip：该头由 Vercel 平台写入真实客户端 IP，客户端无法伪造。
+  // 不回退到 x-forwarded-for——它可被客户端伪造，攻击者轮换该头即可获得新桶绕过限流。
+  // 局限：此限流为单实例内存级，serverless 多实例 / 冷启动会重置；
+  // 真正的分布式限流需 Vercel KV / WAF rate-limit 规则（属基础设施改动，未在此引入）。
+  const clientIp = request.headers.get('x-real-ip')?.trim() || 'unknown';
 
   if (isRateLimited(clientIp)) {
     return NextResponse.json(

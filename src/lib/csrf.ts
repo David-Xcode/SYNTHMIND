@@ -31,9 +31,16 @@ export function checkCsrf(req: NextRequest): NextResponse | null {
   }
 
   // 降级检查 Referer（某些浏览器 / 隐私模式可能不发 Origin）
+  // 必须解析出 origin 再精确比对：startsWith 前缀匹配会被
+  // https://synthmind.ca.evil.com 这类 lookalike 域绕过
   if (referer) {
-    const allowed = ALLOWED_ORIGINS.some((o) => referer.startsWith(o));
-    if (allowed) return null;
+    let refererOrigin: string | null = null;
+    try {
+      refererOrigin = new URL(referer).origin;
+    } catch {
+      refererOrigin = null;
+    }
+    if (refererOrigin && ALLOWED_ORIGINS.includes(refererOrigin)) return null;
     return NextResponse.json(
       { error: 'Forbidden: invalid referer.' },
       { status: 403 },

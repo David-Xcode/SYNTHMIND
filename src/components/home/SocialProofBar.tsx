@@ -6,6 +6,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import Eyebrow from '@/components/shared/Eyebrow';
 import { caseStudies } from '@/data/case-studies';
 import { realEstateSites } from '@/data/real-estate';
 
@@ -34,9 +35,9 @@ export default function SocialProofBar() {
   return (
     <section className="py-16 bg-bg-base overflow-hidden">
       <AnimateOnScroll>
-        <p className="text-center font-mono text-txt-tertiary text-xs font-medium tracking-eyebrow uppercase mb-8">
+        <Eyebrow tone="tertiary" className="block text-center mb-8">
           Trusted by businesses across industries
-        </p>
+        </Eyebrow>
       </AnimateOnScroll>
 
       {/* Marquee 容器 */}
