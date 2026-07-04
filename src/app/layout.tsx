@@ -34,6 +34,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  // Google Search Console 站点所有权验证 — 渲染 <meta name="google-site-verification">
+  verification: {
+    google: 'ygG1JvdzdlzTjU3ruttowjnXPMbV_VIJdUKXsvX1CLk',
+  },
   openGraph: {
     title: 'Synthmind | AI Solutions That Actually Work',
     description:
