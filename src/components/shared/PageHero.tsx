@@ -1,8 +1,8 @@
 // ─── 内页 Hero · Blueprint ───
 // about / products / contact 共享的页头区块：
 // 径向光晕 + 图签 + light/bold 标题 + 副标题
-// v4：背景 = layout 级满铺砖墙（BlueprintWall）；本组件的网格与
-// depth-drift 深度层已退役（fixed 墙即深度基准，spec C.1 裁决）
+// v4.1：背景 = layout 级随滚方砖墙（BlueprintWall）；本组件的网格与
+// depth-drift 深度层已退役（墙与内容同速随滚，深度由材质层次承担）
 
 import AnimateOnScroll from './AnimateOnScroll';
 import SheetLabel from './SheetLabel';

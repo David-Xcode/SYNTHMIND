@@ -8,9 +8,10 @@ import { footerNav } from '@/data/navigation';
 import { CONTACT_EMAIL } from '@/lib/constants';
 
 export default function SiteFooter() {
-  // v4：bg-base/90 半透明收尾 — 满铺墙隐约透出（bg token 的 opacity modifier，非新色）
+  // v4.1：bg-base/70 半透明收尾 — 墙材质要看得见（/90 读作单一色调平底，
+  // 触 v4.1「无单一色调平底」验收线）；文字为居中小字号，实测仍清晰
   return (
-    <footer className="relative text-white bg-bg-base/90">
+    <footer className="relative text-white bg-bg-base/70">
       {/* 顶部蓝色分割线 — 页面的视觉句号 */}
       <hr className="ruled-line" />
 
@@ -45,14 +46,15 @@ export default function SiteFooter() {
           ))}
         </nav>
 
-        {/* 版权 + 邮箱 */}
+        {/* 版权 + 邮箱 — tertiary 而非 quaternary：quaternary 是「禁用/装饰」档，
+            压在墙材质上只有 3.4:1 不达 WCAG AA；tertiary 为 5.9:1 */}
         <div className="mt-8 space-y-1">
-          <p className="text-txt-quaternary text-xs">
+          <p className="text-txt-tertiary text-xs">
             &copy; {new Date().getFullYear()} Synthmind. Toronto, Canada.
           </p>
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className="inline-block text-txt-quaternary hover:text-accent text-xs transition-colors duration-200"
+            className="inline-block text-txt-tertiary hover:text-accent text-xs transition-colors duration-200"
           >
             {CONTACT_EMAIL}
           </a>

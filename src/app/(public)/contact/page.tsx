@@ -131,7 +131,8 @@ export default function ContactPage() {
                 ))}
 
                 <div className="pt-5 border-t border-[var(--border-default)]">
-                  <p className="text-txt-quaternary text-sm leading-relaxed">
+                  {/* tertiary：quaternary 压在墙材质上仅 3.3:1，不达 WCAG AA */}
+                  <p className="text-txt-tertiary text-sm leading-relaxed">
                     Our team handles all inquiries directly. No sales team, no
                     runaround — you talk to the people who will build your
                     project.

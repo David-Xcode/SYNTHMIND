@@ -1,7 +1,8 @@
 // ─── 公开页面共享布局 ───
 // SiteHeader + SiteFooter 在此声明一次，所有公开页面自动继承
-// BlueprintWall：全站唯一背景材质（fixed 单实例，z-index -1），
-// 所有页面的 section 不再持有整幅不透明底色（v4 层次纪律 L0/L1/L2）
+// BlueprintWall：全站唯一背景材质（单实例，z-index -1），v4.1 起随页面
+// 滚动——relative wrapper 撑满文档高，墙以 absolute inset-0 铺满其中
+// （无 JS 也随滚）；所有页面的 section 不再持有整幅不透明底色（L0/L1/L2）
 
 import type { ReactNode } from 'react';
 import SiteFooter from '@/components/layout/SiteFooter';
@@ -11,7 +12,7 @@ import ErrorBoundary from '@/components/shared/ErrorBoundary';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className="relative">
       {/* 跳到主内容链接 — WCAG 2.4.1，首个可聚焦元素，仅键盘聚焦时可见（Tailwind 内置 sr-only / not-sr-only） */}
       <a
         href="#main-content"
@@ -31,6 +32,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <ErrorBoundary fallback={null}>
         <SiteFooter />
       </ErrorBoundary>
-    </>
+    </div>
   );
 }

@@ -29,7 +29,7 @@ export default function TextListSection({
   eyebrow,
 }: TextListSectionProps) {
   return (
-    <section className={`py-16 ${bgClass} px-4`}>
+    <section className={`py-16 px-4 ${bgClass}`.trim()}>
       <div className="max-w-3xl mx-auto">
         <AnimateOnScroll>
           <SectionTitle

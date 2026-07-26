@@ -28,17 +28,14 @@
   --border-strong: rgba(74, 159, 229, 0.18);
   --border-heavy: rgba(74, 159, 229, 0.25);
 
-  /* ── 蓝图基准网格 (alpha ≤0.04 — 注意到才看见) ── */
-  --grid-line-major: rgba(74, 159, 229, 0.04);
-  --grid-line-minor: rgba(74, 159, 229, 0.02);
-
   /* ── v4 Blueprint Material token ──
      正本 = BlueprintObject 的面/线/光系（spec A.2 对照表）；
      砖墙与按钮同源消费——改物件色阶必须同步此块。
      TSX 侧 STROKE 表保持字面量（SVG presentation attribute 的 var()
      替换在个别 WebView 失效，物件内已有同类坑注释） */
-  --mat-face-base: rgba(17, 22, 32, 0.75); /* bg-elevated 的半透明形态
-     （0.55 会让透光层光带穿透砖面成 96px 鬼影线，稀释错缝节奏——实测定 0.75） */
+  --mat-face-base: rgba(17, 22, 32, 0.9); /* bg-elevated 的高实度形态
+     （v4.1：缝隙透光由光槽层专职，面不再兼职透光——0.75 时代的鬼影线
+     口径废弃；SVG tile 内字面值与本 token 交叉锁定，改值两处同步） */
   --mat-face-tint: rgba(
     74,
     159,
@@ -57,26 +54,34 @@
   --mat-seam-soft: rgba(74, 159, 229, 0.55); /* = 物件竖缝光心/淡入终值 */
 
   /* ── 砖墙 pitch — 静态材质层与 WallBricks 同读（JS 只读不定，
-     永不产生第二事实源）；大屏阶梯见下方媒体查询 ── */
-  --wall-brick-w: 192px;
-  --wall-row-h: 96px;
+     永不产生第二事实源）；v4.1 方砖单变量（--wall-row-h 已退役），
+     缝宽恒 = pitch/16（整除保 DOM 砖与静态 tile 几何等价）；
+     阶梯见下方媒体查询 ── */
+  --wall-brick-w: 96px;
   --wall-seam: 6px;
 
   /* ── 动画缓动 ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 大屏砖 pitch 阶梯 — 预算恒 ≤220/视口；16:9 大屏必须行高同步放大
-   （纯宽度阶梯在 4K 无缩放下仍超预算）；全部 24 倍数保细分格连续 */
-@media (min-width: 2200px) {
+/* 方砖 pitch 阶梯 — 预算恒 ≤400/视口（实测 368 砖满帧、600 砖掉帧
+   min 67fps）；窄屏加密、超宽屏放大；--wall-seam 同步 = pitch/16 */
+@media (max-width: 639.98px) {
   :root {
-    --wall-brick-w: 288px;
+    --wall-brick-w: 80px;
+    --wall-seam: 5px;
   }
 }
-@media (min-width: 3000px) {
+@media (min-width: 2200px) {
   :root {
-    --wall-brick-w: 384px;
-    --wall-row-h: 144px;
+    --wall-brick-w: 128px;
+    --wall-seam: 8px;
+  }
+}
+@media (min-width: 3600px) {
+  :root {
+    --wall-brick-w: 192px;
+    --wall-seam: 12px;
   }
 }
 
@@ -166,203 +171,136 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   BlueprintWall 满铺砖墙 · Living Blueprint v4
-   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4-design.md（WF-C）
-   全站唯一背景材质（fixed 单实例，(public)/layout 挂载）：
-   透光层（埋于砖下）+ 奇偶两行带静态砖面（CSS 直出，无 JS/触屏/RM 也可见）
-   + WallBricks 懒构建 JS 砖场（data-bricks 同帧接管，静止态像素等价）
-   「墙不动、图纸动」——fixed 层滚动零重绘，砖场预算恒 = 视口面积
+   BlueprintWall 随滚方砖墙 · Living Blueprint v4.1
+   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.1-design.md
+   全站唯一背景材质（单实例，(public)/layout 的 relative wrapper 内挂载）：
+   文档级 absolute 静态墙（光槽层 + SVG tile 方砖面——CSS 直出，
+   无 JS/触屏/RM 三路径可见且天然随页滚动）+ fixed 洗墙光（光源属视口，
+   墙动光不动）+ WallBricks fixed 砖场（mod 回卷追随滚动，
+   data-bricks 同帧接管像素等价）
    ═══════════════════════════════════════════════ */
 
 .bp-wall {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
 }
 
-/* 透光层 — 柔光带埋于砖面之下：静态只从 6px 缝里漏出细光（≤0.08），
-   砖翘起让开时露出宽光带 = 物件缝光系统的墙体版（纯几何显影零联动逻辑）。
-   横向光带沿每条水平缝；竖向光带沿 brick-w/2 栅格（奇偶行竖缝的并集，
-   被砖面盖住的部分不可见，无需区分行带） */
+/* 光槽层 — 缝隙灯槽（v4.1 灯光质感的主承担者）：横竖光带沿缝走，
+   缝心 α0.12、缝外 7px 渐隐；静态时从缝里漏光，砖翘起让开时露出宽光带
+   = 物件缝光系统的墙体版（纯几何显影零联动逻辑，v4 机制原样） */
 .bp-wall-light {
   position: absolute;
   inset: 0;
   background-image:
     repeating-linear-gradient(
       180deg,
-      rgba(74, 159, 229, 0.07) 0px,
-      rgba(74, 159, 229, 0.08) 3px,
-      transparent 18px,
-      transparent calc(var(--wall-row-h) - 14px),
-      rgba(74, 159, 229, 0.07) var(--wall-row-h)
+      rgba(74, 159, 229, 0.1) 0px,
+      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
+      rgba(74, 159, 229, 0.1) var(--wall-seam),
+      transparent calc(var(--wall-seam) + 7px),
+      transparent calc(var(--wall-brick-w) - 7px),
+      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
     ),
     repeating-linear-gradient(
       90deg,
-      rgba(74, 159, 229, 0.05) 0px,
-      rgba(74, 159, 229, 0.06) 3px,
-      transparent 20px,
-      transparent calc(var(--wall-brick-w) / 2 - 16px),
-      rgba(74, 159, 229, 0.05) calc(var(--wall-brick-w) / 2)
+      rgba(74, 159, 229, 0.1) 0px,
+      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
+      rgba(74, 159, 229, 0.1) var(--wall-seam),
+      transparent calc(var(--wall-seam) + 7px),
+      transparent calc(var(--wall-brick-w) - 7px),
+      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
     );
 }
 
-/* 静态砖面 — 奇偶行各一元素。砖面矩形阵列的免 DOM 画法：
-   单层 repeating-gradient 只能画无限长条纹，砖面 = 竖缝条纹 × 行带条纹的
-   交集——双层 mask 取交（intersect / 老 WebKit 语法 source-in）。
-   老内核不支持 composite 时软降级为无缝满面细网格（仍是安静背景，非事故）。
-   本元素是纯 2D 背景层（无 3D 子树）——mask 分组扁平化无碍；
-   JS 砖场是无 mask 的 sibling（v3 wrap-mask 教训已内建规避） */
+/* 静态方砖面 — 单元素 SVG data-URI tile（一格一砖：缝归 tile 左/上缘
+   透出光槽层，面 rect 从 (seam,seam) 起）。网格化对齐阵列的周期 = 单 tile，
+   v4 的奇偶行双元素 + mask-composite 机器整体退役（SVG 背景无兼容缺口，
+   连软降级路径都不再需要）。tile 内字面色值与 --mat-* token 交叉锁定
+   （data URI 无法消费 var()——同 BlueprintObject STROKE 表机制，改值两处
+   同步）：面基底 rgba(17,22,32,0.9) = --mat-face-base、受光沉降 0.05 =
+   --mat-face-tint、底缘厚度带 0.22 = --mat-face-shade 折算档、
+   1px 棱线 = 中性明度轴豁免区 */
 .bp-wall-face {
   position: absolute;
   inset: 0;
-  background-color: var(--mat-face-base);
-  /* 受光 fade — 每行顶部微亮，至面高中段消隐 */
-  background-image:
-    repeating-linear-gradient(
-      180deg,
-      var(--mat-face-tint) var(--wall-seam),
-      transparent calc(var(--wall-row-h) / 2),
-      transparent var(--wall-row-h)
-    ),
-    /* 顶缘 1px 受光棱线（中性白明度轴，非第二色相） */
-    repeating-linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.035) var(--wall-seam),
-      rgba(255, 255, 255, 0.035) calc(var(--wall-seam) + 1px),
-      transparent calc(var(--wall-seam) + 1px),
-      transparent var(--wall-row-h)
-    ),
-    /* 底缘厚度暗示带 — 砖的侧缘压暗（--mat-face-shade 渐入） */
-    repeating-linear-gradient(
-      180deg,
-      transparent 0px,
-      transparent calc(var(--wall-row-h) - 5px),
-      var(--mat-face-shade) calc(var(--wall-row-h) - 1px),
-      var(--mat-face-shade) var(--wall-row-h)
-    ),
-    /* 24px 细分格 — 图纸砖的方格纸肌理（全局相位，与 DOM 砖对齐） */
-    linear-gradient(var(--grid-line-minor) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line-minor) 1px, transparent 1px);
-  background-size:
-    auto,
-    auto,
-    auto,
-    24px 24px,
-    24px 24px;
-  -webkit-mask-image:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent var(--wall-seam),
-      #000 var(--wall-seam),
-      #000 var(--wall-brick-w)
-    ),
-    repeating-linear-gradient(
-      180deg,
-      transparent 0px,
-      transparent var(--wall-seam),
-      #000 var(--wall-seam),
-      #000 var(--wall-row-h),
-      transparent var(--wall-row-h),
-      transparent calc(var(--wall-row-h) * 2)
-    );
-  mask-image:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent var(--wall-seam),
-      #000 var(--wall-seam),
-      #000 var(--wall-brick-w)
-    ),
-    repeating-linear-gradient(
-      180deg,
-      transparent 0px,
-      transparent var(--wall-seam),
-      #000 var(--wall-seam),
-      #000 var(--wall-row-h),
-      transparent var(--wall-row-h),
-      transparent calc(var(--wall-row-h) * 2)
-    );
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-/* 奇行 — 错缝 brick-w/2（砌砖 bond），行带下移一行 */
-.bp-wall-face--b {
-  -webkit-mask-position:
-    calc(var(--wall-brick-w) / 2) 0,
-    0 var(--wall-row-h);
-  mask-position:
-    calc(var(--wall-brick-w) / 2) 0,
-    0 var(--wall-row-h);
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.05'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.22'/></linearGradient></defs><rect x='6' y='6' width='90' height='90' fill='%23111620' fill-opacity='0.9'/><rect x='6' y='6' width='90' height='90' fill='url(%23t)'/><rect x='6' y='91' width='90' height='5' fill='url(%23s)'/><rect x='6' y='6' width='90' height='1' fill='%23ffffff' fill-opacity='0.04'/><rect x='6' y='6' width='1' height='90' fill='%23ffffff' fill-opacity='0.02'/><rect x='95' y='6' width='1' height='90' fill='%23000000' fill-opacity='0.16'/></svg>");
+  background-size: var(--wall-brick-w) var(--wall-brick-w);
 }
 
-/* JS 砖场（WallBricks 懒构建）— 激活后静态砖面整层退场（同帧切换，
-   静止态像素等价）；透光层不隐藏——砖下遮挡关系由 DOM 砖接管 */
+/* JS 砖场（WallBricks 懒构建）— fixed + translateY(-(scrollY mod pitch))
+   回卷追随文档滚动（对齐阵列以 pitch 为完全周期 ⇒ 回卷逐像素无缝）；
+   高度由 JS 写入（视口行数 + 1 回卷备用行）。激活后静态砖面整层退场
+   （同帧切换像素等价）；光槽层/洗墙光不隐藏——遮挡关系由 DOM 砖接管 */
 .bp-wall-field {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
 }
 .bp-wall[data-bricks="on"] .bp-wall-face {
   opacity: 0;
 }
+/* 激活期光槽随场走：场的回卷 transform 由主线程 scroll 事件写入，恒落后
+   合成器滚动 ~1 帧——若缝光仍留在文档层（合成器精确随滚），快滚时砖面
+   与缝光互相错位。解法 = 光槽搬进场背景（同一 transform 下与砖逐帧一致），
+   文档层光槽同帧退场；静止态两者像素等价（同渐变、同相位、同底）。
+   渐变栈与 .bp-wall-light 严格同值——改光槽参数两处同步 */
+.bp-wall[data-bricks="on"] .bp-wall-light {
+  opacity: 0;
+}
+.bp-wall[data-bricks="on"] .bp-wall-field {
+  background-image:
+    repeating-linear-gradient(
+      180deg,
+      rgba(74, 159, 229, 0.1) 0px,
+      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
+      rgba(74, 159, 229, 0.1) var(--wall-seam),
+      transparent calc(var(--wall-seam) + 7px),
+      transparent calc(var(--wall-brick-w) - 7px),
+      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(74, 159, 229, 0.1) 0px,
+      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
+      rgba(74, 159, 229, 0.1) var(--wall-seam),
+      transparent calc(var(--wall-seam) + 7px),
+      transparent calc(var(--wall-brick-w) - 7px),
+      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
+    );
+}
 
-/* DOM 砖面 — 与 .bp-wall-face 同一 token 栈逐层等价：
-   受光 fade / 顶棱线 / 厚度带按面高换算；细分格相位 -6px 对齐全局 24 栅格
-   （面左上角在全局 (col*brickW+6, row*rowH+6)） */
+/* 洗墙光 — fixed 恒在最上（静态面与 DOM 砖同受光，接管前后一致）；
+   光源属于场景不属于墙：滚动时墙动光不动（灯光质感的物理正解）；
+   低 α 径向，哑光禁强 bloom */
+.bp-wall-wash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 0%,
+    rgba(74, 159, 229, 0.05),
+    transparent 75%
+  );
+}
+
+/* DOM 砖面 — face 专用 SVG tile（与静态 tile 同渐变栈、无缝偏移版）：
+   background-size 100% ⇒ 各 MQ 档与静态层等比缩放一致；
+   字面色值与 --mat-* token 交叉锁定（同上）；细分格已随 v4.1 禁绝 */
 .bp-brick {
   position: absolute;
-  background-color: var(--mat-face-base);
-  background-image:
-    linear-gradient(
-      180deg,
-      var(--mat-face-tint) 0px,
-      transparent calc(var(--wall-row-h) / 2 - var(--wall-seam))
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.035) 0px,
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      180deg,
-      transparent calc(100% - 5px),
-      var(--mat-face-shade) calc(100% - 1px),
-      var(--mat-face-shade) 100%
-    ),
-    linear-gradient(var(--grid-line-minor) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line-minor) 1px, transparent 1px);
-  background-size:
-    auto,
-    auto,
-    auto,
-    24px 24px,
-    24px 24px;
-  background-position:
-    0 0,
-    0 0,
-    0 0,
-    -6px -6px,
-    -6px -6px;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.05'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.22'/></linearGradient></defs><rect width='90' height='90' fill='%23111620' fill-opacity='0.9'/><rect width='90' height='90' fill='url(%23t)'/><rect y='85' width='90' height='5' fill='url(%23s)'/><rect width='90' height='1' fill='%23ffffff' fill-opacity='0.04'/><rect width='1' height='90' fill='%23ffffff' fill-opacity='0.02'/><rect x='89' width='1' height='90' fill='%23000000' fill-opacity='0.16'/></svg>");
+  background-size: 100% 100%;
 }
 /* 翘起增亮层 — opacity 由 JS 随抬升量写入（0 = 与静态砖面无差）：
-   面微亮 + 24px 格线显影 + hairline 描边趋 --mat-edge-strong（物件
-   hover boost 的砖版；哑光纪律：无 bloom，全部低 alpha 线性元素） */
+   面微亮 + hairline 描边趋 --mat-edge-strong（物件 hover boost 的砖版；
+   哑光纪律：无 bloom，全部低 alpha 元素） */
 .bp-brick-glow {
   position: absolute;
   inset: 0;
   opacity: 0;
-  background-color: rgba(74, 159, 229, 0.04);
-  background-image:
-    linear-gradient(var(--mat-edge-faint) 1px, transparent 1px),
-    linear-gradient(90deg, var(--mat-edge-faint) 1px, transparent 1px);
-  background-size:
-    24px 24px,
-    24px 24px;
-  background-position:
-    -6px -6px,
-    -6px -6px;
+  background-color: rgba(74, 159, 229, 0.045);
   box-shadow: inset 0 0 0 1px var(--mat-edge-strong);
 }
 /* 砖下投影 — 独立 sibling（不随砖 transform 移动：影子留在墙上）；
@@ -459,15 +397,19 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   按钮系统 v4 — 悬空 3D 模组（悬浮面板 + 底座插槽）
+   按钮系统 v4.1 — 悬空长条砖（Brick Bar：与砖墙完全同族）
+   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.1-design.md（§3）
    唯一授权入口 = ModuleButton 组件（shared/），业务代码不得直接写类。
-   与 Hero 物件同一制图语言：面板常态悬浮于插槽上方 5px（触屏/无 JS
-   静态即读出 3D 姿态），hover 抬起 −2px，按下 +4px 按入插槽收拢间隙。
+   面板 = 一块从墙上浮起的砖（砖 tile 同材质栈），底座插槽 = 墙上的
+   空砖槽（槽内透光，与缝隙灯槽同语言），frame 背后带 backglow 透光；
+   常态悬浮于插槽上方 5px（触屏/无 JS 静态即读出 3D 姿态），hover 抬起
+   −2px，按下 +4px 按入插槽收拢间隙。
    状态机走单一变量 --btn-dy：面板 translateY(var(--btn-dy))；插槽（::before）
    随父移动，用 translateY(calc(5px - var(--btn-dy))) 反向抵消 → 视觉恒静止。
    双层同时长过渡 = 同步无撕裂。语义/命中区不变（伪元素仍属元素盒）。
-   呼吸+晃动（btnHoverIdle）放在 .btn-module-frame wrapper 上——infinite
-   动画与按压 transition 永不共存于同一元素（分层纪律，Hero 物件同款）。
+   呼吸+晃动（btnHoverIdle）在 .btn-module-frame wrapper、pointer tilt
+   （ButtonTilt 弹簧）在 .btn-tilt 中间层、按压 transition 在本体——
+   infinite / JS 逐帧 / transition 三个 transform 写入者各居一层（分层纪律）。
    ═══════════════════════════════════════════════ */
 
 /* 尺寸由类锁定（padding / font-size）：本块在 @tailwind utilities 之后，
@@ -536,9 +478,12 @@ body {
   font-size: 0.875rem;
 }
 .btn-primary::after {
-  background: linear-gradient(135deg, #4a9fe5, #3488cc);
-  /* 厚度暗示：顶棱受光（中性白低 α，明度轴非第二色相）+ 底缘压暗 + 悬浮光晕
-     （v4 投影升档——空间悬浮高度要读得出来，但不做强 bloom） */
+  /* v4.1 砖同族：accent 渐变（CTA affordance）上叠砖 tile 同款顶部受光沉降
+     （中性白明度轴）；厚度暗示 = 顶棱受光 inset + 底缘压暗 inset + 悬浮光晕
+     （空间悬浮高度要读得出来，但不做强 bloom） */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
+    linear-gradient(135deg, #4a9fe5, #3488cc);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     inset 0 -2px 0 rgba(0, 0, 0, 0.18),
@@ -548,7 +493,9 @@ body {
   --btn-dy: -2px;
 }
 .btn-primary:hover:not(:disabled)::after {
-  background: linear-gradient(135deg, #5daae9, #4a9fe5);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
+    linear-gradient(135deg, #5daae9, #4a9fe5);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     inset 0 -2px 0 rgba(0, 0, 0, 0.18),
@@ -556,7 +503,8 @@ body {
 }
 .btn-primary:hover:not(:disabled)::before {
   border-color: var(--border-heavy);
-  /* 插槽缝光增亮 — 抬起时插口内光更可感（--mat-seam-soft 低 α 内光线） */
+  /* 插槽缝光增亮 — 抬起时插口内光更可感（缝光语言的低 α 变体，
+     非 --mat-seam-* token 值：槽内光要压在正文对比阈下） */
   background: rgba(74, 159, 229, 0.1);
   box-shadow: inset 0 0 10px rgba(74, 159, 229, 0.16);
 }
@@ -576,15 +524,16 @@ body {
   font-size: 0.875rem;
 }
 .btn-secondary::after {
-  /* 面板必须有实底遮挡插槽 — rgba(12,16,23) 与 .card-surface 同源（bg-surface）；
-     v4：叠物件同款受光渐变面（--mat-face-tint）——「淡淡的颜色」来自
-     材质 token 而非新色相 */
+  /* v4.1 secondary = 字面意义的一块长条砖：面板面改喝砖 tile 同栈——
+     面基底（--mat-face-base 同源高实度，实底遮插槽的硬功能不变）+
+     顶部受光沉降（--mat-face-tint）+ 顶棱白线/底缘压暗 inset（厚度暗示） */
   border: 1px solid var(--border-strong);
   background:
-    linear-gradient(160deg, var(--mat-face-tint), rgba(74, 159, 229, 0.01)),
-    rgba(12, 16, 23, 0.85);
+    linear-gradient(180deg, var(--mat-face-tint), transparent 55%),
+    var(--mat-face-base);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.28),
     0 8px 18px rgba(8, 11, 16, 0.55);
 }
 .btn-secondary:hover:not(:disabled) {
@@ -593,12 +542,13 @@ body {
 }
 .btn-secondary:hover:not(:disabled)::after {
   border-color: var(--accent);
-  /* accent 提亮叠在同一基面上 — 不引入新字面色 */
+  /* accent 提亮叠在同一砖面基底上 — 不引入新字面色 */
   background:
     linear-gradient(0deg, rgba(74, 159, 229, 0.08), rgba(74, 159, 229, 0.08)),
-    rgba(12, 16, 23, 0.85);
+    var(--mat-face-base);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.28),
     0 9px 20px rgba(8, 11, 16, 0.6);
 }
 .btn-secondary:hover:not(:disabled)::before {
@@ -628,11 +578,14 @@ body {
   box-shadow: none;
 }
 
-/* 呼吸 + 微晃 — ModuleButton 骨架 wrapper（v4 全站按钮默认常态即活）；
+/* 呼吸 + 微晃 — ModuleButton 骨架 wrapper（全站按钮默认常态即活）；
    float（translateY）与 sway（rotate）都写 transform，两个 infinite 动画
    同属性互相覆盖——必须合并为单一 keyframes（分层不了就合帧）；
    幅度 ≤±2px / ≤±0.4°，非对称关键帧 = 有机漂浮而非钟摆；
-   同屏多按钮由使用处 phase（负 animation-delay）错峰 */
+   同屏多按钮由使用处 phase（负 animation-delay）错峰。
+   v4.1 transform 写入者三层分工：frame = 本 infinite 呼吸 /
+   .btn-tilt = ButtonTilt 的 JS 弹簧逐帧 / 本体 = --btn-dy 按压 transition
+   ——同元素同属性冲突纪律天然满足 */
 @keyframes btnHoverIdle {
   0%,
   100% {
@@ -649,8 +602,40 @@ body {
   }
 }
 .btn-module-frame {
+  position: relative;
+  /* isolation 恒建 stacking context：RM 下 animation:none 会拆掉动画带来的
+     stacking context，负 z 的 backglow 会漏到祖先背景之下——显式锁层序 */
+  isolation: isolate;
   display: inline-flex;
   animation: btnHoverIdle 8s ease-in-out infinite;
+}
+/* backglow — 按钮背后透光（bp-object-backglow 语言小号版，与砖墙缝光
+   同族）：低 α 径向、哑光禁强 bloom；opacity-only 微增亮不入动画属性冲突 */
+.btn-module-frame::before {
+  content: "";
+  position: absolute;
+  inset: -16px -24px;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse 62% 58% at 50% 60%,
+    rgba(74, 159, 229, 0.18),
+    transparent 72%
+  );
+  opacity: 0.75;
+  transition: opacity 0.2s var(--ease-out-expo);
+  pointer-events: none;
+}
+/* hover 背光微增亮 — :has 老内核不支持时软降级（恒 0.75，无害） */
+.btn-module-frame:has(:hover):not(:has(:disabled))::before {
+  opacity: 1;
+}
+/* ButtonTilt 的 JS 弹簧层 — transform 由 rAF 写入（每按钮独立小弹簧，
+   perspective 内嵌不建 3D 链）；无 JS/触屏/RM 时是纯透传 span。
+   flex:1 必须有：本层是 frame 内唯一 item，不撑满会 shrink-to-fit，
+   按钮的 w-full 解析到收缩宽度而失效（移动端 CTA 满宽依赖此链路） */
+.btn-tilt {
+  display: inline-flex;
+  flex: 1 1 auto;
 }
 /* 半落座的禁用按钮不该还在呼吸 — :has 老内核不支持时软降级（继续呼吸，无害） */
 .btn-module-frame:has(:disabled) {
