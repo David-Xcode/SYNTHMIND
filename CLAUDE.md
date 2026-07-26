@@ -30,8 +30,8 @@ src/
 │   │                      #   CropMarks, ArrowRightIcon, AnimatedStat, TextReveal,
 │   │                      #   ErrorBoundary, JsonLd
 │   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
-│   ├── home/              # 首页: HomeHero, HomeHeroBlueprint, SocialProofBar,
-│   │                      #   CapabilitiesSection, FeaturedWork, ProcessSection
+│   ├── home/              # 首页: HomeHero, BlueprintObject, HeroObjectPhysics,
+│   │                      #   SocialProofBar, CapabilitiesSection, FeaturedWork, ProcessSection
 │   ├── products/          # 产品页: RealEstateShowcase (地产营销站统一模块)
 │   └── case-study/        # 产品详情页: CaseStudyHero, ChallengeSection, SolutionSection,
 │                          #   TextListSection, TechStackBadges, ResultsSection
@@ -116,7 +116,7 @@ import SheetLabel from '@/components/shared/SheetLabel';
 **豁免：**
 - 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
 - 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
-- `HomeHeroBlueprint` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha）。
+- `BlueprintObject` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha），及其逐面着色 fill 的中性黑压暗渐变（`rgba(0,0,0,α)` — 明度轴不是第二色相）。
 
 ### Accent Scale (Synth Blue = 蓝图蓝)
 | Token | Hex | Usage |
@@ -193,7 +193,7 @@ Props: `variant`, `className`。内边距固定 `p-6` — 需要自定义 paddin
 
 ### 三条踩过坑的硬规则 — IMPORTANT
 1. **禁止 `overflow-hidden` 包住任何含 `.sheet-reveal` / `.depth-drift-back` 的子树**：hidden 会创建 scroll container，劫持 `view()` 时间轴的滚动器查找，整个子树的滚动动画**静默失效**（不报错、不掉 lint）。需要裁切时一律用 globals.css 的 `.overflow-clip-safe`（clip 不建 scroll container；老内核回落 hidden）。
-2. **`.bp-draw` 只能用在 `<path>` 上**：`pathLength` 在 `<rect>`/`<circle>` 上 WebKit 不支持，dasharray 归一化会碎成 1px 点线。矩形/圆都用等价 path 命令改写（见 HomeHeroBlueprint）。
+2. **`.bp-draw` 只能用在 `<path>` 上**：`pathLength` 在 `<rect>`/`<circle>` 上 WebKit 不支持，dasharray 归一化会碎成 1px 点线。矩形/圆都用等价 path 命令改写（见 BlueprintObject）。
 3. **`prefers-reduced-motion` 三件套**：scroll-driven 动画必须显式 `animation: none`（时长重置对其无效）；`animation-delay`/`transition-delay` 必须通配归零（否则分段 delay 变成逐个"闪现"）；infinite 动画（marquee / scroll-pulse 类）必须显式关闭（0.01ms 周期 = 每帧乱跳）。三者都已在 globals.css 的 reduced-motion 块落实，新增动画时对号入座。
 
 ### The ONE Scroll Entrance
@@ -220,8 +220,14 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 ### ALLOWED Animations（白名单，全站只允许这些）
 - ✅ `sheet-settle` — 图纸沉降入场（AnimateOnScroll；rotateX ≤5°）
 - ✅ `depth-drift` — 背景装饰层异速位移（`.depth-drift-back`；幅度 ≤ ±16px，仅背景层）
-- ✅ `bp-draw` / `bp-fade` — SVG 逐笔绘制 + 标注淡入（Hero 活蓝图、hairline 图标）
-- ✅ `hero-tilt` — Hero 蓝图滚动倾斜（scroll(root) scrub，前 600px）
+- ✅ `bp-draw` / `bp-fade` — SVG 逐笔绘制 + 标注淡入（Hero 物件、hairline 图标）
+- ✅ `hero-tilt` — Hero 物件滚动倾斜（scroll(root) scrub，前 600px；≥lg 专属——<lg 物件缩放静态显示不倾斜）
+- ✅ `bpSolidify` — Hero 物件面板实体化淡入（挂载于 `.bp-face-fill` / backglow，入场叙事 Build 阶段）
+- ✅ `objFloat` / `objSway` / `objShadow` — Hero 物件常态呼吸/摇曳/投影（`.obj-float` ≤±6px、`.obj-sway` ≤±3°、`.bp-object-shadow`；周期 ≥7s，仅 Hero 物件 BlueprintObject / HeroObjectPhysics）
+- ✅ Hero 物件弹簧物理 — HeroObjectPhysics 的 rAF 欠阻尼弹簧（指针阻尼跟随 + 回摆 + hover scale ≈1.03；只写 transform / opacity / CSS 变量；全站唯一 mouse-tracking 豁免）
+- ✅ `modAssemble` / `modDrift` — Hero 物件模块装配入场 + 错位-停驻-归位无限循环（幅度 ≤14px，周期 ≥10s 错峰；仅 BlueprintObject 模块层）
+- ✅ `seamIn` / `seamPulse` / `coreIn` / `corePulse` — Hero 物件缝隙发光条与核心环微光呼吸（opacity only，低 alpha 禁强 bloom）
+- ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤10px 沿签名轴 + 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
 - ✅ `scaleIn` — 表单成功态缩放弹入
@@ -232,12 +238,12 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 
 ### FORBIDDEN Animations
 - ❌ `shimmer` / shimmer gradients
-- ❌ `float` / floating animations
+- ❌ `float` / floating animations（唯一豁免：Hero 物件的 `objFloat`，见白名单）
 - ❌ `gradient-shift` / `gradientShift`
 - ❌ `noise` texture overlays
 - ❌ 满屏 parallax（深度暗示只允许白名单里 ≤ ±16px 的 depth-drift）
 - ❌ `particle` effects
-- ❌ mouse-tracking tilt / mouseGlow
+- ❌ mouse-tracking tilt / mouseGlow（唯一豁免：Hero 物件的 HeroObjectPhysics 阻尼弹簧跟随——rAF lerp 有惯性，非 1:1 硬跟；卡片一律不做）
 - ❌ 动画属性超出 transform / opacity / filter / stroke-dashoffset
 
 ### 性能纪律

@@ -1,13 +1,15 @@
 // ─── 首页 Hero · Blueprint ───
-// 左文案 + 右活蓝图的不对称分栏；视频背景已移除（LCP 减重 + 消除微信 WebView 包袱）
-// Server Component — 动效全部走 CSS（animate-reveal / hero-tilt）与 client 叶子（TextReveal）
+// 左文案 + 右轴测物件的不对称分栏；视频背景已移除（LCP 减重 + 消除微信 WebView 包袱）
+// Server Component — 动效走 CSS（animate-reveal / hero-tilt）与 client 叶子
+// （TextReveal 逐词入场、HeroObjectPhysics 弹簧物理）
 
 import Link from 'next/link';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
 import BlueprintGrid from '@/components/shared/BlueprintGrid';
 import SheetLabel from '@/components/shared/SheetLabel';
 import TextReveal from '@/components/shared/TextReveal';
-import HomeHeroBlueprint from './HomeHeroBlueprint';
+import BlueprintObject from './BlueprintObject';
+import HeroObjectPhysics from './HeroObjectPhysics';
 
 export default function HomeHero() {
   return (
@@ -84,9 +86,13 @@ export default function HomeHero() {
           </div>
         </div>
 
-        {/* 右：活蓝图 — 滚动时从绘图桌上抬起（hero-tilt scrub，桌面端专属） */}
-        <div className="hero-tilt hidden lg:block">
-          <HomeHeroBlueprint />
+        {/* 右：Blueprint Object v2 — 模块化组合体
+            桌面：弹簧物理 + 滚动 hero-tilt 抬起；<lg：缩放静态显示
+            （循环动画照常，无指针物理——bp-object-stage 负责缩放与高度收紧） */}
+        <div className="hero-tilt bp-object-stage">
+          <HeroObjectPhysics>
+            <BlueprintObject />
+          </HeroObjectPhysics>
         </div>
       </div>
 

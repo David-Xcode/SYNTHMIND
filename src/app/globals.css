@@ -367,7 +367,9 @@ body {
   animation-delay: var(--draw-delay, 0s);
 }
 
-/* Hero 蓝图滚动倾斜 — 离开视口时图纸从绘图桌上抬起（scrub 前 600px） */
+/* Hero 蓝图滚动倾斜 — 离开视口时图纸从绘图桌上抬起（scrub 前 600px）
+   ≥lg 专属：v2 起物件移动端可见（缩放显示），小屏首屏即物件、
+   开滚即倾斜淡出观感突兀，滚动倾斜只留桌面 */
 @supports (animation-timeline: scroll()) {
   @keyframes heroTilt {
     from {
@@ -379,11 +381,360 @@ body {
       opacity: 0.4;
     }
   }
-  .hero-tilt {
-    transform-origin: center 20%;
-    animation: heroTilt linear both;
-    animation-timeline: scroll(root);
-    animation-range: 0 600px;
+  @media (min-width: 1024px) {
+    .hero-tilt {
+      transform-origin: center 20%;
+      animation: heroTilt linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 600px;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   Hero Blueprint Object v2 — Bonded Assembly 砌合组合体（CSS preserve-3d）
+   设计定案：docs/superpowers/specs/2026-07-26-blueprint-object-v2-modular-design.md
+   （v1 正本 2026-07-25-blueprint-object-design.md，透视链/降级链结论全部继承）
+   透视链纪律：scene(perspective) → spring / root / float / sway / 本体 / 模块三层
+   （scene 之后全部 preserve-3d，scene 只供 perspective 不入 3D 上下文——
+   否则 backglow/shadow 会重新参与深度排序）；任何一层断链都会把面元素压扁回 2D 投影
+   ═══════════════════════════════════════════════ */
+
+/* 透视距离偏长 — 贴近工程轴测的平行投影气质，避免广角畸变
+   relative：背光/投影（弹簧层外的兄弟节点）以本容器定位 */
+.bp-object-scene {
+  position: relative;
+  perspective: 2000px;
+}
+
+/* 弹簧层 — transform 由 HeroObjectPhysics 的 rAF 欠阻尼弹簧写入 */
+.bp-object-spring {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* 物件根容器 — 也是透视链一环：此处缺 preserve-3d 时 WebKit 会把
+   整个物件压扁成平面卡（Chromium 恰好宽容，Safari 严格执行扁平化） */
+.bp-object-root {
+  transform-style: preserve-3d;
+}
+
+/* 常态呼吸 — 关键帧首尾归零，避免 animation-delay 结束瞬间跳位 */
+@keyframes objFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  33% {
+    transform: translateY(-6px);
+  }
+  66% {
+    transform: translateY(3px);
+  }
+}
+.obj-float {
+  transform-style: preserve-3d;
+  animation: objFloat 7s ease-in-out infinite;
+  animation-delay: 2.4s; /* 入场编排（~2.6s）尾声接管 */
+}
+
+/* 常态摇曳 — ±3°（与指针 yaw ±7° 同轴叠加峰值 10°，不破倾角纪律） */
+@keyframes objSway {
+  0%,
+  100% {
+    transform: rotateY(0deg);
+  }
+  33% {
+    transform: rotateY(-3deg);
+  }
+  66% {
+    transform: rotateY(3deg);
+  }
+}
+.obj-sway {
+  transform-style: preserve-3d;
+  animation: objSway 13s ease-in-out infinite;
+  animation-delay: 2.4s;
+}
+
+/* 本体 — 工程制图轴测基姿态 */
+.bp-object {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-16deg) rotateY(-28deg);
+}
+
+/* 面元素 — 背面不可见（可视角度域内 back/left/bottom 三面已整体省略） */
+.bp-face {
+  position: absolute;
+  backface-visibility: hidden;
+}
+
+/* 面板实体化（入场 Build 阶段）— 与 .bp-fade 同构：基态透明 + fill both 落终态 */
+@keyframes bpSolidify {
+  to {
+    opacity: 1;
+  }
+}
+.bp-face-fill {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: bpSolidify 0.8s ease-out both;
+  animation-delay: var(--solidify-delay, 0.9s);
+}
+
+/* 逐面着色 — 平面体的静态 flat shading：光源固定左上前方
+   提亮走 accent 低 alpha（蓝色环境光），压暗走中性黑 — 不引入第二色相 */
+/* 实底必须与页面背景明确分离 — 否则物件读作空壳线框 */
+.bp-face-fill--front {
+  background:
+    linear-gradient(160deg, rgba(74, 159, 229, 0.07), rgba(74, 159, 229, 0)),
+    var(--bg-elevated);
+}
+.bp-face-fill--top {
+  background:
+    linear-gradient(180deg, rgba(74, 159, 229, 0.12), rgba(74, 159, 229, 0.03)),
+    var(--bg-elevated);
+}
+.bp-face-fill--right {
+  background:
+    linear-gradient(200deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.4)),
+    var(--bg-elevated);
+}
+/* core 前面板 — 环心微光垫底（radial 圆心对齐前面 SVG 的 ring center 96,46） */
+.bp-face-fill--core {
+  background:
+    radial-gradient(
+      circle 70px at 96px 46px,
+      rgba(74, 159, 229, 0.12),
+      transparent 70%
+    ),
+    linear-gradient(160deg, rgba(74, 159, 229, 0.08), rgba(74, 159, 229, 0.01)),
+    var(--bg-elevated);
+}
+
+/* ── v2 模块系统（Bonded Assembly）──
+   三层 transform 解耦：装配入场(asm) / 无限漂移(drift) / hover 偏移(hover)
+   永不共存于同一元素——同属性动画冲突的分层解法；
+   链上每层必须 preserve-3d（缺一层 WebKit 把整个子树压扁成平面卡） */
+.bp-module {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+.bp-mod-layer {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* 入场装配（Build 阶段）— 从签名轴偏移位滑入装配位；
+   fill both = Draft 阶段棱线在偏移位绘制；RM 全局 reset 直接落到 to（装配终位） */
+@keyframes modAssemble {
+  from {
+    transform: translate3d(var(--ax, 0px), var(--ay, 0px), var(--az, 0px));
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+.bp-mod-asm {
+  animation: modAssemble 0.9s var(--ease-out-expo) both;
+  animation-delay: var(--asm-delay, 0.9s);
+}
+
+/* 无限漂移 — 停驻(0-32%) → 滑出(44-56% 停驻) → 归位(68%)；
+   0% 即装配位：delay 期间零影响（无 backwards fill），接管零跳变；
+   周期/相位 per-module 错峰（互质周期 + 交错 delay），任意时刻总有模块在动 */
+@keyframes modDrift {
+  0%,
+  32%,
+  68%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  44%,
+  56% {
+    transform: translate3d(var(--dx, 0px), var(--dy, 0px), var(--dz, 0px));
+  }
+}
+.bp-mod-drift {
+  animation: modDrift var(--drift-dur, 14s) ease-in-out infinite;
+  animation-delay: var(--drift-delay, 3s);
+}
+
+/* 单模块 hover — 沿签名轴偏移 + 本模块描边增亮；
+   仅真 hover 设备（防触屏 tap 粘滞）；进入平滑、离开即时归位由基态规则接管 */
+@media (hover: hover) {
+  .bp-mod-hover {
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+  .bp-module:hover .bp-mod-hover {
+    transform: translate3d(var(--hx, 0px), var(--hy, 0px), var(--hz, 0px));
+  }
+  .bp-module:hover .bp-edge-boost {
+    opacity: 0.7;
+    transition: opacity 0.3s ease-out;
+  }
+}
+
+/* 缝隙发光条 — z=54 埋于前面板(z=60)后方：对齐时从 6px 缝漏微光，
+   模块滑出时露出更多（纯几何结果）；静态 blur 不参与动画（层内一次栅格化） */
+.bp-seam-glow {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(2px);
+  animation:
+    seamIn 0.8s ease-out 2.4s both,
+    seamPulse 7s ease-in-out var(--seam-delay, 3.3s) infinite;
+}
+.bp-seam-glow--h {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(74, 159, 229, 0.7) 20%,
+    rgba(74, 159, 229, 0.7) 80%,
+    transparent
+  );
+}
+/* 竖缝直视无斜视角衰减，alpha 低横缝一档取得同等观感 */
+.bp-seam-glow--v {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(74, 159, 229, 0.55) 20%,
+    rgba(74, 159, 229, 0.55) 80%,
+    transparent
+  );
+}
+/* 淡入终值 0.55 = seamPulse 起始值，交接零跳变（同 objShadowIn 模式） */
+@keyframes seamIn {
+  to {
+    opacity: 0.55;
+  }
+}
+@keyframes seamPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 核心微光呼吸 — SYNTH CORE 环的宽描边叠加层（M.04 前面板 SVG 内） */
+.bp-core-pulse {
+  opacity: 0;
+  filter: blur(3px);
+  animation:
+    coreIn 0.8s ease-out 2.5s both,
+    corePulse 5s ease-in-out 3.4s infinite;
+}
+@keyframes coreIn {
+  to {
+    opacity: 0.35;
+  }
+}
+@keyframes corePulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 浮动尺寸基准面 — 链外静止全高标注（模块动、基准不动的参照系）
+   pointer-events 必须关：其投影带与右缘模块重叠，会吃掉 .bp-module 的 :hover */
+.bp-datum {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 移动端缩放台 — v2 起 <lg 不再隐藏物件：整体缩放 0.64 居中静态显示
+   （循环动画照常，指针物理仍桌面专属）；scale 作用在 scene 外层，
+   perspective 随之整体缩放，透视气质与桌面一致 */
+.bp-object-stage {
+  position: relative;
+}
+/* 1023.98 对齐 Tailwind max-lg — 整数 1023 会与 min-width:1024 之间
+   留出小数视口空档（Windows 分数 DPI 下两边规则都不生效） */
+@media (max-width: 1023.98px) {
+  .bp-object-stage {
+    height: 276px;
+  }
+  .bp-object-stage > * {
+    transform: scale(0.64);
+    transform-origin: top center;
+  }
+}
+
+/* 物件背光 — 低调环境光，把哑光机体从深底里托出来
+   渲染于弹簧层外（HeroObjectPhysics 内 spring 的兄弟节点），光源不随指针旋转
+   宽度显式锁定物件尺度（380px）：scene 是整列宽，吃百分比会让光晕随列宽漂移 */
+.bp-object-backglow {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 50%;
+  width: 380px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse 55% 45% at 50% 46%,
+    rgba(74, 159, 229, 0.07),
+    transparent 72%
+  );
+  opacity: 0;
+  animation: bpSolidify 1.2s ease-out 1.1s both;
+}
+
+/* hover 增亮描边层 — opacity 由 --edge-boost 驱动（JS 弹簧逐帧写在 scene 根上）
+   v2 全局系数 0.9→0.35：整体 hover 只做底色增亮，让位给单模块 :hover 反馈（0.7） */
+.bp-edge-boost {
+  opacity: calc(var(--edge-boost, 0) * 0.35);
+}
+
+/* 地面光晕投影 — 深底上"影子"以光的缺席不可见，改用下方微光；
+   与呼吸同周期反相；渲染于弹簧层外（HeroObjectPhysics），不随指针旋转 */
+@keyframes objShadow {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.55;
+  }
+  33% {
+    transform: translateX(-50%) scale(0.92);
+    opacity: 0.38;
+  }
+  66% {
+    transform: translateX(-50%) scale(1.03);
+    opacity: 0.6;
+  }
+}
+.bp-object-shadow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 36px;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(74, 159, 229, 0.1),
+    transparent 70%
+  );
+  opacity: 0;
+  /* 淡入终值 0.55 = objShadow 起始值，2.4s 交接零跳变 */
+  animation:
+    objShadowIn 0.8s ease-out 1.2s both,
+    objShadow 7s ease-in-out 2.4s infinite;
+}
+@keyframes objShadowIn {
+  to {
+    opacity: 0.55;
   }
 }
 
@@ -474,8 +825,25 @@ body {
   .depth-drift-back,
   .hero-tilt,
   .animate-marquee,
-  .animate-scroll-pulse {
+  .animate-scroll-pulse,
+  .obj-float,
+  .obj-sway,
+  .bp-object-shadow,
+  .bp-mod-drift,
+  .bp-seam-glow,
+  .bp-core-pulse {
     /* biome-ignore lint/complexity/noImportantStyles: scroll-driven/infinite animations ignore duration reset, must disable explicitly */
     animation: none !important;
+  }
+  /* 带淡入终值的层被 none 掉后基态 opacity 为 0 — 静态完成态需补回终值
+     （modAssemble 非 infinite，走全局 reset 落到 to=装配位，无需补） */
+  .bp-object-shadow {
+    opacity: 0.55;
+  }
+  .bp-seam-glow {
+    opacity: 0.55;
+  }
+  .bp-core-pulse {
+    opacity: 0.35;
   }
 }
