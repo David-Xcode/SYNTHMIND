@@ -20,7 +20,7 @@ import { caseStudies } from '@/data/case-studies';
 import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Products | Synthmind',
+  title: 'Synthmind Products | Real Solutions for Real Businesses',
   description:
     'AI-powered software products and real estate marketing sites built for real businesses. See our work.',
   alternates: { canonical: '/products' },

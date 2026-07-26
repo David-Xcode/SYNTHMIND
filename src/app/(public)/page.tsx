@@ -14,14 +14,14 @@ import JsonLd from '@/components/shared/JsonLd';
 import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Synthmind | AI-Powered Software Studio',
+  title: 'Synthmind | AI-Powered Software Development & Automation',
   description:
-    'Toronto-based AI startup building tools that actually work. Workflow automation, legacy modernization, and custom AI solutions.',
+    'Toronto-based software team building AI tools that actually work. Workflow automation, legacy modernization, and custom AI solutions.',
   openGraph: {
     ...BASE_OPEN_GRAPH,
     title: 'Synthmind | AI Solutions That Actually Work',
     description:
-      'AI startup building tools that actually work. No corporate fluff — just working software.',
+      'Practical AI tools for traditional industries, built in Toronto.',
   },
 };
 
@@ -33,7 +33,7 @@ const organizationJsonLd = {
   url: SITE_URL,
   logo: `${SITE_URL}/synthmind_logo.png`,
   description:
-    'Toronto-based AI startup building software for traditional industries.',
+    'Toronto-based software company building AI-powered tools for traditional industries.',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Toronto',

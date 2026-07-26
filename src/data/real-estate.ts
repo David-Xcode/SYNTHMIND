@@ -1,6 +1,7 @@
 // ─── 地产营销站数据层 ───
 // 4 个已上线楼盘营销站，统一在 /products 的 Real Estate 模块展示
-// 不再有独立详情页 — 卡片直接外链到真实站点（旧 slug 在 next.config.js 中 301）
+// 不再有独立详情页 — 卡片直接外链到真实站点（旧 slug 在 next.config.js
+// 中 permanent:true 重定向 = 308，与 constants.ts 注释口径一致）
 
 export interface RealEstateSite {
   /** 用于 React key 与旧路由 301 对照 */

@@ -21,7 +21,7 @@ import { faqs } from './faqData';
 export const metadata: Metadata = {
   title: 'Contact Synthmind | Book a Free Consultation',
   description:
-    'Get in touch with Synthmind for AI-powered software development. Free consultation for insurance, real estate, accounting, and construction businesses.',
+    'Get in touch with Synthmind for AI-powered software development. Free consultation for insurance, real estate, accounting/tax, and construction businesses.',
   alternates: { canonical: '/contact' },
   openGraph: {
     ...BASE_OPEN_GRAPH,

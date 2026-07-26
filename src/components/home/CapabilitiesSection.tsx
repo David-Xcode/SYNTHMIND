@@ -20,7 +20,7 @@ const GLYPH_PROPS = {
 const capabilities = [
   {
     title: 'Workflow Automation',
-    copy: 'Intake, validation, notifications, tracking — we turn the routine that eats your team’s week into software that runs it end to end.',
+    copy: "Intake, validation, notifications, tracking — we turn the routine that eats your team's week into software that runs it end to end.",
     // 正交流程线：起点方块 → 布线 → 箭头
     glyph: (
       <svg {...GLYPH_PROPS}>

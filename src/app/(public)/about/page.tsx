@@ -1,5 +1,5 @@
 // ─── About 页面 · Blueprint ───
-// 使命驱动创业公司叙事 — 6 区块结构（section 带图纸编号 01-04）
+// 使命驱动叙事 — 6 区块结构（section 带图纸编号 01-04）
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
@@ -10,29 +10,39 @@ import Eyebrow from '@/components/shared/Eyebrow';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 import StatCard from '@/components/shared/StatCard';
+import { caseStudies } from '@/data/case-studies';
+import { realEstateSites } from '@/data/real-estate';
 import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'About Synthmind | AI Software Studio',
+  title: 'About Synthmind | Modern Software for Traditional Industries',
   description:
-    'Synthmind is a Toronto-based AI startup building software that modernizes traditional businesses. We deliver workflow automation, legacy modernization, and custom AI solutions.',
+    'Synthmind is a Toronto-based software team building software that modernizes traditional businesses. We deliver workflow automation, legacy modernization, and custom AI solutions.',
   alternates: { canonical: '/about' },
   openGraph: {
     ...BASE_OPEN_GRAPH,
     url: `${SITE_URL}/about`,
     title: 'About Synthmind',
     description:
-      'Toronto-based AI startup building software that actually works.',
+      'A Toronto-based team building software that actually works.',
   },
 };
 
 // ── 数据常量 ──
 
 const stats = [
-  { value: '9+', label: 'Products Delivered', color: 'text-accent' },
   {
-    value: '100%',
-    label: 'Client Retention',
+    // 从数据层派生（软件案例 + 地产盘）——新增产品自动跟上，硬编码退役
+    value: `${caseStudies.length + realEstateSites.length}+`,
+    label: 'Products Delivered',
+    color: 'text-accent',
+  },
+  {
+    // 「100% Client Retention」零支撑绝对值已移除（v7 文案审计）；
+    // 行业数可由数据层与 FAQ 交叉验证（insurance / real estate /
+    // accounting & tax / construction）
+    value: '4',
+    label: 'Industries Served',
     color: 'text-accent-400',
   },
   {
@@ -115,7 +125,7 @@ export default function AboutPage() {
         eyebrow="OUR MISSION"
         light="Traditional Industries Deserve"
         bold="Modern Software."
-        subtitle="Synthmind is a Toronto-based AI startup. We build software that modernizes how insurance, real estate, accounting, and construction companies operate — no hype, just working tools."
+        subtitle="Synthmind is a Toronto-based software team. We build software that modernizes how insurance, real estate, accounting, and construction companies operate — practical tools that work."
       />
 
       {/* ── Section 2: Why We Exist — 行业问题 + 公司数据 ── */}
@@ -273,7 +283,7 @@ export default function AboutPage() {
       {/* ── Section 6: CTA Banner ── */}
       <CTABanner
         headline="Let's build the future of your industry."
-        subtitle="Insurance, real estate, accounting, construction — wherever your business operates, we can help modernize it. No sales pitch, just a conversation."
+        subtitle="Insurance, real estate, accounting, construction — wherever your business operates, we can help modernize it. A conversation, not a sales pitch."
         buttonText="Start a Conversation"
       />
     </>

@@ -85,7 +85,7 @@ const sendCustomerReply = async (
 
         <div style="background: linear-gradient(135deg, ${BRAND_ACCENT}, ${BRAND_ACCENT_DARK}); padding: 30px; text-align: center; color: white;">
           <h1 style="margin: 0; font-size: 28px; font-weight: 300;">Synthmind</h1>
-          <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Reshaping the Future with AI</p>
+          <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">AI-Powered Software Development &amp; Automation</p>
         </div>
 
         <div style="background-color: white; padding: 30px;">

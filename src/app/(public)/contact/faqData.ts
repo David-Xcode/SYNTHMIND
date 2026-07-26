@@ -4,7 +4,7 @@ export const faqs = [
   {
     question: 'How long does a typical project take?',
     answer:
-      'MVP in 2-4 weeks. Full product in 2-3 months. Timeline depends on scope and complexity.',
+      'MVP in 2–4 weeks. Full product in 2–3 months. Timeline depends on scope and complexity.',
   },
   {
     question: 'What industries do you work with?',
@@ -24,6 +24,6 @@ export const faqs = [
   {
     question: 'How much does a project cost?',
     answer:
-      "It depends on scope. A simple website starts around $3,000. AI-powered platforms range from $10,000-$50,000+. Book a free call and we'll give you an honest estimate.",
+      "It depends on scope. A simple website starts around $3,000. AI-powered platforms range from $10,000–$50,000+. Book a free consultation and we'll give you an honest estimate.",
   },
 ];

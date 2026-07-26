@@ -12,8 +12,10 @@ import SheetLabel from '@/components/shared/SheetLabel';
 import BlueprintObject from './BlueprintObject';
 import HeroObjectPhysics from './HeroObjectPhysics';
 
+// 首页讲「我们做什么」；「我们为何存在」归 About hero——两处副标题
+// 不再逐字重复（v7 文案审计定案），身份标签全站回避
 const SUBTITLE_WORDS =
-  'A Toronto-based startup building AI tools that actually work — workflow automation, legacy modernization, and custom solutions for traditional industries.'.split(
+  'We build AI tools that actually work — workflow automation, legacy modernization, and custom software for insurance, real estate, accounting, and construction.'.split(
     ' ',
   );
 
@@ -41,7 +43,7 @@ export default function HomeHero() {
             className="mb-6 animate-reveal"
             style={{ animationDelay: '0.1s' }}
           >
-            <SheetLabel>AI-Powered Software Studio</SheetLabel>
+            <SheetLabel>AI-Powered Software</SheetLabel>
           </div>
 
           {/* 标题 — LCP 元素：首帧即满不透明渲染，不加入场动画（沿用既有 LCP 纪律） */}

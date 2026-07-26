@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Synthmind | AI-Powered Software Development & Automation',
   description:
-    'Toronto-based AI startup building tools that actually work. Specializing in workflow automation, legacy system modernization, and custom AI solutions for traditional industries.',
+    'Toronto-based software team building AI tools that actually work. Specializing in workflow automation, legacy system modernization, and custom AI solutions for traditional industries.',
   alternates: {
     canonical: '/',
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Synthmind | AI Solutions That Actually Work',
     description:
-      'AI startup building tools for traditional industries. No corporate fluff — just working software.',
+      'Working software for traditional industries — workflow automation, legacy modernization, and custom AI.',
     url: SITE_URL,
     siteName: 'Synthmind',
     locale: 'en_CA',
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Synthmind | AI-Powered Software Development',
-    description: 'AI startup building tools that actually work.',
+    description: 'AI tools that actually work for traditional industries.',
     images: ['/og-image.png'],
   },
 };

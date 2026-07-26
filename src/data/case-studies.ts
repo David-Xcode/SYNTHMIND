@@ -35,8 +35,8 @@ export const caseStudies: CaseStudy[] = [
     results: [
       'Reduced document turnaround from days to under 15 minutes',
       'Full audit trail for compliance — every signature timestamped and verifiable',
-      'Flat-rate pricing saved businesses 60%+ compared to per-envelope platforms',
-      'Trusted by hundreds of small businesses across Canada',
+      'Flat-rate pricing costs a fraction of per-envelope platforms',
+      'Serving small businesses across Canada',
     ],
     techStack: [
       'Next.js',
@@ -65,8 +65,8 @@ export const caseStudies: CaseStudy[] = [
       'Created a real-time tracking dashboard for submission status, with automated reminders for pending approvals and resubmissions.',
     ],
     results: [
-      'Cut document preparation time by 70%',
-      'Reduced submission rejections due to formatting errors by 85%',
+      'Cut document preparation from hours to minutes',
+      'Sharply reduced submission rejections from formatting errors',
       'Real-time tracking eliminated manual follow-up emails',
       'Scaled across multiple active construction projects simultaneously',
     ],
@@ -130,7 +130,7 @@ export const caseStudies: CaseStudy[] = [
       'Implemented lead capture and qualification — the AI identifies high-intent prospects and routes them to the appropriate broker with context.',
     ],
     results: [
-      'Automated 60% of repetitive client inquiries',
+      'Automated the bulk of repetitive client inquiries',
       'Reduced new broker training time by providing instant knowledge access',
       '24/7 lead capture with intelligent qualification',
       'Seamless handoff from AI to human broker with full context preserved',
