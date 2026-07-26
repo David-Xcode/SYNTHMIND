@@ -1,5 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  /* hover:/group-hover: utility 统一编译进 @media (hover:hover)——触屏 tap
+     不再产生粘滞 hover 态（v7 第 4 轮定案：与 .card-glass* CSS 引擎侧
+     门控同口径；Tailwind v4 的默认行为，此处提前启用） */
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],

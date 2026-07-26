@@ -172,9 +172,11 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
 ### Card Rules — IMPORTANT
 - **变体 = 交互语义**：整卡可点才配 interactive（hover 顶起 + tilt + 投影落墙）；纯展示
   一律 static（恒定材质，零 hover 位移——「不可点的卡带可点式反馈」是 v7 修复的病灶，禁止回潮）；
-  container 外壳静、交互属于内部子元素。**卡片全部 hover/active 反馈（含边框微响应）
-  都包在 `@media (hover: hover)` 内**——触屏 tap 页内锚点卡防 sticky（Hero 模块先例）；
-  触屏卡是链接，tap 即跳转，无按压反馈
+  container 外壳静、交互属于内部子元素。**卡片全部 hover/active 反馈都门控在
+  hover-capable 设备**——CSS 引擎侧（`.card-glass*`）手写 `@media (hover:hover)`，
+  Tailwind utility 侧（group-hover 箭头/logo 提亮等）由 tailwind.config 的
+  `future.hoverOnlyWhenSupported` 全站统一编译进同一媒体查询；触屏 tap 页内锚点卡
+  与外链卡不再粘滞（Hero 模块先例）；触屏卡是链接，tap 即跳转，无按压反馈
 - **材质 = 玻璃检视窗**：光滑玻璃档为基态（`--glass-face-solid` 实底，无 blur），
   `@supports`（backdrop-filter or -webkit-backdrop-filter，双属性都写——Safari ≤17
   只认前缀）内升级毛玻璃档（`--glass-face` + blur ≤12px）；厚度 = 顶棱受光 +
@@ -255,7 +257,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤16px / 坡斜 ≤15° / 向心聚拢 ≤3px / 微缩 ≤5% / 透光 ≤25% 全部是井心位置的纯函数，零砖级状态；影响半径 ~200px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；井心透光与指针灯是哑光纪律唯一窄豁免：强度弹簧驱动、离开归零、灯光心 α≤0.9；per-element perspective 不建 preserve-3d 链；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 隐藏 tile，像素等价无感切换），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
 - ✅ `btn-tilt` — 按钮悬停期微摆（ButtonTilt → `src/lib/pointer-tilt-engine.ts` 共享单例引擎，每按钮独立参数 k30 ζ0.6；倾角 ≤4°、仅指针在按钮盒内跟随（盒外即零——嵌墙砖在槽里不晃，v4.1 的 130px 邻域跟随已退役）；仅 hover+fine 且非 RM 挂引擎，触屏/RM/无 JS = 纯透传 span；与本体顶出 transition 分层两元素——JS 逐帧 / transition 永不同层；mouse-tracking 豁免第 3 例，仅限 ModuleButton）
 - ✅ `card-tilt` — interactive 卡指针倾斜（CardTilt → pointer-tilt-engine 同一共享引擎、per-entry 参数：≤2.5° k22 ζ0.65 慢弹簧「厚玻璃板惯性」，perspective 900px；盒内跟随盒外即零；仅 hover+fine 且非 RM 挂载，触屏/RM/无 JS = 纯静态透传；**全站禁止第二份引擎代码**；mouse-tracking 豁免第 4 例，仅限 Card interactive 变体）
-- ✅ 卡片 hover 顶起 — interactive 卡本体 `perspective(900px) translateZ(8px)` transition + 投影落墙 + 边框增亮（与 tilt 分层两元素，照 ModuleButton 先例；static/container 卡零 hover 位移）
+- ✅ 卡片 hover 顶起/active 微收 — interactive 卡本体 `perspective(900px) translateZ(8px)` transition + 投影落墙 + 边框增亮；active `translateZ(2px)` 0.09s 快过渡 + 投影回落半档（与 tilt 分层两元素，照 ModuleButton 先例；hover/active 均包 `@media (hover:hover)`；static/container 卡零 hover 位移）
 - ✅ 按钮顶出/按入 — 本体 `perspective() translateZ` transition（rest 齐平嵌墙 / hover +16px 顶出 / active −5px 按入 0.09s 快过渡；per-element perspective 不建 preserve-3d 链）+ 槽缝涌光 opacity 过渡（frame ::after，`:has(:hover)` 驱动，老内核软降级恒不亮；与砖墙涌光同一豁免语言；仅 .btn-primary/.btn-secondary。v4.1 的 btnHoverIdle 呼吸、backglow、`--btn-dy` 双层反向位移已全部退役）
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
 - ✅ `scaleIn` — 表单成功态缩放弹入

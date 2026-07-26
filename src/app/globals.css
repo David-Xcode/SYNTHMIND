@@ -1212,13 +1212,15 @@ body {
   caret-color: var(--text-primary);
 }
 /* autofill + focus 必须单独声明：-webkit-box-shadow 是 box-shadow 别名，
-   整表替换——不带 ring 的 autofill 规则若赢了级联，键盘焦点环会被吞掉 */
-.form-field:-webkit-autofill:focus {
+   整表替换——不带 ring 的 autofill 规则若赢了级联，键盘焦点环会被吞掉。
+   :hover:focus 变体 (0,4,0) 把「autofill+悬停+聚焦」三态并存的平局从
+   源序裁决升级为特异性裁决——防未来追加 autofill 规则时 ring 静默消失。
+   文字色/caret 由上方 autofill 基础规则级联，不在此冗余声明 */
+.form-field:-webkit-autofill:focus,
+.form-field:-webkit-autofill:hover:focus {
   -webkit-box-shadow:
     inset 0 0 0 1000px var(--bg-base),
     0 0 0 2px rgba(74, 159, 229, 0.3);
-  -webkit-text-fill-color: var(--text-primary);
-  caret-color: var(--text-primary);
 }
 
 /* ═══════════════════════════════════════════════

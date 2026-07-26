@@ -117,7 +117,7 @@ interface CardProps {
 | 变体 | 语义 | 行为 |
 |---|---|---|
 | `interactive` | 整卡可点（自身被 Link/`<a>` 包裹） | CardTilt wrapper（JS 逐帧 ≤2.5°）+ 本体 hover 顶起（CSS transition：`perspective(900px) translateZ(8px)` + 投影落墙 + 边框增亮）+ active 微收 |
-| `static` | 纯展示 | 恒定玻璃材质，零 hover 位移零 tilt；仅边框在 hover 时从 default → strong 的极弱受光响应。**全部卡片 hover/active 反馈包在 `@media (hover: hover)` 内**（触屏 tap 防 sticky，第 3 轮定案） |
+| `static` | 纯展示 | 恒定玻璃材质，零 hover 位移零 tilt；仅边框在 hover 时从 default → strong 的极弱受光响应。**全部卡片 hover/active 反馈门控在 hover-capable 设备**：CSS 引擎侧手写 `@media (hover:hover)`，Tailwind utility 侧经 `future.hoverOnlyWhenSupported` 统一门控（第 3/4 轮定案） |
 | `container` | 外壳静、内部子元素自带交互（FAQ 手风琴 / 含链接或按钮的展示卡） | 与 static 渲染**完全相同的 class**——差异纯语义，错配无视觉信号，选型对定义不对效果 |
 
 - **transform 写入者分层**（照抄 ModuleButton 三层先例）：CardTilt wrapper = JS 逐帧 transform；卡片本体 = CSS transition（顶起/边框/投影）。两者永不同元素。
