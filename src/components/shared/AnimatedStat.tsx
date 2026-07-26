@@ -31,7 +31,7 @@ export default function AnimatedStat({
   const animatedNumber = useCountUp(numericValue, isVisible, 1200);
 
   return (
-    <div ref={ref} className="card-surface p-5 rounded-xl">
+    <div ref={ref} className="card-surface p-5">
       <div className={`font-mono text-2xl font-bold ${color} mb-1`}>
         {numberMatch ? (
           <>

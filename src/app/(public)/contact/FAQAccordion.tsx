@@ -25,7 +25,7 @@ export default function FAQAccordion({ faqs }: FAQAccordionProps) {
         const panelId = `faq-panel-${index}`;
         return (
           <AnimateOnScroll key={index} delay={index * 60}>
-            <div className="card-surface rounded-xl overflow-hidden">
+            <div className="card-surface overflow-hidden">
               <button
                 type="button"
                 onClick={() => setOpenIndex(isOpen ? null : index)}

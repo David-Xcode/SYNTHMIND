@@ -12,6 +12,8 @@ export default function ChallengeSection({
 }: ChallengeSectionProps) {
   return (
     <TextListSection
+      sheetNo="01"
+      eyebrow="CHALLENGE"
       titleLight="The"
       titleBold="Challenge"
       items={challenges}

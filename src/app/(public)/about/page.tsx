@@ -133,6 +133,7 @@ export default function AboutPage() {
             <div>
               <AnimateOnScroll>
                 <SectionTitle
+                  sheetNo="01"
                   light="Why We"
                   bold="Exist"
                   eyebrow="THE PROBLEM"
@@ -182,7 +183,12 @@ export default function AboutPage() {
       <section className="py-24 bg-bg-base px-4">
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
-            <SectionTitle light="What We" bold="Build" eyebrow="SOLUTIONS" />
+            <SectionTitle
+              sheetNo="02"
+              light="What We"
+              bold="Build"
+              eyebrow="SOLUTIONS"
+            />
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -209,7 +215,12 @@ export default function AboutPage() {
 
         <div className="max-w-4xl mx-auto">
           <AnimateOnScroll>
-            <SectionTitle light="Our" bold="Values" eyebrow="PRINCIPLES" />
+            <SectionTitle
+              sheetNo="03"
+              light="Our"
+              bold="Values"
+              eyebrow="PRINCIPLES"
+            />
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -239,6 +250,7 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
+              sheetNo="04"
               light="Our"
               bold="Process"
               subtitle="From idea to production in weeks, not months."
@@ -249,10 +261,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {processSteps.map((step, index) => (
               <AnimateOnScroll key={step.title} delay={index * 80 + 100}>
-                <GlassCard
-                  variant="surface"
-                  className="relative rounded-xl h-full"
-                >
+                <GlassCard variant="surface" className="relative h-full">
                   {/* 大号水印编号 */}
                   <span className="absolute top-3 right-4 font-mono text-5xl font-bold text-txt-quaternary/15 leading-none select-none">
                     {String(index + 1).padStart(2, '0')}

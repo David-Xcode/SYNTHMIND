@@ -32,6 +32,7 @@ export default function InDevelopmentShowcase() {
       <div className="max-w-6xl mx-auto">
         <AnimateOnScroll>
           <SectionTitle
+            sheetNo="03"
             eyebrow="WHAT'S NEXT"
             light="What We're"
             bold="Building"

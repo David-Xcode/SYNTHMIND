@@ -1,6 +1,7 @@
-# Synthmind — Neural Design System Rules
+# Synthmind — Blueprint Design System Rules
 
-> These rules encode the "Neural" design system. All AI agents MUST follow them when implementing UI components, translating Figma designs, or modifying frontend code.
+> These rules encode the "Blueprint" design system（静默精密 / Quiet Precision — 蓝图制图语言）. All AI agents MUST follow them when implementing UI components, translating Figma designs, or modifying frontend code.
+> 设计定案与路线图正本：`docs/superpowers/specs/2026-07-25-frontend-redesign-design.md`
 
 ## Code Language Policy
 
@@ -25,10 +26,12 @@ src/
 │   └── layout.tsx         # 根 layout: html/body/globals.css/metadata ONLY
 ├── components/
 │   ├── shared/            # 可复用 UI: SectionTitle, GlassCard, AnimateOnScroll, CTABanner,
-│   │                      #   ContactForm, PageHero, Eyebrow, ArrowRightIcon, AnimatedStat,
-│   │                      #   TextReveal, LineDrawDivider, ErrorBoundary, JsonLd
+│   │                      #   ContactForm, PageHero, Eyebrow, SheetLabel, BlueprintGrid,
+│   │                      #   CropMarks, ArrowRightIcon, AnimatedStat, TextReveal,
+│   │                      #   ErrorBoundary, JsonLd
 │   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
-│   ├── home/              # 首页: HomeHero, HomeHeroVideo, SocialProofBar
+│   ├── home/              # 首页: HomeHero, HomeHeroBlueprint, SocialProofBar,
+│   │                      #   CapabilitiesSection, FeaturedWork, ProcessSection
 │   ├── products/          # 产品页: RealEstateShowcase (地产营销站统一模块)
 │   └── case-study/        # 产品详情页: CaseStudyHero, ChallengeSection, SolutionSection,
 │                          #   TextListSection, TechStackBadges, ResultsSection
@@ -56,32 +59,46 @@ src/
 
 ---
 
-## 2. Typography — Sora + Manrope + JetBrains Mono
+## 2. Design Concept — Blueprint（先读这个再写 UI）
+
+全站视觉隐喻 = **工程制图/蓝图**：Synth Blue 就是蓝图蓝，客户行业全部活在图纸与单据里（建筑提交文件 / 保单 / 签署文档 / 地产平面图）。设计纪律：
+
+- 科技感做**底色**而非主角；高级藏在细节里（基准网格、图签、hairline、crop marks——注意到才看见）
+- 排版精度 > 空间/材质 > 动效 > 色彩数量
+- 编号只用于**真实序列**（图纸页码、流程步骤）；能力/价值等非序列内容禁止装饰性编号
+- mono 测量标注每屏 ≤2 处；蓝图网格只出现在 Hero 与关键 section，不满屏铺
+
+## 3. Typography — Archivo + Manrope + IBM Plex Mono
 
 Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 
 | Font | Class | Usage | RESTRICTION |
 |------|-------|-------|-------------|
-| Sora | `font-display` | Page titles, hero headlines, bold words in SectionTitle | **NEVER for body text** |
+| Archivo (variable, wdth 轴) | `font-display` | Page titles, hero headlines, bold words in SectionTitle | **NEVER for body text** |
 | Manrope | `font-sans` | Everything else (default body font) | Default — no class needed on body |
-| JetBrains Mono | `font-mono` | Eyebrow labels, stat numbers, process step numbers | **NEVER for paragraphs or headings** |
+| IBM Plex Mono | `font-mono` | 图签编号、测量标注、stat 数字、流程步骤号 | **NEVER for paragraphs or headings** |
 
 ### Typography Patterns
 
-**Eyebrow labels** — ALWAYS use the shared component (never inline the class string):
+**Display 宽体**：`font-display font-semibold` 的高亮词必须加 `.stretch-wide`（font-stretch 116%，Archivo 宽度轴）——这是 Blueprint 的排版签名。Sentence case，禁全大写大标题。
+
+**图签（section 眉标）** — 用 `SheetLabel`（tick 短线 + 可选图纸编号 + mono 标签）：
 ```jsx
-import Eyebrow from '@/components/shared/Eyebrow';
-<Eyebrow>LABEL TEXT</Eyebrow>
+import SheetLabel from '@/components/shared/SheetLabel';
+<SheetLabel no="02">CAPABILITIES</SheetLabel>   // 有编号 → "— 02 / CAPABILITIES"
+<SheetLabel>GET IN TOUCH</SheetLabel>            // 无编号 → "— GET IN TOUCH"
 ```
+`SectionTitle` 通过 `sheetNo` prop 透传。`Eyebrow` 保留用于卡片内小 caption（tone: accent/tertiary/quaternary），不带 tick。
+
+**测量标注**：`.annotation` class（10px mono 大写）。装饰性标注加 `aria-hidden`。
 
 **Section headings (via SectionTitle):**
 ```jsx
-// Light word = font-sans font-light | Bold word = font-display font-semibold
 <span className="font-sans font-light">Our</span>{' '}
-<span className="font-display font-semibold">Approach</span>
+<span className="font-display font-semibold stretch-wide">Approach</span>
 ```
 
-**Page heroes** — about/products 风格的页头统一用 `<PageHero eyebrow light bold subtitle />`。
+**Page heroes** — about/products/contact 页头统一用 `<PageHero eyebrow light bold subtitle />`（内置 BlueprintGrid + depth-drift）。
 
 **Responsive font sizes** (use Tailwind tokens, NOT arbitrary values):
 - `text-display` — hero titles (clamp 2.5rem → 4.5rem)
@@ -91,22 +108,23 @@ import Eyebrow from '@/components/shared/Eyebrow';
 
 ---
 
-## 3. Color System — NEVER Hardcode Hex
+## 4. Color System — NEVER Hardcode Hex
 
 **CRITICAL:** Always use Tailwind tokens from `tailwind.config.js`. Never write raw hex values.
 
 **豁免：**
 - 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
 - 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
+- `HomeHeroBlueprint` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha）。
 
-### Accent Scale (Synth Blue)
+### Accent Scale (Synth Blue = 蓝图蓝)
 | Token | Hex | Usage |
 |-------|-----|-------|
 | `accent` | #4A9FE5 | Primary accent, buttons, links |
 | `accent-400` | #5DAAE9 | Hover states |
 | `accent-700` | #2870AB | Dark accent |
 
-> 色阶只保留这三档。需要透明度用 opacity modifier：`bg-accent/10`、`border-accent/30`、`text-accent/50`。
+> 色阶只保留这三档。需要透明度用 opacity modifier：`bg-accent/10`、`border-accent/30`、`text-accent/50`。**禁止引入第二色相** — 单色相纪律是 Blueprint 的立场。
 
 ### Background Layers (冷色海军黑)
 | Token | Hex | Usage |
@@ -123,62 +141,67 @@ import Eyebrow from '@/components/shared/Eyebrow';
 | `text-txt-tertiary` | Captions, metadata (#868E9C) |
 | `text-txt-quaternary` | Disabled text, decorative (#606876) |
 
-### Border CSS Variables (use in inline styles or globals.css)
+### Border & Grid CSS Variables (use in inline styles or globals.css)
 ```css
 --border-subtle:  rgba(74, 159, 229, 0.06)   /* 最轻 */
 --border-default: rgba(74, 159, 229, 0.10)   /* 默认 */
 --border-strong:  rgba(74, 159, 229, 0.18)   /* hover */
---border-heavy:   rgba(74, 159, 229, 0.25)   /* 强调 */
+--border-heavy:   rgba(74, 159, 229, 0.25)   /* 强调 / crop marks */
+--grid-line-major: rgba(74, 159, 229, 0.04)  /* 蓝图主网格 96px */
+--grid-line-minor: rgba(74, 159, 229, 0.02)  /* 蓝图细分格 24px */
 ```
 
-### Radial Glow
-页头/CTA 的径向光晕用 globals.css 的 `.hero-glow` class（`--glow-y` 控制垂直位置），不要内联 radial-gradient。
+### Radial Glow / Grid
+- 页头/CTA 的径向光晕用 globals.css 的 `.hero-glow` class（`--glow-y` 控制垂直位置），不要内联 radial-gradient。
+- 蓝图网格用 `<BlueprintGrid />` 组件（内部 `.blueprint-grid` + 径向 mask），父容器需 `relative`。
 
 ---
 
-## 4. Card System — GlassCard Component
+## 5. Card System — Sheet 材质（GlassCard 组件）
 
-**ALWAYS** use `<GlassCard>` from `src/components/shared/GlassCard.tsx`.
+**ALWAYS** use `<GlassCard>` from `src/components/shared/GlassCard.tsx`（组件名沿用，材质已从玻璃换为图纸片）。
 
 ```tsx
 import GlassCard from '@/components/shared/GlassCard';
 
-<GlassCard variant="surface">...</GlassCard>   // 最轻量 — 半透明 + 微妙模糊
+<GlassCard variant="surface">...</GlassCard>   // 最轻量 — 半透明实底（无模糊）
 <GlassCard variant="elevated">...</GlassCard>  // 默认 — 实色背景 + hover 上浮 + 蓝色光晕
-<GlassCard variant="spotlight">...</GlassCard>  // 特色 — 左侧蓝色渐变竖线
+<GlassCard variant="spotlight">...</GlassCard> // 特色 — 左侧蓝色渐变竖线
 ```
 
 Props: `variant`, `className`。内边距固定 `p-6` — 需要自定义 padding 时直接用 `.card-surface` / `.card-elevated` CSS 类（如 AnimatedStat、FAQAccordion）。
 
 ### Card Rules — IMPORTANT
-- **Surface** cards use `backdrop-filter: blur(8px)` with semi-transparent background
-- **Elevated** cards use solid `bg-bg-elevated` background
-- Hover: `translateY(-2px)` + `box-shadow: 0 4px 16px rgba(74, 159, 229, 0.08)` + `border-color` change
+- **图纸不是玻璃**：禁止 `backdrop-filter` / blur 玻璃拟态
+- Card corner radius is always **8px**（制图方正感；按钮同 8px，全站圆角只有 8px 和 rounded-full 两种）
+- Hover: `translateY(-2px)` + `box-shadow: 0 4px 16px rgba(74, 159, 229, 0.08)` + `border-color` change（**保持 2D** — 3D 预算全花在滚动入场）
 - **NO** `mouseGlow` or mouse-tracking effects
-- Card corner radius is always `12px` (`rounded-xl` equivalent)
+- 关键卡片可加 `<CropMarks />` 四角裁切标记（需 `relative` 父容器；克制使用）
+- 产品卡带图纸编号 annotation（`S.01`…），编号即图纸集页码
 
 ### Underlying CSS Classes (in globals.css)
-- `.card-surface` — semi-transparent bg + blur(8px) + border-subtle
+- `.card-surface` — semi-transparent solid bg + border-subtle（无 blur）
 - `.card-elevated` — bg-elevated + border-default + hover translateY + blue glow
 - `.card-spotlight` — bg-elevated + border-default + left blue gradient line (::before)
 
 ---
 
-## 5. Animation Rules
+## 6. Animation Rules — 滚动 3D（零依赖 CSS）
 
-### The ONE Scroll Animation
-All scroll-triggered animations use `<AnimateOnScroll>` from `src/components/shared/AnimateOnScroll.tsx`.
-It applies `opacity + translateY(12px) + blur(4px)` reveal effect ("digital emergence").
+技术基座：`animation-timeline: view()/scroll()`（scrub 式滚动联动）+ CSS 3D transform；不支持的浏览器由 `AnimateOnScroll` 的 IntersectionObserver 内联样式路径接管（CSS 动画级联高于内联样式，双路径共存）。`prefers-reduced-motion` 下滚动动画必须显式 `animation: none`（时长重置对 scroll-driven 无效）。
+
+### The ONE Scroll Entrance
+所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：rotateX 5° + translateY + blur 随滚动沉降平整）。
 
 ```tsx
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 
-// 基本用法
 <AnimateOnScroll>
   <div>Content revealed on scroll</div>
 </AnimateOnScroll>
 
-// 交错入场 (卡片列表)
+// 交错入场 (卡片列表) — delay 在降级路径是 transitionDelay，
+// 在 scrub 路径自动映射为 animation-range 偏移
 {items.map((item, index) => (
   <AnimateOnScroll key={item.id} delay={index * 80 + 100}>
     <GlassCard>...</GlassCard>
@@ -186,40 +209,43 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 ))}
 ```
 
-Props: `delay` (ms), `className`。触发阈值与时长为固定值（threshold 0.1 / 700ms）。
-
 可见性触发逻辑统一走 `useIntersectionVisible` hook（`src/hooks/`）— 不要在组件里手写 IntersectionObserver。
 
+### ALLOWED Animations（白名单，全站只允许这些）
+- ✅ `sheet-settle` — 图纸沉降入场（AnimateOnScroll；rotateX ≤5°）
+- ✅ `depth-drift` — 背景装饰层异速位移（`.depth-drift-back`；幅度 ≤ ±16px，仅背景层）
+- ✅ `bp-draw` / `bp-fade` — SVG 逐笔绘制 + 标注淡入（Hero 活蓝图、hairline 图标）
+- ✅ `hero-tilt` — Hero 蓝图滚动倾斜（scroll(root) scrub，前 600px）
+- ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
+- ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
+- ✅ `scaleIn` — 表单成功态缩放弹入
+- ✅ `scroll-pulse` / `scale-in-dot` — 滚动指示器
+- ✅ `translateY(-2px)` on card hover / `box-shadow` blue glow / `border-color` transitions
+- ✅ `transform: scale(0.98)` on button `:active`
+- ✅ count-up 数字滚动（useCountUp）
+
 ### FORBIDDEN Animations
-These have been explicitly removed from the design system. **DO NOT** add them back:
 - ❌ `shimmer` / shimmer gradients
 - ❌ `float` / floating animations
 - ❌ `gradient-shift` / `gradientShift`
 - ❌ `noise` texture overlays
-- ❌ `parallax` scroll effects
+- ❌ 满屏 parallax（深度暗示只允许白名单里 ≤ ±16px 的 depth-drift）
 - ❌ `particle` effects
+- ❌ mouse-tracking tilt / mouseGlow
+- ❌ 动画属性超出 transform / opacity / filter / stroke-dashoffset
 
-### ALLOWED Animations
-- ✅ `reveal` — opacity + translateY + blur scroll entrance (via AnimateOnScroll / `animate-reveal` utility)
-- ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
-- ✅ `scaleIn` — 表单成功态缩放弹入
-- ✅ `scroll-pulse` / `scale-in-dot` — 滚动指示器
-- ✅ `translateY(-2px)` on card hover
-- ✅ `box-shadow` subtle blue glow on card/button hover
-- ✅ `border-color` transitions on card/button hover
-- ✅ `transform: scale(0.98)` on button `:active`
+### 性能纪律
+- LCP 元素（各页 h1）**不加入场动画**
+- 不引入动效 JS 库（Motion/Lenis/three.js 均被否决过——用户已选零依赖路线）
 
 ---
 
-## 6. Button System
+## 7. Button System
 
 Two button styles defined in `globals.css`. Use CSS classes directly:
 
 ```jsx
-// 主要按钮: 蓝色渐变背景 + 白色文字 + hover 蓝色光晕
 <button className="btn-primary">Get Started</button>
-
-// 次要按钮: 透明 + 蓝色边框 + hover 微填充
 <button className="btn-secondary">Learn More</button>
 ```
 
@@ -228,13 +254,13 @@ Two button styles defined in `globals.css`. Use CSS classes directly:
 - Primary hover: `box-shadow: 0 4px 12px rgba(74, 159, 229, 0.25)`
 - Secondary hover: `background: rgba(74, 159, 229, 0.08)` + border highlights
 - Active: `transform: scale(0.98)` only
-- Border radius: `10px` (`rounded-[10px]` equivalent)
+- Border radius: **8px**（与卡片统一）
 - Font: `text-sm font-semibold` (primary) / `text-sm font-medium` (secondary)
 - 按钮内右箭头用 `<ArrowRightIcon />` 共享组件，不要内联 SVG
 
 ---
 
-## 7. Section Dividers
+## 8. Section Dividers
 
 Use `.ruled-line` class for horizontal gradient dividers between page sections:
 
@@ -242,11 +268,11 @@ Use `.ruled-line` class for horizontal gradient dividers between page sections:
 <hr className="ruled-line" />
 ```
 
-The line fades from transparent at edges to `--border-strong` in the center, creating a subtle blue gradient effect.
+The line fades from transparent at edges to `--border-strong` in the center.
 
 ---
 
-## 8. SectionTitle Component
+## 9. SectionTitle Component
 
 **ALWAYS** use `<SectionTitle>` from `src/components/shared/SectionTitle.tsx` for section headers.
 
@@ -254,9 +280,10 @@ The line fades from transparent at edges to `--border-strong` in the center, cre
 import SectionTitle from '@/components/shared/SectionTitle';
 
 <SectionTitle
-  eyebrow="OUR PROCESS"           // JetBrains Mono 小标签 (可选)
+  sheetNo="02"                     // 图纸编号 (页内 section 序号，可选)
+  eyebrow="OUR PROCESS"            // 图签标签 (SheetLabel 渲染，可选)
   light="How We"                   // Manrope font-light
-  bold="Deliver"                   // Sora font-semibold
+  bold="Deliver"                   // Archivo semibold + stretch-wide
   subtitle="Description text..."   // 副标题 (可选)
   size="lg"                        // lg | md | sm
   align="left"                     // center | left

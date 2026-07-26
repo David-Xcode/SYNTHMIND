@@ -10,6 +10,8 @@ interface SolutionSectionProps {
 export default function SolutionSection({ solutions }: SolutionSectionProps) {
   return (
     <TextListSection
+      sheetNo="02"
+      eyebrow="SOLUTION"
       titleLight="The"
       titleBold="Solution"
       items={solutions}

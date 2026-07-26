@@ -62,7 +62,14 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
     <section className="py-16 bg-bg-surface px-4">
       <div className="max-w-3xl mx-auto">
         <AnimateOnScroll>
-          <SectionTitle light="The" bold="Results" align="left" size="md" />
+          <SectionTitle
+            sheetNo="03"
+            eyebrow="RESULTS"
+            light="The"
+            bold="Results"
+            align="left"
+            size="md"
+          />
         </AnimateOnScroll>
 
         {/* Stat 卡片网格 */}

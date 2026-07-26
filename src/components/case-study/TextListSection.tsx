@@ -14,6 +14,10 @@ interface TextListSectionProps {
   items: string[];
   /** 背景色 class，默认 bg-bg-surface */
   bgClass?: string;
+  /** 图纸编号 (如 "01") — 详情页 section 序号 */
+  sheetNo?: string;
+  /** 图签标签，配合 sheetNo 显示 */
+  eyebrow?: string;
 }
 
 export default function TextListSection({
@@ -21,6 +25,8 @@ export default function TextListSection({
   titleBold,
   items,
   bgClass = 'bg-bg-surface',
+  sheetNo,
+  eyebrow,
 }: TextListSectionProps) {
   return (
     <section className={`py-16 ${bgClass} px-4`}>
@@ -31,13 +37,15 @@ export default function TextListSection({
             bold={titleBold}
             align="left"
             size="md"
+            sheetNo={sheetNo}
+            eyebrow={eyebrow}
           />
         </AnimateOnScroll>
 
         <div className="space-y-4">
           {items.map((paragraph, index) => (
             <AnimateOnScroll key={index} delay={index * 80 + 100}>
-              <div className="flex gap-5 p-5 rounded-xl border-l-2 border-accent/30 bg-bg-elevated">
+              <div className="flex gap-5 rounded-lg border-l-2 border-accent/30 bg-bg-elevated p-5">
                 <span className="font-mono text-2xl font-semibold text-accent/20 leading-none pt-0.5">
                   {String(index + 1).padStart(2, '0')}
                 </span>

@@ -20,6 +20,7 @@ export default function RealEstateShowcase() {
       <div className="max-w-6xl mx-auto">
         <AnimateOnScroll>
           <SectionTitle
+            sheetNo="02"
             eyebrow="REAL ESTATE MARKETING"
             light="Property"
             bold="Launch Sites"

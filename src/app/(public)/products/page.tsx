@@ -1,6 +1,7 @@
-// ─── 产品总览页 · Neural ───
+// ─── 产品总览页 · Blueprint ───
 // 三段式结构：软件产品网格（进详情页，含开发中产品 teaser 卡）
 // + 地产营销站统一模块（外链真实站点）+ 开发中产品详述（CSIO 会员背书）
+// 产品卡 = 图纸卡：S.NN 图纸编号 + crop marks 角标
 
 import type { Metadata } from 'next';
 import Image from 'next/image';
@@ -11,6 +12,7 @@ import InDevelopmentShowcase from '@/components/products/InDevelopmentShowcase';
 import RealEstateShowcase from '@/components/products/RealEstateShowcase';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
+import CropMarks from '@/components/shared/CropMarks';
 import GlassCard from '@/components/shared/GlassCard';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -48,6 +50,7 @@ export default function ProductsPage() {
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
+              sheetNo="01"
               eyebrow="SOFTWARE PRODUCTS"
               light="Custom"
               bold="Software"
@@ -62,9 +65,10 @@ export default function ProductsPage() {
                 <Link href={`/products/${cs.slug}`} className="block h-full">
                   <GlassCard
                     variant="elevated"
-                    className="h-full group cursor-pointer"
+                    className="relative h-full group cursor-pointer"
                   >
-                    <div className="h-10 mb-5 flex items-center">
+                    <CropMarks />
+                    <div className="h-10 mb-5 flex items-center justify-between">
                       <Image
                         src={cs.logo}
                         alt={`${cs.title} logo`}
@@ -73,6 +77,10 @@ export default function ProductsPage() {
                         className="h-8 w-auto object-contain filter brightness-0 invert opacity-50 group-hover:opacity-90 transition-opacity duration-300"
                         suppressHydrationWarning
                       />
+                      {/* 图纸编号 — 产品即图纸集里的一张 sheet */}
+                      <span className="annotation" aria-hidden="true">
+                        {`S.0${index + 1}`}
+                      </span>
                     </div>
 
                     <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
