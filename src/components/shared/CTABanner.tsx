@@ -51,10 +51,7 @@ export default function CTABanner({
         )}
 
         <AnimateOnScroll delay={200}>
-          <Link
-            href="/contact"
-            className="group inline-flex items-center gap-2 btn-primary text-base px-8 py-3.5"
-          >
+          <Link href="/contact" className="group btn-primary">
             <span>{buttonText}</span>
             <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>

@@ -92,6 +92,17 @@ body {
   }
 }
 
+/* 100svh 优先（移动端地址栏/工具栏不吃首屏布局），老内核回退 100vh
+   — 同 overflow-clip-safe 的渐进增强模式 */
+.min-h-svh-safe {
+  min-height: 100vh;
+}
+@supports (min-height: 100svh) {
+  .min-h-svh-safe {
+    min-height: 100svh;
+  }
+}
+
 /* ═══════════════════════════════════════════════
    排版工具 — Archivo 宽度轴
    ═══════════════════════════════════════════════ */
@@ -114,7 +125,23 @@ body {
    蓝图基准网格 — 双层 linear-gradient
    96px 主格 + 24px 细分格，径向 mask 渐隐
    仅用于 Hero 与关键 section，不满屏铺
+   v3：wrap（承 mask）+ 静态格线层 + 砖墙层（GridBricks 懒构建）
    ═══════════════════════════════════════════════ */
+
+/* mask 在 wrap 上 — 静态层与砖层同步渐隐；
+   mask 的分组扁平化不影响砖（每砖 transform 自带 perspective，无 3D 链） */
+.bp-grid-wrap {
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 35%,
+    black 30%,
+    transparent 80%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 35%,
+    black 30%,
+    transparent 80%
+  );
+}
 
 .blueprint-grid {
   background-image:
@@ -127,16 +154,45 @@ body {
     96px 96px,
     24px 24px,
     24px 24px;
-  -webkit-mask-image: radial-gradient(
-    ellipse 90% 70% at 50% 35%,
-    black 30%,
-    transparent 80%
-  );
-  mask-image: radial-gradient(
-    ellipse 90% 70% at 50% 35%,
-    black 30%,
-    transparent 80%
-  );
+}
+
+/* ── 砖墙层（Living Blueprint v3 · WF2）──
+   静止 = 安静网格，动起来才暴露 3D 跟随系统（注意到才看见的极致表达）
+   砖块自绘与静态层同规格的主格/细分格线：激活切换像素等价、静止零差异 */
+.bp-brick-field {
+  position: absolute;
+  inset: 0;
+}
+/* 激活后静态层整层退场 — 格线绘制权移交砖块（双层同画会加深线色） */
+.bp-grid-wrap[data-bricks="on"] > .blueprint-grid {
+  opacity: 0;
+}
+.bp-brick {
+  position: absolute;
+  background-image:
+    linear-gradient(var(--grid-line-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-line-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-minor) 1px, transparent 1px);
+  background-size:
+    96px 96px,
+    96px 96px,
+    24px 24px,
+    24px 24px;
+}
+/* 翘起增亮层 — opacity 由 JS 随抬升量写入（accent 格线 + 极淡面填充：
+   砖离开墙面时才显形，静止 0 = 不存在） */
+.bp-brick-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-image:
+    linear-gradient(rgba(74, 159, 229, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 159, 229, 0.16) 1px, transparent 1px);
+  background-size:
+    96px 96px,
+    96px 96px;
+  background-color: rgba(74, 159, 229, 0.03);
 }
 
 /* ═══════════════════════════════════════════════
@@ -210,54 +266,179 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   按钮系统 — 蓝色渐变 + 光晕（圆角与卡片统一 8px）
+   按钮系统 v3 — 悬空 3D 模组（悬浮面板 + 底座插槽）
+   与 Hero 物件同一制图语言：面板常态悬浮于插槽上方 5px（触屏/无 JS
+   静态即读出 3D 姿态），hover 抬起 −2px，按下 +4px 按入插槽收拢间隙。
+   状态机走单一变量 --btn-dy：面板 translateY(var(--btn-dy))；插槽（::before）
+   随父移动，用 translateY(calc(5px - var(--btn-dy))) 反向抵消 → 视觉恒静止。
+   双层同时长过渡 = 同步无撕裂。语义/命中区不变（伪元素仍属元素盒）。
+   悬浮呼吸（btnFloat）放在 .btn-levitate wrapper 上——infinite 动画与按压
+   transition 永不共存于同一元素（同属性冲突的分层纪律，Hero 物件同款）。
    ═══════════════════════════════════════════════ */
 
-.btn-primary {
+/* 尺寸由类锁定（padding / font-size）：本块在 @tailwind utilities 之后，
+   同特异性按源序压过工地 utility——不要在使用处写 px-* / py-* / text-* 覆写 */
+.btn-primary,
+.btn-secondary {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
-  background: linear-gradient(135deg, #4a9fe5, #3488cc);
+  border-radius: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  --btn-dy: 0px;
+  transform: translateY(var(--btn-dy));
+  transition:
+    transform 0.2s var(--ease-out-expo),
+    color 0.2s var(--ease-out-expo);
+}
+/* 层序机理：元素带 transform 自建 stacking context，负 z 伪元素画在
+   元素自身背景之上、文字之下（CSS 2.1 App.E 步骤 2）——所以元素本体不带
+   任何面板视觉，面板面全部住进 ::after（z -1 晚于插槽 z -2，正确遮挡插槽） */
+/* 底座插槽 — hairline 框 + 内缝光，常态露出面板下缘 5px 的插口 */
+.btn-primary::before,
+.btn-secondary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: rgba(74, 159, 229, 0.06);
+  transform: translateY(calc(5px - var(--btn-dy)));
+  transition:
+    transform 0.2s var(--ease-out-expo),
+    border-color 0.2s var(--ease-out-expo),
+    background-color 0.2s var(--ease-out-expo);
+  pointer-events: none;
+}
+/* 悬浮面板面 — 随元素一起做 --btn-dy 位移（伪元素属元素盒） */
+.btn-primary::after,
+.btn-secondary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 8px;
+  transition:
+    border-color 0.2s var(--ease-out-expo),
+    background-color 0.2s var(--ease-out-expo),
+    box-shadow 0.2s var(--ease-out-expo);
+  pointer-events: none;
+}
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.btn-primary {
   color: #ffffff;
   font-weight: 600;
   font-size: 0.875rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s var(--ease-out-expo);
 }
-.btn-primary:hover {
+.btn-primary::after {
+  background: linear-gradient(135deg, #4a9fe5, #3488cc);
+  /* 厚度暗示：顶棱受光（中性白低 α，明度轴非第二色相）+ 底缘压暗 + 悬浮光晕 */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+    0 6px 14px rgba(74, 159, 229, 0.16);
+}
+.btn-primary:hover:not(:disabled) {
+  --btn-dy: -2px;
+}
+.btn-primary:hover:not(:disabled)::after {
   background: linear-gradient(135deg, #5daae9, #4a9fe5);
-  box-shadow: 0 4px 12px rgba(74, 159, 229, 0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+    0 9px 20px rgba(74, 159, 229, 0.28);
 }
-.btn-primary:active {
-  transform: scale(0.98);
+.btn-primary:hover:not(:disabled)::before {
+  border-color: var(--border-heavy);
+  background: rgba(74, 159, 229, 0.1);
+}
+.btn-primary:active:not(:disabled) {
+  --btn-dy: 4px;
+}
+.btn-primary:active:not(:disabled)::after {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
+    0 2px 5px rgba(74, 159, 229, 0.14);
 }
 
 .btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.75rem;
-  background: transparent;
   color: var(--accent);
   font-weight: 500;
   font-size: 0.875rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  cursor: pointer;
-  transition: all 0.2s var(--ease-out-expo);
 }
-.btn-secondary:hover {
-  border-color: var(--accent);
-  background: rgba(74, 159, 229, 0.08);
+.btn-secondary::after {
+  /* 面板必须有实底遮挡插槽 — rgba(12,16,23) 与 .card-surface 同源（bg-surface） */
+  border: 1px solid var(--border-strong);
+  background: rgba(12, 16, 23, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 6px 14px rgba(8, 11, 16, 0.5);
+}
+.btn-secondary:hover:not(:disabled) {
+  --btn-dy: -2px;
   color: var(--accent-hover);
 }
-.btn-secondary:active {
-  transform: scale(0.98);
+.btn-secondary:hover:not(:disabled)::after {
+  border-color: var(--accent);
+  /* accent 提亮叠在同一基面上 — 不引入新字面色 */
+  background:
+    linear-gradient(0deg, rgba(74, 159, 229, 0.08), rgba(74, 159, 229, 0.08)),
+    rgba(12, 16, 23, 0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 9px 20px rgba(8, 11, 16, 0.6);
+}
+.btn-secondary:hover:not(:disabled)::before {
+  border-color: var(--border-heavy);
+  background: rgba(74, 159, 229, 0.1);
+}
+.btn-secondary:active:not(:disabled) {
+  --btn-dy: 4px;
+}
+.btn-secondary:active:not(:disabled)::after {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 2px 5px rgba(8, 11, 16, 0.45);
+}
+
+/* 禁用态 — 半落座（悬浮间隙收半）；hover/active 规则均带 :not(:disabled)，
+   禁用时不抬起、不增亮、不换色 */
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  --btn-dy: 2px;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.btn-primary:disabled::after,
+.btn-secondary:disabled::after {
+  box-shadow: none;
+}
+
+/* CTA 悬浮呼吸 — 仅 wrapper 使用（全站 ≤3 处，hero 两颗 CTA）；
+   反相错峰用内联负 animation-delay */
+@keyframes btnFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+.btn-levitate {
+  animation: btnFloat 6s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════════════════
@@ -365,6 +546,27 @@ body {
   opacity: 0;
   animation: bpFade 0.5s ease-out both;
   animation-delay: var(--draw-delay, 0s);
+}
+
+/* 词级入场 — Server 直出 CSS（零 JS 依赖：无 hydration/微信 WebView 也会
+   播完落在可见终态；RM 全局 reset 直接落终态）。比 reveal 更轻的位移/模糊
+   （8px/2px）：词粒度用 12px/4px 会显得笨重。仅用于首屏副标题一类
+   load-time 词入场；滚动触发的词入场仍走 TextReveal */
+@keyframes wordReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+.word-reveal {
+  display: inline-block;
+  animation: wordReveal 0.5s var(--ease-out-expo) both;
 }
 
 /* Hero 蓝图滚动倾斜 — 离开视口时图纸从绘图桌上抬起（scrub 前 600px）
@@ -502,11 +704,12 @@ body {
     linear-gradient(200deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.4)),
     var(--bg-elevated);
 }
-/* core 前面板 — 环心微光垫底（radial 圆心对齐前面 SVG 的 ring center 96,46） */
+/* core 前面板 — 环心微光垫底；radial 圆心/半径随变体走 CSS 变量
+   （桌面 ring center 96,46 r70 / 移动 44,28 r50，由 ModuleShell 内联下发） */
 .bp-face-fill--core {
   background:
     radial-gradient(
-      circle 70px at 96px 46px,
+      circle var(--core-r, 70px) at var(--core-x, 96px) var(--core-y, 46px),
       rgba(74, 159, 229, 0.12),
       transparent 70%
     ),
@@ -654,33 +857,30 @@ body {
   pointer-events: none;
 }
 
-/* 移动端缩放台 — v2 起 <lg 不再隐藏物件：整体缩放 0.64 居中静态显示
-   （循环动画照常，指针物理仍桌面专属）；scale 作用在 scene 外层，
-   perspective 随之整体缩放，透视气质与桌面一致 */
-.bp-object-stage {
-  position: relative;
+/* 移动场景修饰 — v3 起 <lg 渲染真横陈变体（纯 Server 静态场景），
+   v2 的 0.64 缩放台已删除；背光宽度收窄贴合 300px 低台 */
+.bp-object-scene--mobile {
+  --backglow-w: 340px;
 }
-/* 1023.98 对齐 Tailwind max-lg — 整数 1023 会与 min-width:1024 之间
-   留出小数视口空档（Windows 分数 DPI 下两边规则都不生效） */
-@media (max-width: 1023.98px) {
-  .bp-object-stage {
-    height: 276px;
-  }
-  .bp-object-stage > * {
-    transform: scale(0.64);
+/* 320 级窄屏兜底 — 300px 低台 + 轴测投影超出 272px 内容盒，整体缩放让位
+   （scale 挂在 root 上不断透视链：root 本就 preserve-3d，加 transform 无碍） */
+@media (max-width: 339.98px) {
+  .bp-object-scene--mobile .bp-object-root {
+    transform: scale(0.85);
     transform-origin: top center;
   }
 }
 
 /* 物件背光 — 低调环境光，把哑光机体从深底里托出来
    渲染于弹簧层外（HeroObjectPhysics 内 spring 的兄弟节点），光源不随指针旋转
-   宽度显式锁定物件尺度（380px）：scene 是整列宽，吃百分比会让光晕随列宽漂移 */
+   宽度显式锁定物件尺度（默认 380px，移动场景 340px）：
+   scene 是整列宽，吃百分比会让光晕随列宽漂移 */
 .bp-object-backglow {
   position: absolute;
   top: -10%;
   bottom: -10%;
   left: 50%;
-  width: 380px;
+  width: var(--backglow-w, 380px);
   transform: translateX(-50%);
   background: radial-gradient(
     ellipse 55% 45% at 50% 46%,
@@ -831,7 +1031,8 @@ body {
   .bp-object-shadow,
   .bp-mod-drift,
   .bp-seam-glow,
-  .bp-core-pulse {
+  .bp-core-pulse,
+  .btn-levitate {
     /* biome-ignore lint/complexity/noImportantStyles: scroll-driven/infinite animations ignore duration reset, must disable explicitly */
     animation: none !important;
   }

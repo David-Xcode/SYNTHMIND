@@ -81,7 +81,7 @@ export default function FeaturedWork() {
         </div>
 
         <AnimateOnScroll delay={300} className="mt-10 text-center">
-          <Link href="/products" className="btn-secondary px-7 py-3">
+          <Link href="/products" className="btn-secondary">
             View all products
           </Link>
         </AnimateOnScroll>

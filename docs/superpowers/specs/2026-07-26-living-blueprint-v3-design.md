@@ -32,11 +32,13 @@ scrub 路径不生效，只剩 IO + 内联样式路径 → 微信里 hydration �
    RM 全局 reset（时长 0.01ms + delay 归负）直接落终态。首屏入场本来就该
    load-time 播放，语义也更对。HomeHero 不再引用 TextReveal。
 2. **TextReveal / AnimateOnScroll 改「可见基态 + 挂载后按需隐藏」**：
-   `isVisible` 初始 `true`（SSR 直出可见）；hydration 时（layout effect，
-   paint 前）检查元素是否完全在视口下方——是才置 `false` 并挂 IO 观察，
-   否则保持可见跳过动画。视口内元素永不闪烁（不会先显后隐）；
-   无 JS / hydration 失败 = 全部内容静态可见。scrub 路径（`.sheet-reveal`
-   CSS 级联覆盖内联样式）行为不变。
+   `isVisible` 初始 `true`（SSR 直出可见）；挂载后（useEffect——元素在视口
+   下方时 paint 后隐藏也不可见，且避开 useLayoutEffect 的 SSR 告警）检查
+   元素是否完全在视口下方——是才置 `false` 并挂 IO 观察，否则保持可见跳过
+   动画。**武装隐藏必须 transition:none 瞬时**（带过渡会让全页 wrapper 在
+   hydration 时齐跑一轮 blur 渐隐）。视口内元素永不闪烁；无 JS / hydration
+   失败 = 全部内容静态可见。scrub 路径（`.sheet-reveal` CSS 级联覆盖内联
+   样式）行为不变。
 
 ### 1.2 移动端物件概念草案与定案
 
@@ -62,23 +64,30 @@ scrub 路径不生效，只剩 IO + 内联样式路径 → 微信里 hydration �
 - 缝光 4 条（横 2 + 竖 2），z=54 规则、溢出补位规则、WebKit 零平面相交
   不变量全部继承 v2；顶行才渲染顶面、右缘才渲染右面同理
 - datum 基准面移动端省略（横构图 + 小屏预算；图签行已承载制图叙事）
-- 入场编排压缩：asm delay 0.7–1.15s，Ship 收尾 ~2.2s（桌面 2.8s）——
-  移动端首屏节奏更快，编排在可视位置完整播放
+- 入场编排压缩：asm delay 0.7–1.1s，焊盘圆点 2s 亮起、~2.5s 全收尾
+  （桌面 ~2.95s）——移动端首屏节奏更快，编排在可视位置完整播放
 - 渲染：`BlueprintObject` 增加 `variant` prop（数据表切换，ModuleShell 复用）；
   桌面实例 `hidden lg:block` + HeroObjectPhysics；移动实例 `lg:hidden` 为
   **纯 Server 静态场景**（.bp-object-scene + backglow/shadow 兄弟层，无 client
   组件——避免桌面上隐藏实例重复挂指针监听）；backglow 宽度改 CSS 变量
-  （桌面 380px / 移动 340px）
+  （桌面 380px / 移动 340px）。**已知代价（接受）**：两变体都进 SSR HTML
+  （另一端 display:none，动画不跑）——换取无 JS/微信路径的直出可见；
+  动态 import 门控会把移动物件重新绑回 hydration，违背本工作流根修法
+- 320 级窄屏（<340px）：`.bp-object-root` 整体 scale(0.85) 兜底（300px 低台
+  + 轴测投影超出 272px 内容盒）
 - `.bp-object-stage` 缩放台删除（被真变体取代）；`hero-tilt` 维持 ≥lg
 
 ### 1.3 移动端首屏垂直预算（390×844，微信 WebView 可用高 ~720px）
 
-eyebrow → h1（2–3 行）→ 副标题（Server CSS 词入场）→ CTA（WF3 模组按钮，
-纵向堆叠，触达 ≥44px）→ 横陈组合体（~230px 含顶面投影与投影光）。
-节奏收紧：section 改 `min-h-svh`（地址栏工具栏不吃布局），pt-28 → pt-24
-（<lg），CTA mt-10 → mt-8（<lg），物件区 mt-4；滚动指示器 <lg 隐藏
-（与物件基座在同一落点，视觉冲突且占预算）。验收：390px 首屏文案 + 活物件
-同屏，副标题正常渲染。
+eyebrow → h1（2–3 行）→ 副标题（Server CSS 词入场；<sm 用 text-base——
+5 行 subtitle 会把物件挤出微信折叠线）→ CTA（WF3 模组按钮，纵向堆叠，
+触达 ≥44px）→ 横陈组合体（~230px 含顶面投影与投影光）。
+节奏收紧：section 改 `.min-h-svh-safe`（100svh 优先、100vh 回退——同
+overflow-clip-safe 的渐进增强模式）+ `<lg items-start`，pt-28 → pt-24
+（<lg），栅格 gap-6（<lg），CTA mt-10 → mt-8（<lg），物件区 mt-2；
+滚动指示器 <lg 隐藏（与物件基座在同一落点，视觉冲突且占预算）。
+验收：390px 首屏文案 + 活物件同屏，副标题正常渲染；740px 视口（微信
+WebView 实测可用高）实绘组合体完整可见。
 
 ---
 
@@ -100,9 +109,12 @@ eyebrow → h1（2–3 行）→ 副标题（Server CSS 词入场）→ CTA（WF
 砖激活时替换掉静态层的绘制（同帧 class 切换，像素等价无跳变），翘起时砖带着
 自己的格线离开底面，露出 bg-base 深底 = 「墙上揭下一块图纸砖」。
 
-**瓦片预算**：容器实测尺寸 ÷ 砖尺寸；总数 >220 时砖加宽为 288×96（内线
-96/192）重算。1600×900 hero ≈ 100 砖；4K 封顶 ~180 砖。每砖 1 个 div +
-1 个增亮子层 div（accent 0.10 α 格线，opacity 由 JS 随翘起量写入）。
+**瓦片预算**：容器实测尺寸 ÷ 砖尺寸；总数 >220 时砖宽按 96 步进增宽重算
+直至 ≤220（4K/带鱼屏成立；错缝恒 96 = 主格倍数，任何砖宽都不破静止态像素
+等价）；砖宽 768 封顶后仍超预算（8K 级全屏）→ **彻底放弃增强，静态网格
+原样**——预算是硬上限，超限宁可不做。1440×900 hero 实测 80 砖。每砖 1 个
+div + 1 个增亮子层 div（accent 0.16 α 格线 + 0.03 面填充，opacity 由 JS
+随翘起量写入）。
 
 **3D 实现**：每砖独立 `transform: perspective(600px) rotateX() rotateY()
 translateZ()`——**自带透视，不建 preserve-3d 链**。径向 mask 在父容器上
@@ -115,10 +127,11 @@ translateZ()`——**自带透视，不建 preserve-3d 链**。径向 mask 在�
 全部收敛即停帧。指针离开 section → 目标归零缓落。rect 缓存 TTL 150ms。
 
 **构建与门控**：client 组件挂载时仅判定能力（`(hover:hover) and (pointer:fine)`
-且非 RM），**首次 pointerenter 才构建砖 DOM**——SSR HTML 零增量、hydration
+且非 RM），**首次 pointermove 才构建砖 DOM**——SSR HTML 零增量、hydration
 零工作、LCP 零影响；触屏/RM/无 JS 三条路径 = 现状静态网格原样。会话中途
 开 RM → teardown 恢复静态层（listenMql 能力守卫提为共享 util）。resize
-防抖重建。
+防抖重建。无 `<section>` 祖先（wrap 是 pointer-events-none 收不到事件）
+直接放弃增强。
 
 **落点**：`BlueprintGrid` 升级为 wrapper（静态层 + 懒砖层），对外 API 不变
 ——HomeHero 与 PageHero（products/about/contact）自动获得砖墙。PageHero 的
@@ -136,13 +149,16 @@ translateZ()`——**自带透视，不建 preserve-3d 链**。径向 mask 在�
 | B. **§7 全站升维，零标记迁移（定案）** | 重写 `.btn-primary`/`.btn-secondary` CSS，伪元素造插槽结构，5 个使用文件零改动 | ✓ 单一按钮语言；迁移 = 纯 CSS，回退 = git revert 单文件区块 |
 | C. preserve-3d 多面按钮 | 真三维六面体按钮 | 否——affordance 优先于炫技；焦点环/命中区/RM 复杂度全面上升，而按压质感 2.5D 已足够传达 |
 
-### 3.2 定案细节：「悬浮面板 + 底座插槽」双层结构（单元素 + 伪元素）
+### 3.2 定案细节：「悬浮面板 + 底座插槽」双层结构（单元素 + 双伪元素）
 
-- **元素本体 = 悬浮面板（plate）**：现有渐变面 + hairline 边 + 底缘压暗
-  渐变（厚度暗示）+ 顶缘 1px 提亮（受光棱线，中性白低 α，非第二色相）
-- **`::before` = 底座插槽（socket）**：与面板同形 8px 圆角 hairline 框 +
-  内部 accent 低 α 缝光，静息位下沉 5px——**面板悬浮于插槽上方 5px 是常态**，
-  所有设备（含触屏）静态即读出 3D 悬空姿态
+- **层序机理（实施中修正）**：元素带 transform 自建 stacking context 后，
+  负 z 伪元素画在元素自身背景**之上**（CSS 2.1 App.E）——所以元素本体不带
+  面板视觉，**面板面住 `::after`（z -1）**：渐变面 + hairline 边 + 底缘压暗 +
+  顶缘 1px 提亮（受光棱线，中性白低 α，明度轴非第二色相）
+- **`::before`（z -2）= 底座插槽（socket）**：与面板同形 8px 圆角 hairline
+  框 + 内部 accent 低 α 缝光，静息位下沉 5px——**面板悬浮于插槽上方 5px
+  是常态**，所有设备（含触屏）静态即读出 3D 悬空姿态；-1 晚于 -2 绘制，
+  面板正确遮挡插槽
 - **状态机走单一 CSS 变量 `--btn-dy`**：面板 `translateY(var(--btn-dy))`、
   插槽反向 `translateY(calc(5px - var(--btn-dy)))`（插槽视觉恒静止）。
   rest 0 / hover −2px（抬起 + 缝光增亮 + 光晕扩大）/ active +4px（按入
@@ -152,8 +168,10 @@ translateZ()`——**自带透视，不建 preserve-3d 链**。径向 mask 在�
   transition，**同元素同属性动画冲突的三层解耦纪律的按钮版**。全站克制
   使用（≤3 处：hero ×2，CTABanner 可选 ×1）
 - **语义零变化**：仍是 `<Link>`/`<button>` + class；`:focus-visible` 显式
-  2px accent 外描边 + 3px offset；触达面积 = 元素盒（py-3 + 字高 ≥44px，
-  插槽伪元素还向下扩了 5px 命中区）；`:active` 在触屏同样触发按入
+  2px accent 外描边 + 3px offset；触达面积 = 元素盒（类内 padding 锁定
+  ≥44px；使用处的 px-*/py-*/text-* 覆写会被源序压掉——已从全部 5 个使用点
+  清除死 utility）；`:active` 在触屏同样触发按入；disabled 半落座 +2px
+  且 hover/active 规则带 :not(:disabled) 不响应
 - **RM**：`.btn-levitate` 显式 `animation: none`；hover/active 过渡被全局
   reset 压到 0.01ms（状态跳变仍传达按压语义，无位移动画）
 - **禁用态**：ContactForm 提交按钮 disabled 时插槽间隙收半、无 hover 抬起

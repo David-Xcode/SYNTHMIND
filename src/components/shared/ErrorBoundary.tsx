@@ -58,7 +58,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={() => this.setState({ hasError: false })}
-            className="btn-secondary text-sm px-4 py-2"
+            className="btn-secondary"
           >
             Try Again
           </button>

@@ -1,21 +1,30 @@
 // ─── 首页 Hero · Blueprint ───
 // 左文案 + 右轴测物件的不对称分栏；视频背景已移除（LCP 减重 + 消除微信 WebView 包袱）
-// Server Component — 动效走 CSS（animate-reveal / hero-tilt）与 client 叶子
-// （TextReveal 逐词入场、HeroObjectPhysics 弹簧物理）
+// Server Component — 动效走 CSS（word-reveal / animate-reveal / hero-tilt）与
+// client 叶子（HeroObjectPhysics 弹簧物理，桌面专属）
+// 副标题为 Server 直出词级 CSS 入场：不依赖 hydration——微信 WebView JS 失效时
+// 仍完整渲染（TextReveal 的 JS 可见性路径在该渠道真机翻过车，2026-07-26）
+// 移动端（<lg）：物件为横陈 ELEV. 变体，与文案同屏构成首屏叙事（v3 定案）
 
 import Link from 'next/link';
+import { Fragment } from 'react';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
 import BlueprintGrid from '@/components/shared/BlueprintGrid';
 import SheetLabel from '@/components/shared/SheetLabel';
-import TextReveal from '@/components/shared/TextReveal';
 import BlueprintObject from './BlueprintObject';
 import HeroObjectPhysics from './HeroObjectPhysics';
+
+const SUBTITLE_WORDS =
+  'A Toronto-based startup building AI tools that actually work — workflow automation, legacy modernization, and custom solutions for traditional industries.'.split(
+    ' ',
+  );
 
 export default function HomeHero() {
   return (
     // overflow-clip-safe：clip 不创建 scroll container，保证 view() 时间轴找到根滚动器
-    <section className="relative flex min-h-screen items-center overflow-clip-safe bg-bg-base">
-      {/* 蓝图基准网格 — hero 专属，径向渐隐 */}
+    // 移动端 items-start：items-center 在 <lg 会把超高内容推出折叠线（v2 实测缺陷）
+    <section className="relative flex min-h-svh-safe items-start overflow-clip-safe bg-bg-base lg:items-center">
+      {/* 蓝图基准网格 — hero 专属，径向渐隐（桌面精指针下升维为砖墙层） */}
       <BlueprintGrid />
 
       {/* 背景光晕装饰 */}
@@ -26,8 +35,8 @@ export default function HomeHero() {
         <div className="absolute top-1/3 right-[10%] h-[320px] w-[320px] rounded-full bg-accent/[0.03] blur-[100px]" />
       </div>
 
-      {/* 内容区 — 不对称分栏（左 7 / 右 5） */}
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 pt-28 pb-24 lg:grid-cols-[7fr_5fr]">
+      {/* 内容区 — 不对称分栏（左 7 / 右 5）；移动端节奏收紧保证首屏同屏 */}
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-6 px-6 pt-24 pb-16 lg:grid-cols-[7fr_5fr] lg:gap-12 lg:pt-28 lg:pb-24">
         {/* 左：文案 */}
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
           {/* 图签眉标 */}
@@ -57,42 +66,73 @@ export default function HomeHero() {
             </span>
           </h1>
 
-          {/* 副标题 — 逐词入场 */}
-          <TextReveal
-            text="A Toronto-based startup building AI tools that actually work — workflow automation, legacy modernization, and custom solutions for traditional industries."
-            className="mt-6 max-w-xl text-subtitle text-txt-secondary"
-            delay={400}
-            stagger={40}
-          />
+          {/* 副标题 — Server 直出词级 CSS 交错入场（零 JS 依赖，无 hydration 也可见）
+              <sm 用 text-base：5 行 subtitle 会把物件挤出微信 WebView 折叠线 */}
+          <p className="mt-6 max-w-xl text-base text-txt-secondary sm:text-subtitle">
+            {SUBTITLE_WORDS.map((word, i) => (
+              <Fragment key={`${word}-${i}`}>
+                {/* 分隔空格放在 inline-block 外面的兄弟文本节点：行尾正常折叠
+                    （放进 span 里要用 NBSP 防尾部裁剪，但行尾不裁会让居中行偏移） */}
+                {i > 0 && ' '}
+                <span
+                  className="word-reveal"
+                  style={{ animationDelay: `${(400 + i * 40) / 1000}s` }}
+                >
+                  {word}
+                </span>
+              </Fragment>
+            ))}
+          </p>
 
-          {/* CTA 按钮 */}
+          {/* CTA 按钮 — 3D 悬浮模组（v3）：levitate wrapper 承载呼吸 infinite，
+              按钮本体只有按压 transition（同元素同属性动画冲突的分层纪律） */}
           <div
-            className="mt-10 flex flex-wrap justify-center gap-4 animate-reveal lg:justify-start"
+            className="mt-8 flex w-full max-w-xs animate-reveal flex-col gap-4 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center lg:mt-10 lg:justify-start"
             style={{ animationDelay: '0.7s' }}
           >
-            <Link
-              href="/contact"
-              className="btn-primary px-7 py-3 text-sm sm:text-base"
+            <span className="btn-levitate flex">
+              <Link href="/contact" className="btn-primary w-full sm:w-auto">
+                Book a Free Consultation
+                <ArrowRightIcon />
+              </Link>
+            </span>
+            {/* 反相错峰 — 两颗 CTA 呼吸不同步（负 delay 从周期中段接入） */}
+            <span
+              className="btn-levitate flex"
+              style={{ animationDelay: '-3s' }}
             >
-              Book a Free Consultation
-              <ArrowRightIcon />
-            </Link>
-            <Link
-              href="/products"
-              className="btn-secondary px-7 py-3 text-sm sm:text-base"
-            >
-              View Our Work
-            </Link>
+              <Link href="/products" className="btn-secondary w-full sm:w-auto">
+                View Our Work
+              </Link>
+            </span>
           </div>
         </div>
 
-        {/* 右：Blueprint Object v2 — 模块化组合体
-            桌面：弹簧物理 + 滚动 hero-tilt 抬起；<lg：缩放静态显示
-            （循环动画照常，无指针物理——bp-object-stage 负责缩放与高度收紧） */}
-        <div className="hero-tilt bp-object-stage">
-          <HeroObjectPhysics>
-            <BlueprintObject />
-          </HeroObjectPhysics>
+        {/* 右：Blueprint Object
+            桌面（≥lg）：竖塔变体 + 弹簧物理 + 滚动 hero-tilt 抬起
+            移动（<lg）：横陈 ELEV. 变体，纯 Server 静态场景（无 client 组件——
+            物理本就是桌面专属，双实例挂载只会白白重复监听）
+            min-w-0：<lg 轨道（grid-cols-1 = minmax(0,1fr)）本不受 300px 抬高；
+            ≥lg 的 [7fr_5fr] 轨道最小值是 auto，min-w-0 才是那里的护栏——
+            当前松弛（物件 280px < 1024px 断点下 5fr 份额 ≈386px），若将来
+            加宽物件/收窄 gap 就会咬合，勿删；<340px 真兜底 = scale(0.85) */}
+        <div className="min-w-0">
+          <div className="hero-tilt hidden lg:block">
+            <HeroObjectPhysics>
+              <BlueprintObject />
+            </HeroObjectPhysics>
+          </div>
+          <div className="mt-2 lg:hidden">
+            <div
+              className="bp-object-scene bp-object-scene--mobile"
+              aria-hidden="true"
+            >
+              {/* 背光/投影 — 物件旋转链外，光源固定（与桌面同构） */}
+              <div className="bp-object-backglow" />
+              <div className="bp-object-shadow" />
+              <BlueprintObject variant="mobile" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -112,8 +152,8 @@ export default function HomeHero() {
         <div className="absolute inset-0 bg-gradient-to-t from-bg-base to-transparent" />
       </div>
 
-      {/* 滚动指示器 */}
-      <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2">
+      {/* 滚动指示器 — 桌面专属（移动端与物件基座同落点，视觉冲突且占首屏预算） */}
+      <div className="pointer-events-none absolute bottom-8 left-1/2 hidden -translate-x-1/2 lg:block">
         <div className="flex h-8 w-5 items-start justify-center rounded-full border border-txt-quaternary/40 p-1.5">
           <div className="h-2 w-0.5 animate-scroll-pulse rounded-full bg-txt-quaternary" />
         </div>

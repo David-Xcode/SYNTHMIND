@@ -11,6 +11,7 @@
 // children 用组合模式接收 Server Component 子树 — SVG 大块 DOM 不进 client bundle
 
 import { type ReactNode, useEffect, useRef } from 'react';
+import { listenMql } from '@/lib/listen-mql';
 
 // 旋转弹簧 ζ≈0.6 — 欠阻尼一次过冲（"有质量的物体被拨动"）
 const ROT_STIFFNESS = 30;
@@ -43,14 +44,6 @@ function stepSpring(
 
 function isSettled(s: SpringState, target: number) {
   return Math.abs(s.x - target) < REST_EPS && Math.abs(s.v) < REST_EPS;
-}
-
-// MediaQueryList.addEventListener 是 Safari 14+ 才有 — 老内核缺守卫会在
-// effect 里抛 TypeError，经页面 ErrorBoundary 把整个 Hero（含 LCP h1）打成 null
-function listenMql(mql: MediaQueryList, fn: (e: MediaQueryListEvent) => void) {
-  if (typeof mql.addEventListener !== 'function') return () => {};
-  mql.addEventListener('change', fn);
-  return () => mql.removeEventListener('change', fn);
 }
 
 interface HeroObjectPhysicsProps {

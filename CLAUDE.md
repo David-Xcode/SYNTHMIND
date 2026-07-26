@@ -28,6 +28,7 @@ src/
 │   ├── shared/            # 可复用 UI: SectionTitle, GlassCard, AnimateOnScroll, CTABanner,
 │   │                      #   ContactForm, PageHero, Eyebrow, SheetLabel, BlueprintGrid,
 │   │                      #   CropMarks, ArrowRightIcon, AnimatedStat, TextReveal,
+│   │                      #   GridBricks (砖墙层, BlueprintGrid 内部),
 │   │                      #   ErrorBoundary, JsonLd
 │   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
 │   ├── home/              # 首页: HomeHero, BlueprintObject, HeroObjectPhysics,
@@ -37,9 +38,10 @@ src/
 │                          #   TextListSection, TechStackBadges, ResultsSection
 ├── data/                  # TS 常量 (非 CMS): case-studies.ts (5 软件产品),
 │                          #   real-estate.ts (4 地产营销站), navigation.ts
-├── hooks/                 # useCountUp, useIntersectionVisible
+├── hooks/                 # useCountUp, useIntersectionVisible, useDeferredReveal
 ├── lib/                   # constants.ts (SITE_URL/CONTACT_EMAIL), csrf.ts,
-│                          #   tech-brand-colors.ts (品牌色 hex 唯一豁免区)
+│                          #   tech-brand-colors.ts (品牌色 hex 唯一豁免区),
+│                          #   listen-mql.ts (MediaQueryList 监听守卫)
 └── proxy.ts               # Next 16 middleware 约定 (安全 header)
 ```
 
@@ -117,6 +119,7 @@ import SheetLabel from '@/components/shared/SheetLabel';
 - 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
 - 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
 - `BlueprintObject` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha），及其逐面着色 fill 的中性黑压暗渐变（`rgba(0,0,0,α)` — 明度轴不是第二色相）。
+- 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）；secondary 面板基面 `rgba(12,16,23,α)` 与 `.card-surface` 同源（= bg-surface #0C1017 的 rgba 形态）。
 
 ### Accent Scale (Synth Blue = 蓝图蓝)
 | Token | Hex | Usage |
@@ -154,7 +157,7 @@ import SheetLabel from '@/components/shared/SheetLabel';
 
 ### Radial Glow / Grid
 - 页头/CTA 的径向光晕用 globals.css 的 `.hero-glow` class（`--glow-y` 控制垂直位置），不要内联 radial-gradient。
-- 蓝图网格用 `<BlueprintGrid />` 组件（内部 `.blueprint-grid` + 径向 mask），父容器需 `relative`。
+- 蓝图网格用 `<BlueprintGrid />` 组件（内部 = wrap 承径向 mask + 静态格线层 + GridBricks 砖墙层），父容器需 `relative`。桌面精指针下自动升维为砖墙（白名单 `brick-tilt`），其余路径静态网格。
 
 ---
 
@@ -215,35 +218,41 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 ))}
 ```
 
-可见性触发逻辑统一走 `useIntersectionVisible` hook（`src/hooks/`）— 不要在组件里手写 IntersectionObserver。
+可见性触发逻辑统一走 hooks（`src/hooks/`）— 不要在组件里手写 IntersectionObserver：
+- **入场揭示**（TextReveal / AnimateOnScroll）→ `useDeferredReveal`：SSR 基态可见，挂载后仅对视口下方元素武装隐藏态。**纪律：SSR 基态必须可见，JS 只允许在确认将播放动画时才隐藏**——微信 WebView hydration 失败时整页内容仍完整可读（2026-07-26 真机踩坑定案）
+- **状态触发**（count-up 等不隐藏内容的场景）→ `useIntersectionVisible`（初始 false 语义保留）
+- 首屏 load-time 词入场用 Server 直出 `.word-reveal`（零 JS 依赖），不要用 TextReveal（视口内元素不播动画）
 
 ### ALLOWED Animations（白名单，全站只允许这些）
 - ✅ `sheet-settle` — 图纸沉降入场（AnimateOnScroll；rotateX ≤5°）
 - ✅ `depth-drift` — 背景装饰层异速位移（`.depth-drift-back`；幅度 ≤ ±16px，仅背景层）
 - ✅ `bp-draw` / `bp-fade` — SVG 逐笔绘制 + 标注淡入（Hero 物件、hairline 图标）
-- ✅ `hero-tilt` — Hero 物件滚动倾斜（scroll(root) scrub，前 600px；≥lg 专属——<lg 物件缩放静态显示不倾斜）
+- ✅ `hero-tilt` — Hero 物件滚动倾斜（scroll(root) scrub，前 600px；≥lg 专属——<lg 为横陈 ELEV. 变体不倾斜）
 - ✅ `bpSolidify` — Hero 物件面板实体化淡入（挂载于 `.bp-face-fill` / backglow，入场叙事 Build 阶段）
 - ✅ `objFloat` / `objSway` / `objShadow` — Hero 物件常态呼吸/摇曳/投影（`.obj-float` ≤±6px、`.obj-sway` ≤±3°、`.bp-object-shadow`；周期 ≥7s，仅 Hero 物件 BlueprintObject / HeroObjectPhysics）
-- ✅ Hero 物件弹簧物理 — HeroObjectPhysics 的 rAF 欠阻尼弹簧（指针阻尼跟随 + 回摆 + hover scale ≈1.03；只写 transform / opacity / CSS 变量；全站唯一 mouse-tracking 豁免）
+- ✅ Hero 物件弹簧物理 — HeroObjectPhysics 的 rAF 欠阻尼弹簧（指针阻尼跟随 + 回摆 + hover scale ≈1.03；只写 transform / opacity / CSS 变量；mouse-tracking 豁免第 1 例）
 - ✅ `modAssemble` / `modDrift` — Hero 物件模块装配入场 + 错位-停驻-归位无限循环（幅度 ≤14px，周期 ≥10s 错峰；仅 BlueprintObject 模块层）
 - ✅ `seamIn` / `seamPulse` / `coreIn` / `corePulse` — Hero 物件缝隙发光条与核心环微光呼吸（opacity only，低 alpha 禁强 bloom）
 - ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤10px 沿签名轴 + 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
+- ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）
+- ✅ `brick-tilt` — 背景砖墙指针邻域翘起跟随（GridBricks rAF 阻尼弹簧场；倾角 ≤10°、抬升 ≤14px、影响半径 ~240px；仅 hover+fine 指针设备懒构建，触屏/RM/无 JS = 静态网格原样；静止时与静态网格逐像素一致；mouse-tracking 豁免第 2 例，仅限 BlueprintGrid 砖层）
+- ✅ `btnFloat` — CTA 按钮悬浮呼吸（`.btn-levitate` wrapper ≤±2px、周期 ≥6s；全站 ≤3 处，与按压 transition 分层不同元素）
+- ✅ 按钮按压位移 — `--btn-dy` 双层反向 transition（rest 悬浮 5px / hover −2px / active +4px 按入；插槽 ::before 反向抵消恒静止；仅 .btn-primary/.btn-secondary）
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
 - ✅ `scaleIn` — 表单成功态缩放弹入
 - ✅ `scroll-pulse` / `scale-in-dot` — 滚动指示器
 - ✅ `translateY(-2px)` on card hover / `box-shadow` blue glow / `border-color` transitions
-- ✅ `transform: scale(0.98)` on button `:active`
 - ✅ count-up 数字滚动（useCountUp）
 
 ### FORBIDDEN Animations
 - ❌ `shimmer` / shimmer gradients
-- ❌ `float` / floating animations（唯一豁免：Hero 物件的 `objFloat`，见白名单）
+- ❌ `float` / floating animations（豁免仅两例：Hero 物件 `objFloat`、CTA `btnFloat`，口径见白名单）
 - ❌ `gradient-shift` / `gradientShift`
 - ❌ `noise` texture overlays
 - ❌ 满屏 parallax（深度暗示只允许白名单里 ≤ ±16px 的 depth-drift）
 - ❌ `particle` effects
-- ❌ mouse-tracking tilt / mouseGlow（唯一豁免：Hero 物件的 HeroObjectPhysics 阻尼弹簧跟随——rAF lerp 有惯性，非 1:1 硬跟；卡片一律不做）
+- ❌ mouse-tracking tilt / mouseGlow（豁免仅两例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintGrid 砖层 GridBricks 邻域翘起。卡片与其余一切元素一律不做）
 - ❌ 动画属性超出 transform / opacity / filter / stroke-dashoffset
 
 ### 性能纪律
@@ -252,23 +261,38 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 
 ---
 
-## 7. Button System
+## 7. Button System — 悬空 3D 模组（Living Blueprint v3）
 
-Two button styles defined in `globals.css`. Use CSS classes directly:
+Two button styles defined in `globals.css`. Use CSS classes directly（标记零迁移——
+双层结构全在伪元素里，语义仍是真实 `<Link>`/`<button>`）:
 
 ```jsx
 <button className="btn-primary">Get Started</button>
 <button className="btn-secondary">Learn More</button>
+
+// CTA 悬浮呼吸（可选，全站 ≤3 处）：wrapper 承载 infinite 动画，
+// 与按钮本体的按压 transition 分层——同元素同属性动画冲突纪律
+<span className="btn-levitate flex">
+  <Link href="/contact" className="btn-primary">Book a Call</Link>
+</span>
 ```
 
 ### Button Rules — IMPORTANT
+- **双层悬浮模组结构**：元素本体 = 悬浮面板（渐变面 + 厚度暗示 inset 阴影）；
+  `::before` = 底座插槽（hairline 框 + accent 缝光），常态位于面板下方 5px
+- **状态机走单一变量 `--btn-dy`**：面板 `translateY(var(--btn-dy))`，插槽
+  `translateY(calc(5px - var(--btn-dy)))` 反向抵消恒静止。
+  rest `0` / hover `-2px`（抬起+增亮）/ active `+4px`（按入插槽）/ disabled `+2px`（半落座）
+- 触屏无 hover：静态悬空姿态 + `:active` 按入传达质感（纯 CSS，无 JS 依赖）
+- `:focus-visible`：2px accent 外描边 + 3px offset（显式定义，勿删）
+- 触达面积 ≥44px — 由类内 `padding: 0.75rem 1.75rem` 锁定；**尺寸不接受
+  使用处 utility 覆写**（本块在 @tailwind utilities 之后，px-*/py-*/text-*
+  会被源序压掉——写了也不生效，别写）
 - Primary: `linear-gradient(135deg, #4A9FE5, #3488CC)` background
-- Primary hover: `box-shadow: 0 4px 12px rgba(74, 159, 229, 0.25)`
-- Secondary hover: `background: rgba(74, 159, 229, 0.08)` + border highlights
-- Active: `transform: scale(0.98)` only
 - Border radius: **8px**（与卡片统一）
 - Font: `text-sm font-semibold` (primary) / `text-sm font-medium` (secondary)
 - 按钮内右箭头用 `<ArrowRightIcon />` 共享组件，不要内联 SVG
+- 禁止再给按钮加 `scale(0.98)` 按压（v3 起由 `--btn-dy` 按入取代）
 
 ---
 
