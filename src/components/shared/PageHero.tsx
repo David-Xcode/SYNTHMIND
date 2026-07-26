@@ -1,15 +1,16 @@
-// ─── 内页 Hero · Neural ───
-// about / products 共享的页头区块：径向光晕 + 眉标 + light/bold 标题 + 副标题
-// 此前两页各自复制了整段结构与内联渐变，统一收拢
+// ─── 内页 Hero · Blueprint ───
+// about / products 共享的页头区块：
+// 蓝图基准网格（滚动异速深度层）+ 径向光晕 + 图签 + light/bold 标题 + 副标题
 
 import AnimateOnScroll from './AnimateOnScroll';
-import Eyebrow from './Eyebrow';
+import BlueprintGrid from './BlueprintGrid';
+import SheetLabel from './SheetLabel';
 
 interface PageHeroProps {
   eyebrow: string;
   /** 标题普通字重部分 */
   light: string;
-  /** 标题 Sora semibold 蓝色高亮部分 */
+  /** 标题 Archivo 宽体蓝色高亮部分 */
   bold: string;
   subtitle?: string;
 }
@@ -22,6 +23,9 @@ export default function PageHero({
 }: PageHeroProps) {
   return (
     <section className="relative pt-8 pb-24 px-4 overflow-hidden">
+      {/* 蓝图基准网格 — 随滚动反向缓移，制造轻微深度层 */}
+      <BlueprintGrid className="depth-drift-back" />
+
       {/* 微妙径向光晕背景 — .hero-glow 定义在 globals.css */}
       <div
         className="pointer-events-none absolute inset-0 hero-glow"
@@ -30,7 +34,7 @@ export default function PageHero({
 
       <div className="relative max-w-3xl mx-auto text-center">
         <AnimateOnScroll>
-          <Eyebrow>{eyebrow}</Eyebrow>
+          <SheetLabel>{eyebrow}</SheetLabel>
         </AnimateOnScroll>
 
         <AnimateOnScroll delay={100}>
@@ -38,7 +42,7 @@ export default function PageHero({
             <span className="font-sans font-light text-txt-primary">
               {light}{' '}
             </span>
-            <span className="font-display font-semibold text-accent">
+            <span className="font-display font-semibold stretch-wide text-accent">
               {bold}
             </span>
           </h1>

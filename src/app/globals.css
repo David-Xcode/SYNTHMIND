@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════
-   Synthmind "Neural" Design System
-   冷色蓝调 + 清晰几何 = 智能感与科技感
+   Synthmind "Blueprint" Design System
+   深海军黑 + 蓝图制图语言 = 静默精密（Quiet Precision）
+   科技感做底色而非主角；高级藏在细节里
    ═══════════════════════════════════════════════ */
 
 :root {
@@ -12,7 +13,7 @@
   --bg-base: #080b10;
   --bg-elevated: #111620;
 
-  /* ── 主色 (Synth Blue) ── */
+  /* ── 主色 (Synth Blue = 蓝图蓝) ── */
   --accent: #4a9fe5;
   --accent-hover: #5daae9;
 
@@ -26,6 +27,10 @@
   --border-default: rgba(74, 159, 229, 0.1);
   --border-strong: rgba(74, 159, 229, 0.18);
   --border-heavy: rgba(74, 159, 229, 0.25);
+
+  /* ── 蓝图基准网格 (alpha ≤0.04 — 注意到才看见) ── */
+  --grid-line-major: rgba(74, 159, 229, 0.04);
+  --grid-line-minor: rgba(74, 159, 229, 0.02);
 
   /* ── 动画缓动 ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -70,17 +75,63 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   Neural 三级卡片系统
-   微妙玻璃态 + 蓝色光晕 hover
+   排版工具 — Archivo 宽度轴
    ═══════════════════════════════════════════════ */
 
-/* Level 1: 半透明底层 + 微妙模糊 */
+/* Display 大标题宽体 — 制图工业气质的来源，只用于 font-display 高亮词 */
+.stretch-wide {
+  font-stretch: 116%;
+}
+
+/* 测量标注 — mono 微字号（设计纪律：每屏 ≤2 处） */
+.annotation {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-quaternary);
+}
+
+/* ═══════════════════════════════════════════════
+   蓝图基准网格 — 双层 linear-gradient
+   96px 主格 + 24px 细分格，径向 mask 渐隐
+   仅用于 Hero 与关键 section，不满屏铺
+   ═══════════════════════════════════════════════ */
+
+.blueprint-grid {
+  background-image:
+    linear-gradient(var(--grid-line-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-line-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-minor) 1px, transparent 1px);
+  background-size:
+    96px 96px,
+    96px 96px,
+    24px 24px,
+    24px 24px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 35%,
+    black 30%,
+    transparent 80%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 35%,
+    black 30%,
+    transparent 80%
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   Sheet 三级卡片系统（图纸片材质）
+   实底 + hairline 边 — 玻璃拟态已移除，圆角收紧 8px
+   hover 维持 2D（3D 预算全花在滚动入场上）
+   ═══════════════════════════════════════════════ */
+
+/* Level 1: 半透明底层（无模糊 — 图纸不是玻璃） */
 .card-surface {
-  background: rgba(12, 16, 23, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(12, 16, 23, 0.72);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  border-radius: 8px;
   transition: border-color 0.3s var(--ease-out-expo);
 }
 .card-surface:hover {
@@ -91,7 +142,7 @@ body {
 .card-elevated {
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border-radius: 8px;
   transition:
     border-color 0.3s var(--ease-out-expo),
     transform 0.3s var(--ease-out-expo),
@@ -108,7 +159,7 @@ body {
   position: relative;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   transition:
     border-color 0.3s var(--ease-out-expo),
@@ -141,7 +192,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   按钮系统 — 蓝色渐变 + 光晕
+   按钮系统 — 蓝色渐变 + 光晕（圆角与卡片统一 8px）
    ═══════════════════════════════════════════════ */
 
 .btn-primary {
@@ -154,7 +205,7 @@ body {
   color: #ffffff;
   font-weight: 600;
   font-size: 0.875rem;
-  border-radius: 10px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   transition: all 0.2s var(--ease-out-expo);
@@ -177,7 +228,7 @@ body {
   color: var(--accent);
   font-weight: 500;
   font-size: 0.875rem;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--border-strong);
   cursor: pointer;
   transition: all 0.2s var(--ease-out-expo);
@@ -218,6 +269,104 @@ body {
     rgba(74, 159, 229, 0.04),
     transparent
   );
+}
+
+/* ═══════════════════════════════════════════════
+   滚动驱动动效 — 零依赖 CSS 路线
+   支持 animation-timeline 的浏览器：scrub 式滚动联动
+   不支持：AnimateOnScroll 的 IntersectionObserver 内联样式接管
+   （CSS 动画级联高于内联样式，两条路径可安全共存）
+   ═══════════════════════════════════════════════ */
+
+/* 图纸沉降入场 — 轻微 3D：rotateX ≤5°，随滚动沉降平整 */
+@keyframes sheetSettle {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) rotateX(5deg) translateY(24px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg) translateY(0);
+    filter: blur(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .sheet-reveal {
+    animation: sheetSettle linear both;
+    animation-timeline: view();
+    /* --settle-offset: 同排卡片交错（scrub 模式下 delay 无效，改用 range 偏移） */
+    animation-range: entry var(--settle-offset, 0%) entry
+      calc(50% + var(--settle-offset, 0%));
+  }
+}
+
+/* 深度层异速位移 — 仅背景装饰层，±16px 克制幅度（非满屏视差） */
+@keyframes depthDriftBack {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: translateY(-16px);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .depth-drift-back {
+    animation: depthDriftBack linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   Hero 活蓝图 — 签名元素
+   SVG 逐笔绘制（pathLength=1 归一化，--draw-delay 分段编排）
+   ═══════════════════════════════════════════════ */
+
+@keyframes bpDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.bp-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: bpDraw 0.9s var(--ease-out-expo) both;
+  animation-delay: var(--draw-delay, 0s);
+}
+
+/* 标注文字/节点圆点 — 线条画完后淡入（alpha 走颜色值，opacity 恒到 1） */
+@keyframes bpFade {
+  to {
+    opacity: 1;
+  }
+}
+.bp-fade {
+  opacity: 0;
+  animation: bpFade 0.5s ease-out both;
+  animation-delay: var(--draw-delay, 0s);
+}
+
+/* Hero 蓝图滚动倾斜 — 离开视口时图纸从绘图桌上抬起（scrub 前 600px） */
+@supports (animation-timeline: scroll()) {
+  @keyframes heroTilt {
+    from {
+      transform: perspective(1400px) rotateX(0deg) translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: perspective(1400px) rotateX(7deg) translateY(28px);
+      opacity: 0.4;
+    }
+  }
+  .hero-tilt {
+    transform-origin: center 20%;
+    animation: heroTilt linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 600px;
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -291,6 +440,14 @@ body {
     animation-duration: 0.01ms !important;
     /* biome-ignore lint/complexity/noImportantStyles: a11y reduced-motion reset must override utility durations */
     transition-duration: 0.01ms !important;
+  }
+  /* 滚动驱动动画的进度来自滚动轴，时长重置对其无效 — 必须显式关闭，
+     关闭后由 IntersectionObserver 路径以 0.01ms 过渡瞬时显示 */
+  .sheet-reveal,
+  .depth-drift-back,
+  .hero-tilt {
+    /* biome-ignore lint/complexity/noImportantStyles: scroll-driven animations ignore duration reset, must disable explicitly */
+    animation: none !important;
   }
   video {
     display: none;

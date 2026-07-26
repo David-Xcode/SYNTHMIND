@@ -1,8 +1,11 @@
 'use client';
 
-// ─── 滚动入场动画 · Neural ───
-// opacity + translateY + blur 数字显现效果（统一 reveal 动效）
-// threshold/duration/direction 此前全站零调用，已收敛为固定值
+// ─── 滚动入场动画 · Blueprint ───
+// 双路径实现（对外 API 不变）：
+// 1. 支持 animation-timeline 的浏览器：.sheet-reveal 走 CSS scroll-driven
+//    图纸沉降（rotateX 5° + translateY 随滚动 scrub），本组件内联样式被
+//    CSS 动画级联覆盖，IO 状态切换无视觉影响
+// 2. 旧浏览器：IntersectionObserver + 内联过渡（原 Neural reveal 路径）
 
 import React from 'react';
 import { useIntersectionVisible } from '@/hooks/useIntersectionVisible';
@@ -10,7 +13,7 @@ import { useIntersectionVisible } from '@/hooks/useIntersectionVisible';
 interface AnimateOnScrollProps {
   children: React.ReactNode;
   className?: string;
-  /** 延迟时间（ms），用于卡片列表的交错入场 */
+  /** 延迟时间（ms）：IO 路径为 transitionDelay；scrub 路径映射为 animation-range 偏移 */
   delay?: number;
 }
 
@@ -25,8 +28,10 @@ export default function AnimateOnScroll({
 }: AnimateOnScrollProps) {
   const { ref, isVisible } = useIntersectionVisible<HTMLDivElement>(0.1);
 
-  // Neural reveal: 从底部浮现 + 去模糊
-  // willChange 提示浏览器提前准备 GPU 合成层
+  // scrub 交错：delay(ms) → range 偏移（100ms ≈ 2%），封顶 12% 防止排尾卡片入场过晚
+  const settleOffset = Math.min(delay * 0.02, 12);
+
+  // 降级路径隐藏态：从底部浮现 + 去模糊
   const hiddenStyle: React.CSSProperties = {
     opacity: 0,
     transform: 'translateY(12px)',
@@ -49,8 +54,13 @@ export default function AnimateOnScroll({
   return (
     <div
       ref={ref}
-      className={className}
-      style={isVisible ? visibleStyle : hiddenStyle}
+      className={`sheet-reveal ${className}`}
+      style={
+        {
+          ...(isVisible ? visibleStyle : hiddenStyle),
+          '--settle-offset': `${settleOffset}%`,
+        } as React.CSSProperties
+      }
     >
       {children}
     </div>

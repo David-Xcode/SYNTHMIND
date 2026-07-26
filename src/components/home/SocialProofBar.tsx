@@ -6,7 +6,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
-import Eyebrow from '@/components/shared/Eyebrow';
+import SheetLabel from '@/components/shared/SheetLabel';
 import { caseStudies } from '@/data/case-studies';
 import { realEstateSites } from '@/data/real-estate';
 
@@ -34,10 +34,10 @@ const logos = Array.from({ length: REPEAT_COUNT }, () => logoItems).flat();
 export default function SocialProofBar() {
   return (
     <section className="py-16 bg-bg-base overflow-hidden">
-      <AnimateOnScroll>
-        <Eyebrow tone="tertiary" className="block text-center mb-8">
+      <AnimateOnScroll className="text-center">
+        <SheetLabel tone="tertiary" className="mb-8">
           Trusted by businesses across industries
-        </Eyebrow>
+        </SheetLabel>
       </AnimateOnScroll>
 
       {/* Marquee 容器 */}

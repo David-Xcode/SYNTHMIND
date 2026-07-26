@@ -1,12 +1,12 @@
-// ─── 节标题组件 · Neural ───
-// Sora semibold 用于高亮词 / JetBrains Mono 用于眉标
+// ─── 节标题组件 · Blueprint ───
+// Archivo 宽体用于高亮词 / SheetLabel 图签（可带图纸编号）
 
-import Eyebrow from './Eyebrow';
+import SheetLabel from './SheetLabel';
 
 interface SectionTitleProps {
   /** 普通字重的前缀文字 */
   light: string;
-  /** 加粗的高亮文字 (使用 Sora semibold) */
+  /** 加粗的高亮文字 (Archivo semibold 宽体) */
   bold: string;
   /** 可选副标题 */
   subtitle?: string;
@@ -14,8 +14,10 @@ interface SectionTitleProps {
   size?: 'lg' | 'md' | 'sm';
   /** 对齐方式 */
   align?: 'center' | 'left';
-  /** 彩色小标签 (如 "OUR PROCESS")，使用 JetBrains Mono */
+  /** 图签标签 (如 "OUR PROCESS")，IBM Plex Mono */
   eyebrow?: string;
+  /** 图纸编号 (如 "02") — 页内 section 序号，随 eyebrow 渲染 */
+  sheetNo?: string;
 }
 
 export default function SectionTitle({
@@ -25,6 +27,7 @@ export default function SectionTitle({
   size = 'lg',
   align = 'center',
   eyebrow,
+  sheetNo,
 }: SectionTitleProps) {
   // 根据 size 决定标题样式
   const headingClass = {
@@ -37,10 +40,14 @@ export default function SectionTitle({
     <div
       className={`${align === 'center' ? 'text-center' : 'text-left'} mb-16`}
     >
-      {eyebrow && <Eyebrow className="inline-block mb-4">{eyebrow}</Eyebrow>}
+      {eyebrow && (
+        <SheetLabel no={sheetNo} className="mb-4">
+          {eyebrow}
+        </SheetLabel>
+      )}
       <h2 className={`${headingClass} text-txt-primary mb-4`}>
         <span className="font-sans font-light">{light}</span>{' '}
-        <span className="font-display font-semibold">{bold}</span>
+        <span className="font-display font-semibold stretch-wide">{bold}</span>
       </h2>
       {subtitle && (
         <p

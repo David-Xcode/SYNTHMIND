@@ -1,25 +1,26 @@
 import type { Metadata } from 'next';
-import { JetBrains_Mono, Manrope, Sora } from 'next/font/google';
+import { Archivo, IBM_Plex_Mono, Manrope } from 'next/font/google';
 import { SITE_URL } from '@/lib/constants';
 import './globals.css';
 
-// Display 字体 — 标题、Hero 大文字 (替代 DM Serif Display)
-const sora = Sora({
-  weight: ['300', '600'],
+// Display 字体 — 标题、Hero 大文字（Blueprint 制图气质）
+// variable font 含 wdth 宽度轴，大标题配 .stretch-wide 用宽体
+const archivo = Archivo({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-display',
+  axes: ['wdth'],
 });
 
-// 正文/UI 字体 — 几何人文无衬线 (替代 DM Sans)
+// 正文/UI 字体 — 几何人文无衬线（可读性资产，保留）
 const manrope = Manrope({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-body',
 });
 
-// 数据/标签字体 — 编程风格等宽 (替代 DM Mono)
-const jetbrainsMono = JetBrains_Mono({
+// 标注/图签字体 — 工程文档血统等宽（图签编号、测量标注）
+const ibmPlexMono = IBM_Plex_Mono({
   weight: ['400', '500'],
   subsets: ['latin'],
   display: 'swap',
@@ -73,7 +74,7 @@ export default function RootLayout({
       lang="en"
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      className={`${sora.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
+      className={`${archivo.variable} ${manrope.variable} ${ibmPlexMono.variable}`}
     >
       <body className="font-sans antialiased" suppressHydrationWarning>
         {/* 微信 WebView 兼容性修复 — MutationObserver 实时拦截 */}

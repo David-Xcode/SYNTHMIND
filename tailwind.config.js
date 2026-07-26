@@ -27,9 +27,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Sora', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        display: ['var(--font-display)', 'Archivo', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
         sans:    ['var(--font-body)', 'Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        mono:    ['var(--font-mono)', 'JetBrains Mono', 'Menlo', 'Monaco', 'monospace'],
+        mono:    ['var(--font-mono)', 'IBM Plex Mono', 'Menlo', 'Monaco', 'monospace'],
       },
       fontSize: {
         /* 响应式 clamp 尺寸 */
