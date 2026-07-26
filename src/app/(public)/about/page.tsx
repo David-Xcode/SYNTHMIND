@@ -119,7 +119,7 @@ export default function AboutPage() {
       />
 
       {/* ── Section 2: Why We Exist — 行业问题 + 公司数据 ── */}
-      <section className="relative py-24 bg-bg-surface px-4">
+      <section className="sheet-panel relative py-24 px-4">
         <hr className="ruled-line absolute top-0 left-0 right-0" />
 
         <div className="max-w-6xl mx-auto">
@@ -175,7 +175,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── Section 3: What We Build — 3 种解决方案 ── */}
-      <section className="py-24 bg-bg-base px-4">
+      <section className="py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
@@ -205,7 +205,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── Section 4: Our Values — 行业特定原则 ── */}
-      <section className="relative py-24 bg-bg-surface px-4">
+      <section className="sheet-panel relative py-24 px-4">
         <hr className="ruled-line absolute top-0 left-0 right-0" />
 
         <div className="max-w-4xl mx-auto">
@@ -236,7 +236,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── Section 5: Our Process — 水平四步 ── */}
-      <section className="py-24 bg-bg-base px-4">
+      <section className="py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle

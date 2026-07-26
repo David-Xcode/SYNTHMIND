@@ -144,7 +144,7 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ — 可折叠手风琴 */}
-      <section className="py-24 bg-bg-surface px-4">
+      <section className="sheet-panel py-24 px-4">
         <div className="max-w-3xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle

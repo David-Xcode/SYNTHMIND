@@ -63,7 +63,7 @@ const capabilities = [
 
 export default function CapabilitiesSection() {
   return (
-    <section className="relative bg-bg-surface px-4 py-24">
+    <section className="sheet-panel relative px-4 py-24">
       <hr className="ruled-line absolute top-0 left-0 right-0" />
       <div className="mx-auto max-w-6xl">
         <AnimateOnScroll>

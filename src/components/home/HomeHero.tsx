@@ -6,10 +6,8 @@
 // 仍完整渲染（TextReveal 的 JS 可见性路径在该渠道真机翻过车，2026-07-26）
 // 移动端（<lg）：物件为横陈 ELEV. 变体，与文案同屏构成首屏叙事（v3 定案）
 
-import Link from 'next/link';
 import { Fragment } from 'react';
-import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
-import BlueprintGrid from '@/components/shared/BlueprintGrid';
+import ModuleButton from '@/components/shared/ModuleButton';
 import SheetLabel from '@/components/shared/SheetLabel';
 import BlueprintObject from './BlueprintObject';
 import HeroObjectPhysics from './HeroObjectPhysics';
@@ -23,10 +21,8 @@ export default function HomeHero() {
   return (
     // overflow-clip-safe：clip 不创建 scroll container，保证 view() 时间轴找到根滚动器
     // 移动端 items-start：items-center 在 <lg 会把超高内容推出折叠线（v2 实测缺陷）
-    <section className="relative flex min-h-svh-safe items-start overflow-clip-safe bg-bg-base lg:items-center">
-      {/* 蓝图基准网格 — hero 专属，径向渐隐（桌面精指针下升维为砖墙层） */}
-      <BlueprintGrid />
-
+    // v4：背景 = layout 级满铺砖墙（BlueprintWall），本节不再持有底色与网格
+    <section className="relative flex min-h-svh-safe items-start overflow-clip-safe lg:items-center">
       {/* 背景光晕装饰 */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         {/* 主光晕 — 顶部偏左 */}
@@ -84,27 +80,28 @@ export default function HomeHero() {
             ))}
           </p>
 
-          {/* CTA 按钮 — 3D 悬浮模组（v3）：levitate wrapper 承载呼吸 infinite，
-              按钮本体只有按压 transition（同元素同属性动画冲突的分层纪律） */}
+          {/* CTA 按钮 — ModuleButton 悬空模组（v4 组件化）；phase 错峰两颗不同频 */}
           <div
             className="mt-8 flex w-full max-w-xs animate-reveal flex-col gap-4 sm:w-auto sm:max-w-none sm:flex-row sm:justify-center lg:mt-10 lg:justify-start"
             style={{ animationDelay: '0.7s' }}
           >
-            <span className="btn-levitate flex">
-              <Link href="/contact" className="btn-primary w-full sm:w-auto">
-                Book a Free Consultation
-                <ArrowRightIcon />
-              </Link>
-            </span>
-            {/* 反相错峰 — 两颗 CTA 呼吸不同步（负 delay 从周期中段接入） */}
-            <span
-              className="btn-levitate flex"
-              style={{ animationDelay: '-3s' }}
+            <ModuleButton
+              href="/contact"
+              arrow
+              frameClassName="flex"
+              className="w-full sm:w-auto"
             >
-              <Link href="/products" className="btn-secondary w-full sm:w-auto">
-                View Our Work
-              </Link>
-            </span>
+              Book a Free Consultation
+            </ModuleButton>
+            <ModuleButton
+              href="/products"
+              variant="secondary"
+              phase={4}
+              frameClassName="flex"
+              className="w-full sm:w-auto"
+            >
+              View Our Work
+            </ModuleButton>
           </div>
         </div>
 
@@ -143,14 +140,6 @@ export default function HomeHero() {
       >
         TORONTO, CA / 43.65°N 79.38°W
       </span>
-
-      {/* 底部渐变过渡 */}
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 right-0 h-40"
-        aria-hidden="true"
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-bg-base to-transparent" />
-      </div>
 
       {/* 滚动指示器 — 桌面专属（移动端与物件基座同落点，视觉冲突且占首屏预算） */}
       <div className="pointer-events-none absolute bottom-8 left-1/2 hidden -translate-x-1/2 lg:block">

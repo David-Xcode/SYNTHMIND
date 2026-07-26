@@ -7,6 +7,7 @@ import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
 import GlassCard from '@/components/shared/GlassCard';
+import ModuleButton from '@/components/shared/ModuleButton';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { caseStudies } from '@/data/case-studies';
 
@@ -30,7 +31,7 @@ if (
 
 export default function FeaturedWork() {
   return (
-    <section className="relative bg-bg-base px-4 py-24">
+    <section className="relative px-4 py-24">
       <hr className="ruled-line absolute top-0 left-0 right-0" />
       <div className="mx-auto max-w-6xl">
         <AnimateOnScroll>
@@ -81,9 +82,9 @@ export default function FeaturedWork() {
         </div>
 
         <AnimateOnScroll delay={300} className="mt-10 text-center">
-          <Link href="/products" className="btn-secondary">
+          <ModuleButton href="/products" variant="secondary" phase={3}>
             View all products
-          </Link>
+          </ModuleButton>
         </AnimateOnScroll>
       </div>
     </section>

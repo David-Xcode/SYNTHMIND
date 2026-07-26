@@ -45,7 +45,7 @@ export default function ProductsPage() {
       />
 
       {/* ── 软件产品网格 ── */}
-      <section className="relative py-24 bg-bg-surface px-4">
+      <section className="sheet-panel relative py-24 px-4">
         <hr className="ruled-line absolute top-0 left-0 right-0" />
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>

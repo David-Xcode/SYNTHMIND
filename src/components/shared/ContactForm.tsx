@@ -5,6 +5,7 @@
 // 此前的 mini/inline 变体全站零调用，已删除 — 仅保留完整表单
 
 import React, { useEffect, useRef, useState } from 'react';
+import ModuleButton from './ModuleButton';
 
 // 带 focus 动画的输入框样式
 const inputClass =
@@ -102,13 +103,9 @@ export default function ContactForm() {
         <p className="text-txt-tertiary text-sm mb-6">
           We&apos;ll get back to you within 24 hours.
         </p>
-        <button
-          type="button"
-          onClick={() => setStatus('idle')}
-          className="btn-secondary"
-        >
+        <ModuleButton variant="secondary" onClick={() => setStatus('idle')}>
           Send another message
-        </button>
+        </ModuleButton>
       </div>
     );
   }
@@ -179,14 +176,13 @@ export default function ContactForm() {
 
       {/* 提交 */}
       <div className="flex flex-col items-center gap-4">
-        <button
+        <ModuleButton
           type="submit"
           disabled={status === 'sending'}
           aria-busy={status === 'sending'}
-          className="btn-primary"
         >
           {status === 'sending' ? 'Sending...' : 'Send Message'}
-        </button>
+        </ModuleButton>
         {(status === 'error' || status === 'timeout') && (
           <span role="alert" className="text-red-400 text-sm">
             {status === 'timeout'

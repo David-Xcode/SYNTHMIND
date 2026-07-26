@@ -35,20 +35,16 @@ export default function SocialProofBar() {
   return (
     // overflow-clip-safe：clip 不创建 scroll container（overflow-hidden 会让
     // 子元素的 view() 时间轴绑到本节，sheet-reveal 退化）
-    <section className="py-16 bg-bg-base overflow-clip-safe">
+    // v4：透墙 section（背景 = 满铺砖墙）；两端渐隐改 mask（.marquee-fade）
+    <section className="py-16 overflow-clip-safe">
       <AnimateOnScroll className="text-center">
         <SheetLabel tone="tertiary" className="mb-8">
           Trusted by businesses across industries
         </SheetLabel>
       </AnimateOnScroll>
 
-      {/* Marquee 容器 */}
-      <div className="relative">
-        {/* 左侧渐变遮罩 */}
-        <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-r from-bg-base to-transparent z-10 pointer-events-none" />
-        {/* 右侧渐变遮罩 */}
-        <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-40 bg-gradient-to-l from-bg-base to-transparent z-10 pointer-events-none" />
-
+      {/* Marquee 容器 — mask 两端淡出（对任意背景成立） */}
+      <div className="relative marquee-fade">
         {/* 双容器滚动轨道 */}
         <div className="flex items-center w-max animate-marquee hover:[animation-play-state:paused]">
           {/* 第一份轨道 — 可点击跳转到对应项目 */}

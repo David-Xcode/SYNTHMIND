@@ -59,7 +59,7 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
   const textResults = results.filter((r) => !extractStat(r));
 
   return (
-    <section className="py-16 bg-bg-surface px-4">
+    <section className="sheet-panel py-16 px-4">
       <div className="max-w-3xl mx-auto">
         <AnimateOnScroll>
           <SectionTitle

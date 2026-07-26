@@ -26,9 +26,9 @@ src/
 │   └── layout.tsx         # 根 layout: html/body/globals.css/metadata ONLY
 ├── components/
 │   ├── shared/            # 可复用 UI: SectionTitle, GlassCard, AnimateOnScroll, CTABanner,
-│   │                      #   ContactForm, PageHero, Eyebrow, SheetLabel, BlueprintGrid,
+│   │                      #   ContactForm, PageHero, Eyebrow, SheetLabel, ModuleButton,
+│   │                      #   BlueprintWall (满铺砖墙, layout 挂载) + WallBricks (JS 砖场),
 │   │                      #   CropMarks, ArrowRightIcon, AnimatedStat, TextReveal,
-│   │                      #   GridBricks (砖墙层, BlueprintGrid 内部),
 │   │                      #   ErrorBoundary, JsonLd
 │   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
 │   ├── home/              # 首页: HomeHero, BlueprintObject, HeroObjectPhysics,
@@ -66,11 +66,11 @@ src/
 
 全站视觉隐喻 = **工程制图/蓝图**：Synth Blue 就是蓝图蓝，客户行业全部活在图纸与单据里（建筑提交文件 / 保单 / 签署文档 / 地产平面图）。设计纪律：
 
-- 科技感做**底色**而非主角；高级藏在细节里（基准网格、图签、hairline、crop marks——注意到才看见）
+- 科技感做**底色**而非主角；高级藏在细节里（图签、hairline、crop marks——注意到才看见）
 - 排版精度 > 空间/材质 > 动效 > 色彩数量
 - 编号只用于**真实序列**（图纸页码、流程步骤）；能力/价值等非序列内容禁止装饰性编号
 - 标注预算：**自由文本** mono 测量标注（如坐标、尺寸）每屏 ≤2 处；图签（SheetLabel）与卡片图纸编号（S.NN）属结构性编号，不计入预算
-- 蓝图网格只出现在 Hero 与关键 section，不满屏铺
+- **满铺砖墙（v4）**：全站唯一背景 = `BlueprintWall`（fixed 单实例，(public)/layout 挂载）——砖墙材质本身可见（缝隙/砖面/厚度暗示/透光），但守单蓝色相 + 哑光禁强 bloom；内容层次三级：**L0 墙 / L1 `.sheet-panel` 图纸面板（半透明实底）/ L2 不透明卡片**；section 不得再持有整幅不透明底色（「图纸钉在砖墙上」，定案见 v4 spec）
 
 ## 3. Typography — Archivo + Manrope + IBM Plex Mono
 
@@ -102,7 +102,7 @@ import SheetLabel from '@/components/shared/SheetLabel';
 <span className="font-display font-semibold stretch-wide">Approach</span>
 ```
 
-**Page heroes** — about/products/contact 页头统一用 `<PageHero eyebrow light bold subtitle />`（内置 BlueprintGrid + depth-drift）。
+**Page heroes** — about/products/contact 页头统一用 `<PageHero eyebrow light bold subtitle />`（径向光晕 + 图签 + 标题；背景 = layout 级满铺砖墙，组件自身不再持有网格/深度层）。
 
 **Responsive font sizes** (use Tailwind tokens, NOT arbitrary values):
 - `text-display` — hero titles (clamp 2.5rem → 4.5rem)
@@ -121,6 +121,9 @@ import SheetLabel from '@/components/shared/SheetLabel';
 - 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
 - `BlueprintObject` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha），及其逐面着色 fill 的中性黑压暗渐变（`rgba(0,0,0,α)` — 明度轴不是第二色相）。
 - 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）；secondary 面板基面 `rgba(12,16,23,α)` 与 `.card-surface` 同源（= bg-surface #0C1017 的 rgba 形态）。
+- 满铺砖墙材质（globals.css `.bp-wall*` / `.bp-brick*` 块）：同蓝色相 alpha 阶 + 中性明度轴，与物件同一豁免逻辑。
+
+**材质 token（v4）**：物件面/线/光系的共享原语已提为 `:root` 的 `--mat-*` 变量（`--mat-face-base/tint/shade`、`--mat-edge-strong/faint`、`--mat-seam-glow/soft`，正本对照表见 v4 spec A.2）——砖墙/按钮的新材质决策**优先消费 token**，不得另起字面 rgba；改 `BlueprintObject` 的 STROKE/face 色阶必须同步 `--mat-*`（TSX 侧保持字面量是 SVG presentation attribute 的 var() 兼容豁免）。
 
 ### Accent Scale (Synth Blue = 蓝图蓝)
 | Token | Hex | Usage |
@@ -156,9 +159,9 @@ import SheetLabel from '@/components/shared/SheetLabel';
 --grid-line-minor: rgba(74, 159, 229, 0.02)  /* 蓝图细分格 24px */
 ```
 
-### Radial Glow / Grid
+### Radial Glow / Wall
 - 页头/CTA 的径向光晕用 globals.css 的 `.hero-glow` class（`--glow-y` 控制垂直位置），不要内联 radial-gradient。
-- 蓝图网格用 `<BlueprintGrid />` 组件（内部 = wrap 承径向 mask + 静态格线层 + GridBricks 砖墙层），父容器需 `relative`。桌面精指针下自动升维为砖墙（白名单 `brick-tilt`），其余路径静态网格。
+- 满铺砖墙 = `<BlueprintWall />`（(public)/layout 已挂载一次，**页面/组件不得重复实例化**）：透光层 + 奇偶行静态砖面（CSS 直出——无 JS/触屏/RM 三路径也看到完整材质）+ WallBricks 懒构建 JS 砖场（`data-bricks` 同帧接管，静止态像素等价）。砖 pitch 走 `--wall-brick-w`/`--wall-row-h` 媒体查询阶梯（预算 ≤220/视口），**JS 只读不定**。
 
 ---
 
@@ -196,12 +199,12 @@ Props: `variant`, `className`。内边距固定 `p-6` — 需要自定义 paddin
 技术基座：`animation-timeline: view()/scroll()`（scrub 式滚动联动）+ CSS 3D transform；不支持的浏览器由 `AnimateOnScroll` 的 IntersectionObserver 内联样式路径接管（CSS 动画级联高于内联样式，双路径共存）。
 
 ### 三条踩过坑的硬规则 — IMPORTANT
-1. **禁止 `overflow-hidden` 包住任何含 `.sheet-reveal` / `.depth-drift-back` 的子树**：hidden 会创建 scroll container，劫持 `view()` 时间轴的滚动器查找，整个子树的滚动动画**静默失效**（不报错、不掉 lint）。需要裁切时一律用 globals.css 的 `.overflow-clip-safe`（clip 不建 scroll container；老内核回落 hidden）。
+1. **禁止 `overflow-hidden` 包住任何含 `.sheet-reveal` 的子树**：hidden 会创建 scroll container，劫持 `view()` 时间轴的滚动器查找，整个子树的滚动动画**静默失效**（不报错、不掉 lint）。需要裁切时一律用 globals.css 的 `.overflow-clip-safe`（clip 不建 scroll container；老内核回落 hidden）。
 2. **`.bp-draw` 只能用在 `<path>` 上**：`pathLength` 在 `<rect>`/`<circle>` 上 WebKit 不支持，dasharray 归一化会碎成 1px 点线。矩形/圆都用等价 path 命令改写（见 BlueprintObject）。
 3. **`prefers-reduced-motion` 三件套**：scroll-driven 动画必须显式 `animation: none`（时长重置对其无效）；`animation-delay`/`transition-delay` 必须通配归零（否则分段 delay 变成逐个"闪现"）；infinite 动画（marquee / scroll-pulse 类）必须显式关闭（0.01ms 周期 = 每帧乱跳）。三者都已在 globals.css 的 reduced-motion 块落实，新增动画时对号入座。
 
 ### The ONE Scroll Entrance
-所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：rotateX 5° + translateY + blur 随滚动沉降平整）。
+所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：rotateX 5° + translateY + blur 随滚动沉降平整）。深度层异速位移（depth-drift）已于 v4 退役——fixed 满铺墙就是异速层的极限形态（速度 0），两套深度系统并存互相打架。
 
 ```tsx
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
@@ -226,7 +229,6 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 
 ### ALLOWED Animations（白名单，全站只允许这些）
 - ✅ `sheet-settle` — 图纸沉降入场（AnimateOnScroll；rotateX ≤5°）
-- ✅ `depth-drift` — 背景装饰层异速位移（`.depth-drift-back`；幅度 ≤ ±16px，仅背景层）
 - ✅ `bp-draw` / `bp-fade` — SVG 逐笔绘制 + 标注淡入（Hero 物件、hairline 图标）
 - ✅ `hero-tilt` — Hero 物件滚动倾斜（scroll(root) scrub，前 600px；≥lg 专属——<lg 为横陈 ELEV. 变体不倾斜）
 - ✅ `bpSolidify` — Hero 物件面板实体化淡入（挂载于 `.bp-face-fill` / backglow，入场叙事 Build 阶段）
@@ -237,8 +239,8 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤10px 沿签名轴 + 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）
-- ✅ `brick-tilt` — 背景砖墙指针邻域翘起跟随（GridBricks rAF 阻尼弹簧场；倾角 ≤10°、抬升 ≤14px、影响半径 ~240px；仅 hover+fine 指针设备懒构建，触屏/RM/无 JS = 静态网格原样；静止时与静态网格逐像素一致；mouse-tracking 豁免第 2 例，仅限 BlueprintGrid 砖层）
-- ✅ `btnFloat` — CTA 按钮悬浮呼吸（`.btn-levitate` wrapper ≤±2px、周期 ≥6s；全站 ≤3 处，与按压 transition 分层不同元素）
+- ✅ `brick-tilt` — 满铺砖墙指针邻域翘起跟随（WallBricks rAF 阻尼弹簧场；倾角 ≤12°、抬升 ≤18px、影响半径 ~240px；增亮/投影只写 opacity；仅 hover+fine 指针设备懒构建，触屏/RM/无 JS = 静态材质墙原样（CSS 直出可见）；JS 接管瞬间与静态层像素等价；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
+- ✅ `btnHoverIdle` — 按钮悬浮呼吸+微晃合帧（`.btn-module-frame` wrapper ≤±2px / ≤±0.4°、周期 ≥8s；ModuleButton 内建全站默认，同屏多按钮 phase 错峰；disabled 由 `:has(:disabled)` 停摆；float 与 sway 同写 transform 必须合并单一 keyframes——两个 infinite 动画同属性互相覆盖；与按压 transition 分层不同元素）
 - ✅ 按钮按压位移 — `--btn-dy` 双层反向 transition（rest 悬浮 5px / hover −2px / active +4px 按入；插槽 ::before 反向抵消恒静止；仅 .btn-primary/.btn-secondary）
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
 - ✅ `scaleIn` — 表单成功态缩放弹入
@@ -248,12 +250,12 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 
 ### FORBIDDEN Animations
 - ❌ `shimmer` / shimmer gradients
-- ❌ `float` / floating animations（豁免仅两例：Hero 物件 `objFloat`、CTA `btnFloat`，口径见白名单）
+- ❌ `float` / floating animations（豁免仅两例：Hero 物件 `objFloat`、按钮 `btnHoverIdle`，口径见白名单）
 - ❌ `gradient-shift` / `gradientShift`
 - ❌ `noise` texture overlays
-- ❌ 满屏 parallax（深度暗示只允许白名单里 ≤ ±16px 的 depth-drift）
+- ❌ 满屏 parallax（深度线索由 fixed 满铺墙承担；v3 的 depth-drift 已退役，禁止再引入异速滚动层）
 - ❌ `particle` effects
-- ❌ mouse-tracking tilt / mouseGlow（豁免仅两例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintGrid 砖层 GridBricks 邻域翘起。卡片与其余一切元素一律不做）
+- ❌ mouse-tracking tilt / mouseGlow（豁免仅两例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintWall 砖层 WallBricks 邻域翘起。卡片与其余一切元素一律不做）
 - ❌ 动画属性超出 transform / opacity / filter / stroke-dashoffset
 
 ### 性能纪律
@@ -262,38 +264,49 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 
 ---
 
-## 7. Button System — 悬空 3D 模组（Living Blueprint v3）
+## 7. Button System — ModuleButton 悬空模组（Blueprint Material v4）
 
-Two button styles defined in `globals.css`. Use CSS classes directly（标记零迁移——
-双层结构全在伪元素里，语义仍是真实 `<Link>`/`<button>`）:
+全站按钮**唯一授权入口** = `<ModuleButton>`（`src/components/shared/ModuleButton.tsx`）。
+`.btn-primary` / `.btn-secondary` / `.btn-module-frame` 是组件私有 CSS 引擎
+（globals.css §7 块），**业务代码禁止直接写这些类**。
 
 ```jsx
-<button className="btn-primary">Get Started</button>
-<button className="btn-secondary">Learn More</button>
+import ModuleButton from '@/components/shared/ModuleButton';
 
-// CTA 悬浮呼吸（可选，全站 ≤3 处）：wrapper 承载 infinite 动画，
-// 与按钮本体的按压 transition 分层——同元素同属性动画冲突纪律
-<span className="btn-levitate flex">
-  <Link href="/contact" className="btn-primary">Book a Call</Link>
-</span>
+<ModuleButton href="/contact" arrow>Book a Call</ModuleButton>              // Link 形态
+<ModuleButton href="/products" variant="secondary" phase={4}>View</ModuleButton>
+<ModuleButton type="submit" disabled={sending} aria-busy={sending}>Send</ModuleButton>
+<ModuleButton variant="secondary" onClick={reset}>Try Again</ModuleButton>  // button 形态
 ```
 
+Props：`variant`（primary 默认 / secondary）、`href`（有 → Link，无 → button）、
+`arrow`（内置 ArrowRightIcon + hover 右移，**不要手动内联箭头**）、
+`phase`（呼吸相位错峰秒数——**同屏多按钮必须错峰**）、
+`frameClassName`（wrapper 布局）、`className`（本体布局，如 `w-full`）。
+组件不带 `'use client'`（双栖：server 树零 hydration，client 宿主自动随包）。
+
 ### Button Rules — IMPORTANT
-- **双层悬浮模组结构**：元素本体 = 悬浮面板（渐变面 + 厚度暗示 inset 阴影）；
-  `::before` = 底座插槽（hairline 框 + accent 缝光），常态位于面板下方 5px
+- **组件结构**：wrapper（`.btn-module-frame` 承呼吸+微晃 infinite）→ 本体
+  （按压 transition）——infinite 动画与 transition 永不共存于同一元素
+- **呼吸+微晃是单一 keyframes（btnHoverIdle）**：float（translateY）与
+  sway（rotate）都写 transform，两个 infinite 动画同属性互相覆盖——
+  分层不了就合帧；disabled 时由 `:has(:disabled)` 停摆（半落座不呼吸）
+- **双层悬浮模组结构**：`::after` = 悬浮面板（渐变面 + 受光 tint
+  `--mat-face-tint` + 厚度暗示 inset）；`::before` = 底座插槽（hairline 框 +
+  accent 缝光），常态位于面板下方 5px（负 z 伪元素层序：面板 -1 / 插槽 -2）
 - **状态机走单一变量 `--btn-dy`**：面板 `translateY(var(--btn-dy))`，插槽
   `translateY(calc(5px - var(--btn-dy)))` 反向抵消恒静止。
-  rest `0` / hover `-2px`（抬起+增亮）/ active `+4px`（按入插槽）/ disabled `+2px`（半落座）
+  rest `0` / hover `-2px`（抬起+增亮+插槽缝光加深）/ active `+4px`（按入插槽）/
+  disabled `+2px`（半落座）
 - 触屏无 hover：静态悬空姿态 + `:active` 按入传达质感（纯 CSS，无 JS 依赖）
 - `:focus-visible`：2px accent 外描边 + 3px offset（显式定义，勿删）
 - 触达面积 ≥44px — 由类内 `padding: 0.75rem 1.75rem` 锁定；**尺寸不接受
-  使用处 utility 覆写**（本块在 @tailwind utilities 之后，px-*/py-*/text-*
+  使用处 utility 覆写**（引擎块在 @tailwind utilities 之后，px-*/py-*/text-*
   会被源序压掉——写了也不生效，别写）
 - Primary: `linear-gradient(135deg, #4A9FE5, #3488CC)` background
 - Border radius: **8px**（与卡片统一）
 - Font: `text-sm font-semibold` (primary) / `text-sm font-medium` (secondary)
-- 按钮内右箭头用 `<ArrowRightIcon />` 共享组件，不要内联 SVG
-- 禁止再给按钮加 `scale(0.98)` 按压（v3 起由 `--btn-dy` 按入取代）
+- 禁止给按钮加 `scale(0.98)` 按压（由 `--btn-dy` 按入取代）
 
 ---
 

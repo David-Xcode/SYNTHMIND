@@ -8,8 +8,9 @@ import { footerNav } from '@/data/navigation';
 import { CONTACT_EMAIL } from '@/lib/constants';
 
 export default function SiteFooter() {
+  // v4：bg-base/90 半透明收尾 — 满铺墙隐约透出（bg token 的 opacity modifier，非新色）
   return (
-    <footer className="relative text-white bg-bg-base">
+    <footer className="relative text-white bg-bg-base/90">
       {/* 顶部蓝色分割线 — 页面的视觉句号 */}
       <hr className="ruled-line" />
 

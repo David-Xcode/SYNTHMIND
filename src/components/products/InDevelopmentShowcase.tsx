@@ -25,7 +25,7 @@ export default function InDevelopmentShowcase() {
   return (
     <section
       id="in-development"
-      className="relative py-24 bg-bg-surface px-4 scroll-mt-24"
+      className="sheet-panel relative py-24 px-4 scroll-mt-24"
     >
       <hr className="ruled-line absolute top-0 left-0 right-0" />
 

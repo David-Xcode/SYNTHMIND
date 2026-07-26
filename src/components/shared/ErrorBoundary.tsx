@@ -5,6 +5,7 @@
 // 用于包裹可能抛错的区域，防止整页白屏
 
 import React, { Component, type ReactNode } from 'react';
+import ModuleButton from './ModuleButton';
 
 interface Props {
   children: ReactNode;
@@ -55,13 +56,12 @@ export default class ErrorBoundary extends Component<Props, State> {
           <p className="text-txt-secondary text-sm mb-4">
             Something went wrong loading this section.
           </p>
-          <button
-            type="button"
+          <ModuleButton
+            variant="secondary"
             onClick={() => this.setState({ hasError: false })}
-            className="btn-secondary"
           >
             Try Again
-          </button>
+          </ModuleButton>
         </div>
       );
     }

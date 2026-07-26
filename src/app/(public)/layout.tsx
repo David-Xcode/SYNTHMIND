@@ -1,9 +1,12 @@
 // ─── 公开页面共享布局 ───
 // SiteHeader + SiteFooter 在此声明一次，所有公开页面自动继承
+// BlueprintWall：全站唯一背景材质（fixed 单实例，z-index -1），
+// 所有页面的 section 不再持有整幅不透明底色（v4 层次纪律 L0/L1/L2）
 
 import type { ReactNode } from 'react';
 import SiteFooter from '@/components/layout/SiteFooter';
 import SiteHeader from '@/components/layout/SiteHeader';
+import BlueprintWall from '@/components/shared/BlueprintWall';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
@@ -16,6 +19,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
+      <ErrorBoundary fallback={null}>
+        <BlueprintWall />
+      </ErrorBoundary>
       <ErrorBoundary fallback={null}>
         <SiteHeader />
       </ErrorBoundary>

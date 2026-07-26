@@ -1,9 +1,10 @@
 // ─── 内页 Hero · Blueprint ───
-// about / products 共享的页头区块：
-// 蓝图基准网格（滚动异速深度层）+ 径向光晕 + 图签 + light/bold 标题 + 副标题
+// about / products / contact 共享的页头区块：
+// 径向光晕 + 图签 + light/bold 标题 + 副标题
+// v4：背景 = layout 级满铺砖墙（BlueprintWall）；本组件的网格与
+// depth-drift 深度层已退役（fixed 墙即深度基准，spec C.1 裁决）
 
 import AnimateOnScroll from './AnimateOnScroll';
-import BlueprintGrid from './BlueprintGrid';
 import SheetLabel from './SheetLabel';
 
 interface PageHeroProps {
@@ -23,11 +24,8 @@ export default function PageHero({
 }: PageHeroProps) {
   return (
     // overflow-clip-safe 而非 overflow-hidden：hidden 会创建 scroll container，
-    // 劫持子元素 view() 时间轴的滚动器查找，depth-drift / sheet-reveal 全部失效
+    // 劫持子元素 view() 时间轴的滚动器查找，sheet-reveal 全部失效
     <section className="relative pt-8 pb-24 px-4 overflow-clip-safe">
-      {/* 蓝图基准网格 — 随滚动反向缓移，制造轻微深度层 */}
-      <BlueprintGrid className="depth-drift-back" />
-
       {/* 微妙径向光晕背景 — .hero-glow 定义在 globals.css */}
       <div
         className="pointer-events-none absolute inset-0 hero-glow"

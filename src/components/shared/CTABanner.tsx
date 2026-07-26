@@ -2,9 +2,8 @@
 // Server Component：自身无 hooks/事件，交互全在 client 叶子（AnimateOnScroll/TextReveal）
 // 径向光晕背景 + TextReveal 标题（Archivo 宽体）+ 蓝色渐变 CTA
 
-import Link from 'next/link';
 import AnimateOnScroll from './AnimateOnScroll';
-import ArrowRightIcon from './ArrowRightIcon';
+import ModuleButton from './ModuleButton';
 import TextReveal from './TextReveal';
 
 interface CTABannerProps {
@@ -51,10 +50,9 @@ export default function CTABanner({
         )}
 
         <AnimateOnScroll delay={200}>
-          <Link href="/contact" className="group btn-primary">
-            <span>{buttonText}</span>
-            <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
+          <ModuleButton href="/contact" arrow phase={2}>
+            {buttonText}
+          </ModuleButton>
         </AnimateOnScroll>
       </div>
     </section>

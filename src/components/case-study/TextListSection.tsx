@@ -12,7 +12,7 @@ interface TextListSectionProps {
   titleBold: string;
   /** 编号列表文本 */
   items: string[];
-  /** 背景色 class，默认 bg-bg-surface */
+  /** 背景层次 class（v4：sheet-panel = 图纸面板 / '' = 透墙），默认 sheet-panel */
   bgClass?: string;
   /** 图纸编号 (如 "01") — 详情页 section 序号 */
   sheetNo?: string;
@@ -24,7 +24,7 @@ export default function TextListSection({
   titleLight,
   titleBold,
   items,
-  bgClass = 'bg-bg-surface',
+  bgClass = 'sheet-panel',
   sheetNo,
   eyebrow,
 }: TextListSectionProps) {
