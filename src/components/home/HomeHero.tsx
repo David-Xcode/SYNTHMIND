@@ -11,7 +11,8 @@ import HomeHeroBlueprint from './HomeHeroBlueprint';
 
 export default function HomeHero() {
   return (
-    <section className="relative flex min-h-screen items-center overflow-hidden bg-bg-base">
+    // overflow-clip-safe：clip 不创建 scroll container，保证 view() 时间轴找到根滚动器
+    <section className="relative flex min-h-screen items-center overflow-clip-safe bg-bg-base">
       {/* 蓝图基准网格 — hero 专属，径向渐隐 */}
       <BlueprintGrid />
 
@@ -28,9 +29,10 @@ export default function HomeHero() {
         {/* 左：文案 */}
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
           {/* 图签眉标 */}
+          {/* animate-reveal 的 shorthand 已含 fill both，只需覆写 delay */}
           <div
             className="mb-6 animate-reveal"
-            style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
+            style={{ animationDelay: '0.1s' }}
           >
             <SheetLabel>AI-Powered Software Studio</SheetLabel>
           </div>
@@ -64,7 +66,7 @@ export default function HomeHero() {
           {/* CTA 按钮 */}
           <div
             className="mt-10 flex flex-wrap justify-center gap-4 animate-reveal lg:justify-start"
-            style={{ animationDelay: '0.7s', animationFillMode: 'both' }}
+            style={{ animationDelay: '0.7s' }}
           >
             <Link
               href="/contact"

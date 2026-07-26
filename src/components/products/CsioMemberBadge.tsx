@@ -7,7 +7,7 @@ import Eyebrow from '@/components/shared/Eyebrow';
 
 export default function CsioMemberBadge() {
   return (
-    <Eyebrow className="bg-accent/10 border border-accent/25 rounded-md px-2.5 py-1">
+    <Eyebrow className="bg-accent/10 border border-accent/25 rounded-lg px-2.5 py-1">
       CSIO Member
     </Eyebrow>
   );

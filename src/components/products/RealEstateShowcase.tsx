@@ -1,4 +1,4 @@
-// ─── 地产营销站统一展示模块 · Neural ───
+// ─── 地产营销站统一展示模块 · Blueprint ───
 // 4 个已上线楼盘站合并为一个模块：总述 + 紧凑卡片，外链直达真实站点
 // id="real-estate" 供首页 marquee 与旧详情页 301 锚点跳转
 
@@ -70,7 +70,7 @@ export default function RealEstateShowcase() {
                     {site.highlights.map((highlight) => (
                       <span
                         key={highlight}
-                        className="text-xs text-txt-secondary bg-accent/[0.06] border border-accent/[0.12] rounded-md px-2 py-0.5"
+                        className="text-xs text-txt-secondary bg-accent/[0.06] border border-accent/[0.12] rounded-lg px-2 py-0.5"
                       >
                         {highlight}
                       </span>

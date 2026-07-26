@@ -1,8 +1,9 @@
 // ─── Hero 活蓝图 · Blueprint 签名元素 ───
 // 一张自动绘制的工程图：输入文档 → SYNTH CORE → 双输出（workflow automation 的抽象表达）
 // 纯 SVG + CSS 动画（.bp-draw 逐笔绘制 / .bp-fade 标注淡入），零 JS
-// 所有描边元素带 pathLength=1，配合 globals.css 的 dasharray 归一化
-// 坐标全部对齐 12/24 网格，呼应页面基准网格
+// 所有 .bp-draw 元素必须是 <path>：pathLength 在 rect/circle 上 WebKit 不支持，
+// 会把 dasharray 归一化破坏成 1px 点线（Safari 桌面端是本图的主要受众）
+// 坐标全部对齐 12/24 网格，呼应页面基准网格；直角矩形贴合工程制图语言
 // Server Component — 装饰性图形，aria-hidden
 
 import type { CSSProperties } from 'react';
@@ -36,11 +37,12 @@ const STROKE = {
 } as const;
 
 // mono 标注文字的公共属性
+// fill 走 CSS class 而非 presentation attribute — 个别 WebView 不在
+// presentation attribute 里做 var() 替换，会回退成黑色（深底上隐形）
 const LABEL_PROPS = {
   fontSize: 9,
   letterSpacing: '0.08em',
-  fill: 'var(--text-quaternary)',
-  className: 'font-mono bp-fade',
+  className: 'font-mono bp-fade fill-[var(--text-quaternary)]',
 } as const;
 
 export default function HomeHeroBlueprint() {
@@ -52,12 +54,8 @@ export default function HomeHeroBlueprint() {
       className="w-full h-auto"
     >
       {/* ── 图框 ── */}
-      <rect
-        x="12"
-        y="12"
-        width="456"
-        height="376"
-        rx="2"
+      <path
+        d="M12 12 H468 V388 H12 Z"
         stroke={STROKE.frame}
         strokeWidth="1"
         pathLength={1}
@@ -102,12 +100,8 @@ export default function HomeHeroBlueprint() {
       </text>
 
       {/* ── 节点 A：输入文档 ── */}
-      <rect
-        x="36"
-        y="84"
-        width="120"
-        height="72"
-        rx="6"
+      <path
+        d="M36 84 H156 V156 H36 Z"
         stroke={STROKE.node}
         strokeWidth="1"
         pathLength={1}
@@ -146,22 +140,17 @@ export default function HomeHeroBlueprint() {
       />
 
       {/* ── 节点 B：SYNTH CORE ── */}
-      <rect
-        x="204"
-        y="156"
-        width="96"
-        height="96"
-        rx="6"
+      <path
+        d="M204 156 H300 V252 H204 Z"
         stroke={STROKE.node}
         strokeWidth="1"
         pathLength={1}
         className="bp-draw"
         style={{ '--draw-delay': D.nodeB } as CSSProperties}
       />
-      <circle
-        cx="252"
-        cy="204"
-        r="22"
+      {/* 核心圆环 — 两段圆弧拼成整圆（<circle> 不能用 pathLength） */}
+      <path
+        d="M230 204 A22 22 0 1 1 274 204 A22 22 0 1 1 230 204 Z"
         stroke={STROKE.core}
         strokeWidth="1.25"
         pathLength={1}
@@ -211,24 +200,16 @@ export default function HomeHeroBlueprint() {
       />
 
       {/* ── 节点 C / D：双输出 ── */}
-      <rect
-        x="348"
-        y="84"
-        width="96"
-        height="56"
-        rx="6"
+      <path
+        d="M348 84 H444 V140 H348 Z"
         stroke={STROKE.node}
         strokeWidth="1"
         pathLength={1}
         className="bp-draw"
         style={{ '--draw-delay': D.nodeCD } as CSSProperties}
       />
-      <rect
-        x="348"
-        y="248"
-        width="96"
-        height="56"
-        rx="6"
+      <path
+        d="M348 248 H444 V304 H348 Z"
         stroke={STROKE.node}
         strokeWidth="1"
         pathLength={1}
@@ -314,8 +295,7 @@ export default function HomeHeroBlueprint() {
           cx={cx}
           cy={cy}
           r="2.5"
-          fill="#4A9FE5"
-          className="bp-fade"
+          className="bp-fade fill-accent"
           style={{ '--draw-delay': D.dots } as CSSProperties}
         />
       ))}

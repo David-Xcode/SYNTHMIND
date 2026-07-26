@@ -1,6 +1,6 @@
 'use client';
 
-// ─── 计数动画统计卡片 · Neural ───
+// ─── 计数动画统计卡片 · Blueprint ───
 // 用于 About 页面 stats 数字的动画效果
 
 import { useCountUp } from '@/hooks/useCountUp';

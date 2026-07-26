@@ -1,5 +1,6 @@
-// ─── 眉标组件 · Neural ───
-// JetBrains Mono 小标签 — 此前同一串 class 在 4 处内联重复，统一收拢
+// ─── 眉标组件 · Blueprint ───
+// IBM Plex Mono 小标签（无 tick 的 caption 用途；section 图签用 SheetLabel）
+// 此前同一串 class 在 4 处内联重复，统一收拢；SheetLabel 的标签排版也复用本组件
 
 import type { ReactNode } from 'react';
 

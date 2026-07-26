@@ -1,6 +1,6 @@
 'use client';
 
-// ─── 文字逐词入场动画 · Neural ───
+// ─── 文字逐词入场动画 · Blueprint ───
 // 每个词依次 fade-in + translateY(8px) + blur(2px)
 // 与 "digital emergence" 主题一致，stagger 40ms/词
 

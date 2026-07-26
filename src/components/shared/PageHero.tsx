@@ -22,7 +22,9 @@ export default function PageHero({
   subtitle,
 }: PageHeroProps) {
   return (
-    <section className="relative pt-8 pb-24 px-4 overflow-hidden">
+    // overflow-clip-safe 而非 overflow-hidden：hidden 会创建 scroll container，
+    // 劫持子元素 view() 时间轴的滚动器查找，depth-drift / sheet-reveal 全部失效
+    <section className="relative pt-8 pb-24 px-4 overflow-clip-safe">
       {/* 蓝图基准网格 — 随滚动反向缓移，制造轻微深度层 */}
       <BlueprintGrid className="depth-drift-back" />
 
@@ -37,19 +39,18 @@ export default function PageHero({
           <SheetLabel>{eyebrow}</SheetLabel>
         </AnimateOnScroll>
 
-        <AnimateOnScroll delay={100}>
-          <h1 className="mt-6 text-display leading-tight">
-            <span className="font-sans font-light text-txt-primary">
-              {light}{' '}
-            </span>
-            <span className="font-display font-semibold stretch-wide text-accent">
-              {bold}
-            </span>
-          </h1>
-        </AnimateOnScroll>
+        {/* h1 是各页 LCP 元素 — 不加入场动画（CLAUDE.md 性能纪律） */}
+        <h1 className="mt-6 text-display leading-tight">
+          <span className="font-sans font-light text-txt-primary">
+            {light}{' '}
+          </span>
+          <span className="font-display font-semibold stretch-wide text-accent">
+            {bold}
+          </span>
+        </h1>
 
         {subtitle && (
-          <AnimateOnScroll delay={200}>
+          <AnimateOnScroll delay={150}>
             <p className="mt-6 text-subtitle text-txt-secondary leading-relaxed max-w-2xl mx-auto">
               {subtitle}
             </p>

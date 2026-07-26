@@ -1,6 +1,6 @@
 'use client';
 
-// ─── 导航头部 · Neural ───
+// ─── 导航头部 · Blueprint ───
 // 精简版: Logo（左）+ 导航链接（右，仅桌面）/ 无 CTA / 无移动端菜单
 
 import Image from 'next/image';

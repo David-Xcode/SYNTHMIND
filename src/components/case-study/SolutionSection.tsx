@@ -1,5 +1,5 @@
-// ─── 解决方案描述 · Neural ───
-// TextListSection 薄包装
+// ─── 解决方案描述 · Blueprint ───
+// TextListSection 薄包装（图纸编号 02）
 
 import TextListSection from './TextListSection';
 

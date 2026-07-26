@@ -1,5 +1,5 @@
 // ─── 第三方技术品牌色 ───
-// 不属于 Neural 设计系统的固定品牌色值（React 蓝、AWS 橙等）
+// 不属于 Blueprint 设计系统的固定品牌色值（React 蓝、AWS 橙等）
 // 设计系统"禁止硬编码 hex"规则的唯一豁免区 — 集中在此文件，组件不得内联
 
 export const TECH_BRAND_COLORS: Record<string, string> = {

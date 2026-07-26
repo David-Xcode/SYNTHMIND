@@ -1,5 +1,5 @@
-// ─── About 页面 · Neural ───
-// 使命驱动创业公司叙事 — 6 区块结构
+// ─── About 页面 · Blueprint ───
+// 使命驱动创业公司叙事 — 6 区块结构（section 带图纸编号 01-04）
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
@@ -63,27 +63,22 @@ const solutions = [
   },
 ];
 
+// 价值观不是序列 — 不带装饰性编号（Blueprint 规则：编号只用于真实次序）
 const values = [
   {
-    number: '01',
     title: 'Industry First, Technology Second',
     description:
       'We spend more time understanding your industry than picking frameworks. The right solution starts with deep domain knowledge, not a tech stack.',
-    color: 'text-accent',
   },
   {
-    number: '02',
     title: 'Build With, Not For',
     description:
       'We embed in your team, learn your language, and co-create solutions. You are not outsourcing — you are gaining engineering partners who care about your outcome.',
-    color: 'text-accent-400',
   },
   {
-    number: '03',
     title: 'Ship Working Software',
     description:
       'No decks, no vaporware. Every engagement produces working software you can demo, test, and deploy. We measure progress in releases, not slide counts.',
-    color: 'text-accent-700',
   },
 ];
 
@@ -196,7 +191,7 @@ export default function AboutPage() {
               <AnimateOnScroll key={solution.title} delay={index * 80 + 100}>
                 <GlassCard variant="spotlight" className="h-full">
                   <Eyebrow>{solution.eyebrow}</Eyebrow>
-                  <h3 className="mt-3 font-display font-semibold text-lg text-txt-primary tracking-tight">
+                  <h3 className="mt-3 font-display font-semibold stretch-wide text-lg text-txt-primary tracking-tight">
                     {solution.title}
                   </h3>
                   <p className="mt-2 text-txt-tertiary text-sm leading-relaxed">
@@ -227,12 +222,7 @@ export default function AboutPage() {
             {values.map((value, index) => (
               <AnimateOnScroll key={value.title} delay={index * 80 + 100}>
                 <GlassCard variant="elevated" className="h-full">
-                  <span
-                    className={`font-mono text-3xl font-bold ${value.color} mb-4 block leading-none`}
-                  >
-                    {value.number}
-                  </span>
-                  <h3 className="font-display font-semibold text-lg text-txt-primary mb-2 tracking-tight">
+                  <h3 className="font-display font-semibold stretch-wide text-lg text-txt-primary mb-2 tracking-tight">
                     {value.title}
                   </h3>
                   <p className="text-txt-tertiary text-sm leading-relaxed">

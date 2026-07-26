@@ -1,5 +1,5 @@
-// ─── 客户 Logo 展示条 · Neural ───
-// 双容器无缝 marquee / JetBrains Mono 标签
+// ─── 客户 Logo 展示条 · Blueprint ───
+// 双容器无缝 marquee / SheetLabel 图签
 // 9 个 logo × 4 重复 → 轨道宽度覆盖 4K (3840px)
 // Server Component — CSS marquee 不需要 JS，AnimateOnScroll 作为 Client 子组件自动处理
 
@@ -33,7 +33,9 @@ const logos = Array.from({ length: REPEAT_COUNT }, () => logoItems).flat();
 
 export default function SocialProofBar() {
   return (
-    <section className="py-16 bg-bg-base overflow-hidden">
+    // overflow-clip-safe：clip 不创建 scroll container（overflow-hidden 会让
+    // 子元素的 view() 时间轴绑到本节，sheet-reveal 退化）
+    <section className="py-16 bg-bg-base overflow-clip-safe">
       <AnimateOnScroll className="text-center">
         <SheetLabel tone="tertiary" className="mb-8">
           Trusted by businesses across industries

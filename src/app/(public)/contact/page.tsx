@@ -1,5 +1,5 @@
-// ─── Contact 页面 · Neural ───
-// 蓝色 focus 环 / DM Mono 标签 / 冷色调
+// ─── Contact 页面 · Blueprint ───
+// 蓝色 focus 环 / IBM Plex Mono 图签 / 冷色调
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
@@ -147,7 +147,12 @@ export default function ContactPage() {
       <section className="py-24 bg-bg-surface px-4">
         <div className="max-w-3xl mx-auto">
           <AnimateOnScroll>
-            <SectionTitle light="Common" bold="Questions" eyebrow="FAQ" />
+            <SectionTitle
+              sheetNo="01"
+              light="Common"
+              bold="Questions"
+              eyebrow="FAQ"
+            />
           </AnimateOnScroll>
 
           <FAQAccordion faqs={faqs} />

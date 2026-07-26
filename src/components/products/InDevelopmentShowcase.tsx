@@ -1,4 +1,4 @@
-// ─── 开发中产品展示模块 · Neural ───
+// ─── 开发中产品展示模块 · Blueprint ───
 // /products 第三段「What's Next」：CSIO 会员背书 + 开发中的保险经纪管理平台
 // 单条目、文案内联 — 出现第二个开发中产品时再提取到 src/data/
 // CSIO 身份用纯文字 chip + 官方名录外链（无 logo 资产授权，文字声明更合规可验证）
@@ -72,7 +72,7 @@ export default function InDevelopmentShowcase() {
               </a>
             </div>
 
-            <h3 className="text-title font-display font-semibold text-txt-primary tracking-tight">
+            <h3 className="text-title font-display font-semibold stretch-wide text-txt-primary tracking-tight">
               AI-Driven Brokerage Management Platform
             </h3>
             <Eyebrow tone="quaternary" className="block mt-1">
@@ -98,7 +98,7 @@ export default function InDevelopmentShowcase() {
               {HIGHLIGHTS.map((highlight) => (
                 <span
                   key={highlight}
-                  className="text-xs text-txt-secondary bg-accent/[0.06] border border-accent/[0.12] rounded-md px-2 py-0.5"
+                  className="text-xs text-txt-secondary bg-accent/[0.06] border border-accent/[0.12] rounded-lg px-2 py-0.5"
                 >
                   {highlight}
                 </span>

@@ -29,24 +29,24 @@ export default function AnimateOnScroll({
   const { ref, isVisible } = useIntersectionVisible<HTMLDivElement>(0.1);
 
   // scrub 交错：delay(ms) → range 偏移（100ms ≈ 2%），封顶 12% 防止排尾卡片入场过晚
-  const settleOffset = Math.min(delay * 0.02, 12);
+  // toFixed 消除浮点噪声（3.6000000000000005 之类会原样进 SSR HTML）
+  const settleOffset = Number(Math.min(delay * 0.02, 12).toFixed(2));
 
   // 降级路径隐藏态：从底部浮现 + 去模糊
+  // 不写 will-change：整页十几个未入场 wrapper 同时持有合成层提示得不偿失，
+  // scrub 路径下浏览器对 CSS 动画自会处理
   const hiddenStyle: React.CSSProperties = {
     opacity: 0,
     transform: 'translateY(12px)',
     filter: 'blur(4px)',
-    willChange: 'opacity, transform, filter',
     transition: TRANSITION,
     transitionDelay: '0ms',
   };
 
-  // 动画完成后释放 GPU 内存
   const visibleStyle: React.CSSProperties = {
     opacity: 1,
     transform: 'translate(0)',
     filter: 'blur(0)',
-    willChange: 'auto',
     transition: TRANSITION,
     transitionDelay: `${delay}ms`,
   };

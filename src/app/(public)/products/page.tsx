@@ -79,7 +79,7 @@ export default function ProductsPage() {
                       />
                       {/* 图纸编号 — 产品即图纸集里的一张 sheet */}
                       <span className="annotation" aria-hidden="true">
-                        {`S.0${index + 1}`}
+                        {`S.${String(index + 1).padStart(2, '0')}`}
                       </span>
                     </div>
 

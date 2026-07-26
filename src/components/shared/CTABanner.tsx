@@ -1,6 +1,6 @@
-// ─── CTA 横幅 · Neural ───
+// ─── CTA 横幅 · Blueprint ───
 // Server Component：自身无 hooks/事件，交互全在 client 叶子（AnimateOnScroll/TextReveal）
-// 径向光晕背景 + TextReveal 标题 + 蓝色渐变 CTA
+// 径向光晕背景 + TextReveal 标题（Archivo 宽体）+ 蓝色渐变 CTA
 
 import Link from 'next/link';
 import AnimateOnScroll from './AnimateOnScroll';
@@ -21,7 +21,8 @@ export default function CTABanner({
   buttonText = 'Book a Free Consultation',
 }: CTABannerProps) {
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    // overflow-clip-safe：clip 不创建 scroll container（保 view() 时间轴的滚动器查找）
+    <section className="relative py-24 sm:py-32 overflow-clip-safe">
       {/* 上下蓝色渐变分割线 */}
       <div className="absolute top-0 inset-x-0 ruled-line" />
       <div className="absolute bottom-0 inset-x-0 ruled-line" />
@@ -37,7 +38,7 @@ export default function CTABanner({
         <TextReveal
           text={headline}
           as="h2"
-          className="font-display font-semibold text-headline tracking-tight text-txt-primary mb-4"
+          className="font-display font-semibold stretch-wide text-headline tracking-tight text-txt-primary mb-4"
           stagger={50}
         />
 

@@ -66,7 +66,8 @@ src/
 - 科技感做**底色**而非主角；高级藏在细节里（基准网格、图签、hairline、crop marks——注意到才看见）
 - 排版精度 > 空间/材质 > 动效 > 色彩数量
 - 编号只用于**真实序列**（图纸页码、流程步骤）；能力/价值等非序列内容禁止装饰性编号
-- mono 测量标注每屏 ≤2 处；蓝图网格只出现在 Hero 与关键 section，不满屏铺
+- 标注预算：**自由文本** mono 测量标注（如坐标、尺寸）每屏 ≤2 处；图签（SheetLabel）与卡片图纸编号（S.NN）属结构性编号，不计入预算
+- 蓝图网格只出现在 Hero 与关键 section，不满屏铺
 
 ## 3. Typography — Archivo + Manrope + IBM Plex Mono
 
@@ -188,7 +189,12 @@ Props: `variant`, `className`。内边距固定 `p-6` — 需要自定义 paddin
 
 ## 6. Animation Rules — 滚动 3D（零依赖 CSS）
 
-技术基座：`animation-timeline: view()/scroll()`（scrub 式滚动联动）+ CSS 3D transform；不支持的浏览器由 `AnimateOnScroll` 的 IntersectionObserver 内联样式路径接管（CSS 动画级联高于内联样式，双路径共存）。`prefers-reduced-motion` 下滚动动画必须显式 `animation: none`（时长重置对 scroll-driven 无效）。
+技术基座：`animation-timeline: view()/scroll()`（scrub 式滚动联动）+ CSS 3D transform；不支持的浏览器由 `AnimateOnScroll` 的 IntersectionObserver 内联样式路径接管（CSS 动画级联高于内联样式，双路径共存）。
+
+### 三条踩过坑的硬规则 — IMPORTANT
+1. **禁止 `overflow-hidden` 包住任何含 `.sheet-reveal` / `.depth-drift-back` 的子树**：hidden 会创建 scroll container，劫持 `view()` 时间轴的滚动器查找，整个子树的滚动动画**静默失效**（不报错、不掉 lint）。需要裁切时一律用 globals.css 的 `.overflow-clip-safe`（clip 不建 scroll container；老内核回落 hidden）。
+2. **`.bp-draw` 只能用在 `<path>` 上**：`pathLength` 在 `<rect>`/`<circle>` 上 WebKit 不支持，dasharray 归一化会碎成 1px 点线。矩形/圆都用等价 path 命令改写（见 HomeHeroBlueprint）。
+3. **`prefers-reduced-motion` 三件套**：scroll-driven 动画必须显式 `animation: none`（时长重置对其无效）；`animation-delay`/`transition-delay` 必须通配归零（否则分段 delay 变成逐个"闪现"）；infinite 动画（marquee / scroll-pulse 类）必须显式关闭（0.01ms 周期 = 每帧乱跳）。三者都已在 globals.css 的 reduced-motion 块落实，新增动画时对号入座。
 
 ### The ONE Scroll Entrance
 所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：rotateX 5° + translateY + blur 随滚动沉降平整）。

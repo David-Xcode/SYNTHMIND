@@ -1,5 +1,5 @@
-// ─── 客户挑战描述 · Neural ───
-// TextListSection 薄包装
+// ─── 客户挑战描述 · Blueprint ───
+// TextListSection 薄包装（图纸编号 01）
 
 import TextListSection from './TextListSection';
 

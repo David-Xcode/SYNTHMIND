@@ -1,7 +1,7 @@
 'use client';
 
-// ─── 项目成果 · Neural ───
-// DM Mono stat 数字 / 蓝色数字 / 计数动画
+// ─── 项目成果 · Blueprint ───
+// IBM Plex Mono stat 数字 / 蓝色数字 / 计数动画
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -32,7 +32,7 @@ function ResultCard({ text }: { text: string }) {
   const animatedNumber = useCountUp(numericValue, isVisible);
 
   if (stat) {
-    // 有数字指标的 — 大号 stat 卡片, DM Mono 数字
+    // 有数字指标的 — 大号 stat 卡片, IBM Plex Mono 数字
     return (
       <div ref={ref} className="card-elevated p-6 text-center">
         <div className="font-mono text-3xl md:text-4xl font-bold text-accent tracking-tight mb-2">

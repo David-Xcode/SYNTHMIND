@@ -1,4 +1,4 @@
-// ─── 数字计数动画 Hook · Neural ───
+// ─── 数字计数动画 Hook · Blueprint ───
 // 从 ResultsSection 提取的可复用 hook
 // easeOutExpo 缓动 + requestAnimationFrame
 

@@ -1,5 +1,5 @@
-// ─── 技术栈标签 · Neural ───
-// DM Mono 标签 / 品牌色 hover / 冷色基底 / 纯 CSS hover（无需 client JS）
+// ─── 技术栈标签 · Blueprint ───
+// IBM Plex Mono 标签 / 品牌色 hover / 冷色基底 / 纯 CSS hover（无需 client JS）
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import Eyebrow from '@/components/shared/Eyebrow';

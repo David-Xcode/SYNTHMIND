@@ -17,6 +17,17 @@ const featured = FEATURED_SLUGS.map((slug) =>
   caseStudies.find((cs) => cs.slug === slug),
 ).filter((cs): cs is NonNullable<typeof cs> => Boolean(cs));
 
+// slug 拼错会被 filter 静默吞掉（首页 3 列变 2 列没人发现）— dev 提前暴露
+// Server Component 模块顶层：警告只出现在 dev 终端，不在浏览器 console
+if (
+  process.env.NODE_ENV !== 'production' &&
+  featured.length !== FEATURED_SLUGS.length
+) {
+  console.warn(
+    '[FeaturedWork] FEATURED_SLUGS contains slugs missing from case-studies.ts',
+  );
+}
+
 export default function FeaturedWork() {
   return (
     <section className="relative bg-bg-base px-4 py-24">

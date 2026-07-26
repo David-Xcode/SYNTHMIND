@@ -75,6 +75,24 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
+   overflow 裁切（渐进增强）
+   clip 不创建 scroll container — 保住子元素 view() 时间轴的滚动器查找；
+   老内核（Chromium <90 / Safari <16）丢弃 clip 声明后回落到 hidden，
+   避免 marquee 等宽轨道撑出全站横向滚动
+   ═══════════════════════════════════════════════ */
+
+/* @supports 条件组写法：即使将来加了 browserslist 收窄目标，
+   压缩器也不会把 hidden 回退当冗余声明删掉（声明级合并免疫） */
+.overflow-clip-safe {
+  overflow: hidden;
+}
+@supports (overflow: clip) {
+  .overflow-clip-safe {
+    overflow: clip;
+  }
+}
+
+/* ═══════════════════════════════════════════════
    排版工具 — Archivo 宽度轴
    ═══════════════════════════════════════════════ */
 
@@ -435,21 +453,29 @@ body {
   *::before,
   *::after {
     /* 无障碍减少动画重置：!important 必须，用以压过遍布各处的 Tailwind 动画/过渡 utility（如 duration-[2000ms]）。
-       通配符选择器特异性极低，无 !important 会被任何 class/inline 动画覆盖，破坏 prefers-reduced-motion 特性。 */
+       通配符选择器特异性极低，无 !important 会被任何 class/inline 动画覆盖，破坏 prefers-reduced-motion 特性。
+       delay 也必须归零：否则 bp-draw/animate-reveal 的分段 delay 会让元素
+       在 0–2s 内依次"闪现"，对前庭敏感用户比平滑动画更差。
+       animation-delay 用负值配合 fill both 直接落到终态。 */
     /* biome-ignore lint/complexity/noImportantStyles: a11y reduced-motion reset must override utility durations */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: a11y reduced-motion reset must override utility delays */
+    animation-delay: -0.01ms !important;
     /* biome-ignore lint/complexity/noImportantStyles: a11y reduced-motion reset must override utility durations */
     transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: a11y reduced-motion reset must override utility delays */
+    transition-delay: 0ms !important;
   }
   /* 滚动驱动动画的进度来自滚动轴，时长重置对其无效 — 必须显式关闭，
-     关闭后由 IntersectionObserver 路径以 0.01ms 过渡瞬时显示 */
+     关闭后由 IntersectionObserver 路径以 0.01ms 过渡瞬时显示。
+     infinite 动画（marquee / scroll-pulse）被压成 0.01ms 周期后每帧乱跳，
+     比原动画更刺激，必须一并显式关闭（回落到静止基态）。 */
   .sheet-reveal,
   .depth-drift-back,
-  .hero-tilt {
-    /* biome-ignore lint/complexity/noImportantStyles: scroll-driven animations ignore duration reset, must disable explicitly */
+  .hero-tilt,
+  .animate-marquee,
+  .animate-scroll-pulse {
+    /* biome-ignore lint/complexity/noImportantStyles: scroll-driven/infinite animations ignore duration reset, must disable explicitly */
     animation: none !important;
-  }
-  video {
-    display: none;
   }
 }

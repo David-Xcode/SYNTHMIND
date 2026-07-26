@@ -1,4 +1,4 @@
-// ─── Footer · Neural ───
+// ─── Footer · Blueprint ───
 // 极简居中堆叠：ruled-line 收尾 + logo + nav + 版权
 // Server Component — 无 hooks；Image 仍需 suppressHydrationWarning (next/image 是 CC)
 

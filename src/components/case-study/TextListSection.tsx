@@ -1,5 +1,5 @@
-// ─── 通用编号文本列表区块 · Neural ───
-// 蓝色左边框 / DM Mono 编号 / 可配置标题和背景
+// ─── 通用编号文本列表区块 · Blueprint ───
+// 蓝色左边框 / IBM Plex Mono 编号（列表项编号 = 真实次序）/ 可配置标题和背景
 // Server Component：自身无 hooks/事件，交互全在 client 叶子（AnimateOnScroll）
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
