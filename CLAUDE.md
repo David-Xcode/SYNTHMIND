@@ -13,39 +13,10 @@
 
 ## 1. Project Structure
 
-```
-src/
-├── app/
-│   ├── (public)/          # 所有公共页面 (layout: SiteHeader + SiteFooter)
-│   │   ├── about/
-│   │   ├── contact/
-│   │   └── products/
-│   │       └── [slug]/    # 软件产品详情页 (地产盘无详情页，见 Real Estate 模块)
-│   ├── api/               # API routes (仅 contact)
-│   ├── sitemap.ts / robots.ts
-│   └── layout.tsx         # 根 layout: html/body/globals.css/metadata ONLY
-├── components/
-│   ├── shared/            # 可复用 UI: SectionTitle, GlassCard, AnimateOnScroll, CTABanner,
-│   │                      #   ContactForm, PageHero, Eyebrow, SheetLabel, ModuleButton,
-│   │                      #   BlueprintWall (随滚方砖墙, layout 挂载) + WallBricks (邻域砖池翻板)
-│   │                      #   + ButtonTilt (按钮悬停微摆弹簧),
-│   │                      #   CropMarks, ArrowRightIcon, AnimatedStat, TextReveal,
-│   │                      #   ErrorBoundary, JsonLd
-│   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
-│   ├── home/              # 首页: HomeHero, BlueprintObject, HeroObjectPhysics,
-│   │                      #   SocialProofBar, CapabilitiesSection, FeaturedWork, ProcessSection
-│   ├── products/          # 产品页: RealEstateShowcase (地产营销站统一模块),
-│   │                      #   InDevelopmentShowcase + CsioMemberBadge (开发中产品/CSIO 背书)
-│   └── case-study/        # 产品详情页: CaseStudyHero, ChallengeSection, SolutionSection,
-│                          #   TextListSection, TechStackBadges, ResultsSection
-├── data/                  # TS 常量 (非 CMS): case-studies.ts (5 软件产品),
-│                          #   real-estate.ts (4 地产营销站), navigation.ts
-├── hooks/                 # useCountUp, useIntersectionVisible, useDeferredReveal
-├── lib/                   # constants.ts (SITE_URL/CONTACT_EMAIL), csrf.ts,
-│                          #   tech-brand-colors.ts (品牌色 hex 唯一豁免区),
-│                          #   listen-mql.ts (MediaQueryList 监听守卫)
-└── proxy.ts               # Next 16 middleware 约定 (安全 header)
-```
+- `src/app/layout.tsx` — 根 layout 只放 html/body/globals.css/metadata；页面壳层（SiteHeader/SiteFooter + BlueprintWall 单实例）在 `(public)/layout.tsx`
+- `src/data/` — TS 常量即内容层（非 CMS）：case-studies.ts（软件产品）/ real-estate.ts（地产盘）/ navigation.ts
+- `src/proxy.ts` — Next 16 middleware 约定文件（安全 header），命名是框架约定不是笔误
+- 其余目录结构以 `ls src/` 为准（shared 组件清单看 `src/components/shared/`）
 
 ### Component Reuse Rules
 - **ALWAYS** check `src/components/shared/` before creating new UI components
@@ -71,7 +42,7 @@ src/
 - 排版精度 > 空间/材质 > 动效 > 色彩数量
 - 编号只用于**真实序列**（图纸页码、流程步骤）；能力/价值等非序列内容禁止装饰性编号
 - 标注预算：**自由文本** mono 测量标注（如坐标、尺寸）每屏 ≤2 处；图签（SheetLabel）与卡片图纸编号（S.NN）属结构性编号，不计入预算
-- **随滚方砖墙（v4.2）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——48px 方砖网格化对齐阵列、**随页面滚动**（静态层文档级 absolute，无 JS 也随滚）；指针交互 = **邻域砖池翻板**（WallBricks：指针半径 200px 内的砖沿边铰链**背指针外翻 ≤80°**、槽腔涌光洗上邻砖；砖池文档级锚定滚动零滑移，池上限 512 与视口解耦）；灯光质感 = 面受光渐变 + 缝隙灯槽 + fixed 洗墙光（光源属视口，墙动光不动），**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（指针邻域涌光是唯一窄豁免：随翻开角驱动、离开归零，口径见 §6）；内容层次二级：**L0 墙 / L2 不透明卡片**——**任何 section 不得持有底色**（v4 的 L1 `.sheet-panel` 已于 v4.2 退役，可读性由文字对比度提档承担，定案见 v4.2 spec）
+- **真砖重力井墙（v6 Lantern Wall）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——概念 = **墙是光前面的一排真砖，指针是压在墙上的重力井 + 墙后一盏灯**。墙属场景（`.bp-wall` fixed 视口级，**内容从墙前滚过、墙与光不动**，零滚动耦合——v4 的「随滚」已退役）；**单层砖纪律**：桌面指针路径 = WallBricks 首次 pointermove 铺满视口的真砖 div 阵（缝隙是真空隙，墙后光直接透出，无任何底衬/假光层），触屏/RM/无 JS = 静态 SVG tile（像素等价），经 `.bp-wall[data-live]` 互斥切换——**任何时刻只有一层砖**；指针交互 = **重力井塌陷**（近针砖向墙内陷成碗 ≤16px、坑壁沿坡度朝坑心倾 ≤15°、材料向坑心微聚、井深处砖面渐透 ≤25%——墙后灯光从塌陷缝与砖体渗出）；灯光 = 右上角落余晖 + 指针灯（均墙后），**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（指针灯/井心透光是唯一窄豁免：强度弹簧驱动、离开归零，口径见 §6）；内容层次二级：**L0 墙 / L2 不透明卡片**——**任何 section 不得持有底色**（L1 已于 v4.2 退役；v6 定案见 2026-07-26-lantern-wall-v6-design spec）
 
 ## 3. Typography — Archivo + Manrope + IBM Plex Mono
 
@@ -121,9 +92,9 @@ import SheetLabel from '@/components/shared/SheetLabel';
 - 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
 - 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
 - `BlueprintObject` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha），及其逐面着色 fill 的中性黑压暗渐变（`rgba(0,0,0,α)` — 明度轴不是第二色相）。
-- 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）。**secondary 面基色消费 `var(--mat-face-base)`**（砖面同源实底）；槽缝环/砖池槽腔 = `var(--bg-base)` 实底——基色一律走 token，不得回退字面 rgba。
+- 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）。**secondary 面基色消费 `var(--mat-face-base)`**（砖面同源实底）；槽缝环 = `var(--bg-base)` 实底（v6 起墙侧无槽腔层，此口径仅按钮消费）——基色一律走 token，不得回退字面 rgba。
 - 背景 token 的 rgba 形态（半透明基面与投影）：`rgba(8,11,16,α)` = `--bg-base` #080B10、`rgba(12,16,23,α)` = bg-surface #0C1017——`.card-surface` / 按钮投影在用。**只允许这两个既有 hex 的 rgba 化，不得引入新的字面背景色**。
-- 随滚砖墙材质（globals.css `.bp-wall*` / `.bp-brick*` 块）：同蓝色相 alpha 阶 + 中性明度轴，与物件同一豁免逻辑；砖面 SVG data-URI tile 内的字面色值属此豁免（data URI 无法消费 var()，与 `--mat-*` token 交叉锁定，改值两处同步）。
+- 砖墙材质（globals.css `.bp-wall*` / `.bp-brick*` 块）：同蓝色相 alpha 阶 + 中性明度轴，与物件同一豁免逻辑；砖面 SVG data-URI tile 内的字面色值属此豁免（data URI 无法消费 var()，与 `--mat-*` token 交叉锁定，改值两处同步）。
 
 **材质 token（v4 / v4.1）**：物件面/线/光系的共享原语已提为 `:root` 的 `--mat-*` 变量（`--mat-face-base/tint/shade`、`--mat-edge-strong/faint`、`--mat-seam-glow/soft`，正本对照表见 v4 spec A.2；`--mat-face-base` 已按 v4.1 spec §2.5 重定为 `rgba(17,22,32,0.9)` 高实度档，砖面与 secondary 按钮面同源消费）——砖墙/按钮的新材质决策**优先消费 token**，不得另起字面 rgba；改 `BlueprintObject` 的 STROKE/face 色阶必须同步 `--mat-*`（TSX 侧与砖面 SVG data-URI tile 保持字面量是 SVG 的 var() 兼容豁免，均与 token 交叉锁定）。
 
@@ -167,8 +138,8 @@ import SheetLabel from '@/components/shared/SheetLabel';
 
 ### Radial Glow / Wall
 - 页头/CTA 的径向光晕用 globals.css 的 `.hero-glow` class（`--glow-y` 控制垂直位置），不要内联 radial-gradient。
-- 随滚方砖墙 = `<BlueprintWall />`（(public)/layout 已挂载一次，**页面/组件不得重复实例化**）：光槽层 + 静态方砖面（单元素 SVG data-URI tile，CSS 直出——无 JS/触屏/RM 三路径也看到完整材质**且随页滚动**）+ fixed 洗墙光 + WallBricks 懒启动**邻域砖池**（指针半径内的格子物化：不透明槽腔底衬遮住静态砖面 + DOM 砖沿边铰链翻板；文档级锚定，滚动由合成器承担零滑移）。砖 pitch 走 `--wall-brick-w`/`--wall-seam` 媒体查询阶梯（48 基准 / ≥2200px 64 / ≥3600px 96；缝恒 = pitch/16），**JS 只读不定**；池上限 512（与视口尺寸解耦，v4.1 的异形屏放弃逻辑已退役）。
-- ⚠️ **静态层恒在**（v4.1 的 `data-bricks` 全场接管已退役）：砖静止时逐像素盖回底衬 = 与静态墙无差；「光槽渐变栈两处同步」条款作废——光槽只剩 `.bp-wall-light` 一处正本。
+- 真砖重力井墙 = `<BlueprintWall />`（(public)/layout 已挂载一次，**页面/组件不得重复实例化**）：`.bp-wall` fixed 属场景（内容从墙前滚过，零滚动耦合、滚动零 JS）；层序 = 角落余晖 `.bp-wall-ambient` + 指针灯 `.bp-wall-lamp`（均墙后，z auto）→ 静态 tile `.bp-wall-face` / 真砖阵 `.bp-wall-grid`（同 z1，`[data-live]` 互斥切换）。砖 pitch 走 `--wall-brick-w`/`--wall-seam` 媒体查询阶梯（56 基准 / ≥2200px 64 / ≥3600px 96；缝恒 = pitch/16），**JS 只读不定**，解析失败即放弃增强（tile 原样）。
+- ⚠️ **单层砖纪律**：任何时刻只有一层砖——禁止 tile 与真砖阵同时可见，禁止再造逐格底衬/假光层（v5 的「tile + DOM 砖 + 底衬 + 假涌光」四层互相遮掩机器已整体退役）；墙后的光必须是真光（余晖/指针灯直接从真缝隙透出）。
 
 ---
 
@@ -211,7 +182,7 @@ Props: `variant`, `className`。内边距固定 `p-6` — 需要自定义 paddin
 3. **`prefers-reduced-motion` 三件套**：scroll-driven 动画必须显式 `animation: none`（时长重置对其无效）；`animation-delay`/`transition-delay` 必须通配归零（否则分段 delay 变成逐个"闪现"）；infinite 动画（marquee / scroll-pulse 类）必须显式关闭（0.01ms 周期 = 每帧乱跳）。三者都已在 globals.css 的 reduced-motion 块落实，新增动画时对号入座。
 
 ### The ONE Scroll Entrance
-所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：rotateX 5° + translateY + blur 随滚动沉降平整）。深度层异速位移（depth-drift）已于 v4 退役、v4.1 维持——墙与内容同速随滚，深度由材质层次（墙/面板/卡片）与洗墙光承担，禁止再引入异速滚动层。
+所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：rotateX 5° + translateY + blur 随滚动沉降平整）。深度层异速位移（depth-drift）已于 v4 退役；v6 起墙属场景固定（fixed）、内容从墙前滚过，深度由材质层次（墙/卡片）与墙后灯光承担——**内容层之间**禁止引入异速滚动层。
 
 ```tsx
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
@@ -246,7 +217,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤10px 沿签名轴 + 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）
-- ✅ `brick-flip` — 随滚方砖墙指针邻域铰链翻板（WallBricks rAF 阻尼弹簧砖池；砖沿边铰链**背指针外翻 ≤80°**、过冲硬夹 88° 背面永不可见、影响半径 ~200px；槽腔涌光/翻板增亮只写 opacity——涌光是哑光纪律唯一窄豁免：光心 α≤0.8、溢光 α≤0.45、随翻开角驱动、离开归零；铰链走「平移-旋转-回移」组合而非 transform-origin（origin 会拖走 perspective 灭点）；砖池文档级锚定随页滚动（合成器精确零滑移）、池上限 512、落定回收；仅 hover+fine 指针设备懒启动，触屏/RM/无 JS = 静态材质墙原样（CSS 直出可见且随滚）；静止砖与静态层像素等价；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
+- ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤16px / 坡斜 ≤15° / 向心聚拢 ≤3px / 微缩 ≤5% / 透光 ≤25% 全部是井心位置的纯函数，零砖级状态；影响半径 ~200px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；井心透光与指针灯是哑光纪律唯一窄豁免：强度弹簧驱动、离开归零、灯光心 α≤0.9；per-element perspective 不建 preserve-3d 链；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 隐藏 tile，像素等价无感切换），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
 - ✅ `btn-tilt` — 按钮悬停期微摆（ButtonTilt 中间层 rAF 阻尼弹簧，每按钮独立 k30 ζ0.6；倾角 ≤4°、仅指针在按钮盒内跟随（盒外即零——嵌墙砖在槽里不晃，v4.1 的 130px 邻域跟随已退役）；仅 hover+fine 且非 RM 挂引擎，触屏/RM/无 JS = 纯透传 span；与本体顶出 transition 分层两元素——JS 逐帧 / transition 永不同层；mouse-tracking 豁免第 3 例，仅限 ModuleButton）
 - ✅ 按钮顶出/按入 — 本体 `perspective() translateZ` transition（rest 齐平嵌墙 / hover +16px 顶出 / active −5px 按入 0.09s 快过渡；per-element perspective 不建 preserve-3d 链）+ 槽缝涌光 opacity 过渡（frame ::after，`:has(:hover)` 驱动，老内核软降级恒不亮；与砖墙涌光同一豁免语言；仅 .btn-primary/.btn-secondary。v4.1 的 btnHoverIdle 呼吸、backglow、`--btn-dy` 双层反向位移已全部退役）
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
@@ -260,9 +231,9 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ❌ `float` / floating animations（豁免仅一例：Hero 物件 `objFloat`——按钮呼吸已随 v4.2 嵌墙语义退役）
 - ❌ `gradient-shift` / `gradientShift`
 - ❌ `noise` texture overlays
-- ❌ 满屏 parallax（墙与内容同速随滚，深度由材质层次与洗墙光承担；v3 的 depth-drift 已退役，禁止再引入异速滚动层）
+- ❌ 满屏 parallax（v6 起墙属场景固定、内容从墙前滚过；**内容层之间**禁止异速滚动层——v3 的 depth-drift 已退役）
 - ❌ `particle` effects
-- ❌ mouse-tracking tilt / mouseGlow（豁免仅三例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintWall 砖层 WallBricks 邻域铰链翻板；③ ModuleButton 的 ButtonTilt 悬停微摆。卡片与其余一切元素一律不做）
+- ❌ mouse-tracking tilt / mouseGlow（豁免仅三例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintWall 砖层 WallBricks 重力井塌陷——含墙后指针灯 `.bp-wall-lamp`（光斑随井心弹簧移动，三例中唯一的发光跟随；光心 α≤0.9、离开归零，正本 = v6 spec）；③ ModuleButton 的 ButtonTilt 悬停微摆。卡片与其余一切元素一律不做）
 - ❌ 动画属性超出 transform / opacity / filter / stroke-dashoffset
 
 ### 性能纪律
@@ -309,8 +280,8 @@ props 是**判别联合**：`href` 与 `disabled`/`type`/`onClick` 互斥——L
   非缺陷）
 - **槽缝环/涌光**（frame 伪元素，z -1）：槽腔 = `var(--bg-base)` 实底 +
   hairline 框 + 槽内常态微光 + 槽口上缘压暗；涌光 `:has(:hover)` 驱动
-  opacity（老内核软降级恒不亮，无害）——与砖墙槽腔涌光同一
-  「光从墙里照出来」语言
+  opacity（老内核软降级恒不亮，无害）——与砖墙「光在墙后」同一
+  光学语言
 - **面材质直接画在本体元素背景上**（插槽外移 frame 后负 z 伪元素层序问题
   消失）：primary = accent 渐变通电砖；secondary = 砖 tile 同栈
   （`--mat-face-base` 实底 + `--mat-face-tint` 受光沉降 + 顶棱/底缘 inset）

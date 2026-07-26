@@ -1,8 +1,8 @@
 // ─── 公开页面共享布局 ───
 // SiteHeader + SiteFooter 在此声明一次，所有公开页面自动继承
-// BlueprintWall：全站唯一背景材质（单实例，z-index -1），v4.1 起随页面
-// 滚动——relative wrapper 撑满文档高，墙以 absolute inset-0 铺满其中
-// （无 JS 也随滚）；所有页面的 section 不再持有整幅不透明底色（L0/L1/L2）
+// BlueprintWall：全站唯一背景材质（单实例，z-index -1），v6 起 fixed
+// 属场景——内容从墙前滚过、墙与光不动（零滚动耦合，v4 的随滚已退役）；
+// 所有页面的 section 不再持有整幅不透明底色（L0 墙 / L2 卡片二级层次）
 
 import type { ReactNode } from 'react';
 import SiteFooter from '@/components/layout/SiteFooter';
@@ -20,9 +20,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <ErrorBoundary fallback={null}>
-        <BlueprintWall />
-      </ErrorBoundary>
+      {/* 墙的错误边界收在 BlueprintWall 内部的 client 岛上——岛抛错
+          只丢重力井增强，静态砖墙层（唯一背景）保留 */}
+      <BlueprintWall />
       <ErrorBoundary fallback={null}>
         <SiteHeader />
       </ErrorBoundary>

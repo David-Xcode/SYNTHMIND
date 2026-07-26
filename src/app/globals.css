@@ -34,7 +34,10 @@
      正本 = BlueprintObject 的面/线/光系（spec A.2 对照表）；
      砖墙与按钮同源消费——改物件色阶必须同步此块。
      TSX 侧 STROKE 表保持字面量（SVG presentation attribute 的 var()
-     替换在个别 WebView 失效，物件内已有同类坑注释） */
+     替换在个别 WebView 失效，物件内已有同类坑注释）。
+     ⚠️ face-shade / edge-strong / edge-faint / seam-glow / seam-soft
+     五个当前无 CSS var() 消费方——它们是 TSX STROKE 表与砖 tile
+     data-URI 字面值的交叉锁定锚点，改值同步两侧，勿因「未使用」删除 */
   --mat-face-base: rgba(17, 22, 32, 0.9); /* bg-elevated 的高实度形态
      （v4.1：缝隙透光由光槽层专职，面不再兼职透光——0.75 时代的鬼影线
      口径废弃；SVG tile 内字面值与本 token 交叉锁定，改值两处同步） */
@@ -49,27 +52,27 @@
     0,
     0,
     0.32
-  ); /* 压暗轴（物件 right 面 0.18–0.4 中值） */
+  ); /* 压暗轴（物件 right 面 0.18–0.4 带内取值） */
   --mat-edge-strong: rgba(74, 159, 229, 0.5); /* = STROKE.edgeFront */
   --mat-edge-faint: rgba(74, 159, 229, 0.22); /* = STROKE.inner */
   --mat-seam-glow: rgba(74, 159, 229, 0.7); /* = 物件横缝光心 */
   --mat-seam-soft: rgba(74, 159, 229, 0.55); /* = 物件竖缝光心/淡入终值 */
 
   /* ── 砖墙 pitch — 静态材质层与 WallBricks 同读（JS 只读不定，
-     永不产生第二事实源）；缝宽恒 = pitch/16（整除保 DOM 砖与静态 tile
-     几何等价）；v4.2 密度定案 48px（v4.1 的 1/4 面积），
-     阶梯见下方媒体查询 ── */
-  --wall-brick-w: 48px;
-  --wall-seam: 3px;
+     永不产生第二事实源）；缝宽恒 = pitch/16（tile viewBox 等比缩放保
+     DOM 砖与静态 tile 几何等价）；v5 密度定案 56px（灯半径 200px ≈
+     7 砖直径，单砖缩放/推移清晰可读），阶梯见下方媒体查询 ── */
+  --wall-brick-w: 56px;
+  --wall-seam: 3.5px;
 
   /* ── 动画缓动 ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* 方砖 pitch 阶梯 — 超宽屏放大；--wall-seam 同步 = pitch/16。
-   v4.2 砖池架构下 DOM 成本与密度解耦（池上限 512，与视口尺寸无关），
-   v4.1 的「预算 400/视口」与 <640px 窄屏档全部退役（窄屏静态 tile
-   同 48 密度，390px 宽 8 列观感成立；移动端本就无 JS 砖） */
+   v6 全视口真砖阵：DOM 砖数随视口线性（56 基准一屏 ≈700，超宽
+   3440×1440 @64 档 ≈1242 为现实上限；v4.2 的 512 池已退役）；
+   触屏/RM/无 JS 路径零 DOM 砖 = 静态 tile 同密度铺满，无独立窄屏档 */
 @media (min-width: 2200px) {
   :root {
     --wall-brick-w: 64px;
@@ -169,147 +172,115 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   BlueprintWall 随滚方砖墙 · Living Blueprint v4.2
-   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md
-   全站唯一背景材质（单实例，(public)/layout 的 relative wrapper 内挂载）：
-   文档级 absolute 静态墙（光槽层 + SVG tile 方砖面——CSS 直出，
-   无 JS/触屏/RM 三路径可见且天然随页滚动）+ fixed 洗墙光（光源属视口，
-   墙动光不动）+ WallBricks 邻域砖池（指针半径内的砖沿边铰链外翻 ≤80°、
-   槽腔涌光；文档级锚定，滚动全程合成器精确——v4.1 的 fixed 回卷与
-   data-bricks 全场接管已退役，静态层恒在，遮蔽由逐格底衬承担）
+   BlueprintWall 真砖重力井 · Lantern Wall v6
+   概念：墙 = 光前面的一排真砖；指针 = 压在墙上的重力井。
+   - 单层砖纪律：桌面指针路径 = 铺满视口的真砖 div（缝隙是真空隙，
+     墙后的光直接从缝里透出，无假光层）；触屏/RM/无 JS = 静态 tile
+     （像素等价）。两者经 [data-live] 互斥切换，任何时刻只有一层砖
+   - 墙属场景（.bp-wall fixed）：内容从墙前滚过，墙与光都不动——
+     零滚动耦合
+   - 指针交互（WallBricks）：全局 3 标量弹簧（井心 x/y + 强度），
+     近针的砖向墙内塌陷成碗（坑心最深、坑壁沿坡度朝坑心倾 ≤15°、
+     材料向坑心微聚、井深处砖面渐透明），塌陷张开的缝与渐透的砖体
+     透出墙后真灯光——一切响应都是井心位置的纯函数
    ═══════════════════════════════════════════════ */
 
 .bp-wall {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
 }
 
-/* 光槽层 — 缝隙灯槽（v4.1 灯光质感的主承担者）：横竖光带沿缝走，
-   缝心 α0.12、缝外 7px 渐隐；静态时从缝里漏光，砖翘起让开时露出宽光带
-   = 物件缝光系统的墙体版（纯几何显影零联动逻辑，v4 机制原样） */
-.bp-wall-light {
+/* 角落余晖 — 从视口右上角透进墙后的一片固定微光（fixed：光属场景
+   不属墙），加全场极低环境光兜底（离光角落砖缝不至死黑）。
+   静态、零 JS——无指针/触屏/RM 路径的墙也有光可透；亮度压在氛围档，
+   指针灯是唯一主角（穿场光束已退役——与内容抢层级） */
+.bp-wall-ambient {
   position: absolute;
   inset: 0;
-  background-image:
-    repeating-linear-gradient(
-      180deg,
-      rgba(74, 159, 229, 0.1) 0px,
-      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
-      rgba(74, 159, 229, 0.1) var(--wall-seam),
-      transparent calc(var(--wall-seam) + 7px),
-      transparent calc(var(--wall-brick-w) - 7px),
-      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
+  background:
+    radial-gradient(
+      ellipse 60% 50% at 100% 0%,
+      rgba(74, 159, 229, 0.3),
+      rgba(74, 159, 229, 0.09) 45%,
+      transparent 75%
     ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(74, 159, 229, 0.1) 0px,
-      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
-      rgba(74, 159, 229, 0.1) var(--wall-seam),
-      transparent calc(var(--wall-seam) + 7px),
-      transparent calc(var(--wall-brick-w) - 7px),
-      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
-    );
+    linear-gradient(rgba(74, 159, 229, 0.035), rgba(74, 159, 229, 0.035));
 }
 
-/* 静态方砖面 — 单元素 SVG data-URI tile（一格一砖：缝归 tile 左/上缘
-   透出光槽层，面 rect 从 (seam,seam) 起）。网格化对齐阵列的周期 = 单 tile，
-   v4 的奇偶行双元素 + mask-composite 机器整体退役（SVG 背景无兼容缺口，
-   连软降级路径都不再需要）。tile 内字面色值与 --mat-* token 交叉锁定
-   （data URI 无法消费 var()——同 BlueprintObject STROKE 表机制，改值两处
-   同步）：面基底 rgba(17,22,32,0.9) = --mat-face-base、受光沉降 0.05 =
-   --mat-face-tint、底缘厚度带 0.22 = --mat-face-shade 折算档、
-   1px 棱线 = 中性明度轴豁免区 */
+/* 指针灯 — 墙后的灯（fixed 定尺寸圆，JS 只写 transform/opacity =
+   纯合成零重绘）；画在砖面层下：光只从缝隙透出 = 指针周围亮起
+   十字缝光网格。涌光豁免 v6 口径（正本 = 2026-07-26 v6 spec 受光模型）：
+   光心 α≤0.9、随强度弹簧驱动、离开归零——0.9 隔着 α0.9 砖面读作
+   10% 透射，仅真缝隙处全量透出 */
+.bp-wall-lamp {
+  position: absolute;
+  left: -280px;
+  top: -280px;
+  width: 560px;
+  height: 560px;
+  opacity: 0;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(74, 159, 229, 0.9),
+    rgba(74, 159, 229, 0.28) 50%,
+    transparent 100%
+  );
+}
+
+/* 层提升只在真砖接管后生效——触屏/RM/无 JS 路径的灯恒 opacity:0，
+   不值得常驻合成层 */
+.bp-wall[data-live] .bp-wall-lamp {
+  will-change: transform, opacity;
+}
+
+/* 静态方砖面 — 无指针路径（触屏/RM/无 JS）的那一层砖：单元素 SVG
+   data-URI tile（一格一砖：缝归 tile 左/上缘透明，透出其下的余晖/
+   指针灯；面 rect 从 (seam,seam) 起），与真砖 div 阵像素等价；
+   桌面指针接管后由 [data-live] 隐藏——任何时刻只有一层砖。
+   tile 内字面色值与 --mat-* token 交叉锁定（data URI 无法消费 var()——
+   同 BlueprintObject STROKE 表机制，改值两处同步）：面基底
+   rgba(17,22,32,0.9) = --mat-face-base、受光沉降 0.05 = --mat-face-tint、
+   底缘厚度带 0.22 = --mat-face-shade 折算档、1px 棱线 = 中性明度轴豁免区。
+   z-index 1 = 恒压过墙后光层（lamp DOM 序在后也被压下） */
 .bp-wall-face {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.05'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.22'/></linearGradient></defs><rect x='6' y='6' width='90' height='90' fill='%23111620' fill-opacity='0.9'/><rect x='6' y='6' width='90' height='90' fill='url(%23t)'/><rect x='6' y='91' width='90' height='5' fill='url(%23s)'/><rect x='6' y='6' width='90' height='1' fill='%23ffffff' fill-opacity='0.04'/><rect x='6' y='6' width='1' height='90' fill='%23ffffff' fill-opacity='0.02'/><rect x='95' y='6' width='1' height='90' fill='%23000000' fill-opacity='0.16'/></svg>");
   background-size: var(--wall-brick-w) var(--wall-brick-w);
 }
 
-/* 砖池容器（WallBricks 懒启动）— 文档级 absolute：池砖直接写文档坐标，
-   滚动由合成器逐像素承担（v4.1 fixed + mod 回卷退役）。静态砖面/光槽/
-   洗墙光全部恒在——物化格的遮蔽由逐格不透明底衬（.bp-brick-under）承担，
-   砖静止时逐像素盖回底衬 = 与静态墙无差 */
-.bp-wall-field {
+/* 真砖接管开关 — 桌面指针路径建砖后 WallBricks 在 .bp-wall 上落
+   data-live：静态 tile 隐藏、真砖阵上场（像素等价 = 无感切换）。
+   单层砖纪律：两者互斥存在，永不叠加 */
+.bp-wall[data-live] .bp-wall-face {
+  visibility: hidden;
+}
+
+/* 真砖阵容器（WallBricks 懒启动）— 视口级：砖 left/top 建时写死
+   （一次布局），逐帧只写 transform/opacity；与静态 tile 同 z，
+   互斥显示无层序问题 */
+.bp-wall-grid {
   position: absolute;
   inset: 0;
+  z-index: 1;
+  /* 圈内砖逐帧被 3D transform 提升合成层、出圈降级——contain 把
+     布局/重绘失效域锁在墙盒内，不外溢重排 700+ 兄弟砖之外的页面
+     （井形变 ≤16px 恒在墙盒内，paint 裁切无可见副作用） */
+  contain: layout paint style;
 }
 
-/* 洗墙光 — fixed 恒在最上（静态面与 DOM 砖同受光，接管前后一致）；
-   光源属于场景不属于墙：滚动时墙动光不动（灯光质感的物理正解）；
-   低 α 径向，哑光禁强 bloom */
-.bp-wall-wash {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 70% 55% at 50% 0%,
-    rgba(74, 159, 229, 0.05),
-    transparent 75%
-  );
-}
-
-/* DOM 砖面 — face 专用 SVG tile（与静态 tile 同渐变栈、无缝偏移版）：
-   background-size 100% ⇒ 各 MQ 档与静态层等比缩放一致；
-   字面色值与 --mat-* token 交叉锁定（同上）；细分格已随 v4.1 禁绝。
-   z-index 1 = 恒压过全部底衬（含邻格溢光——溢光只洗在未物化的静态
-   砖面与缝隙上，层序确定）；翻起时 JS 提 2（压过邻砖面） */
+/* 真砖 — face 专用 SVG tile（与静态 tile 同渐变栈、无缝偏移版）：
+   background-size 100% ⇒ 各 MQ 档与静态 tile 等比缩放一致；字面
+   色值与 --mat-* token 交叉锁定（同上）。面基底 α0.9 ⇒ 墙后灯光
+   恒以 10% 透射砖面；井压下陷时 JS 再写 opacity（≤0.25 降幅）——
+   陷得越深，墙后真灯光渗出越多（无独立假光层） */
 .bp-brick {
   position: absolute;
-  z-index: 1;
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.05'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.22'/></linearGradient></defs><rect width='90' height='90' fill='%23111620' fill-opacity='0.9'/><rect width='90' height='90' fill='url(%23t)'/><rect y='85' width='90' height='5' fill='url(%23s)'/><rect width='90' height='1' fill='%23ffffff' fill-opacity='0.04'/><rect width='1' height='90' fill='%23ffffff' fill-opacity='0.02'/><rect x='89' width='1' height='90' fill='%23000000' fill-opacity='0.16'/></svg>");
   background-size: 100% 100%;
-}
-/* 翻起增亮层 — opacity 由 JS 随翻开角写入（0 = 与静态砖面无差）：
-   面微亮 + hairline 描边趋 --mat-edge-strong（物件 hover boost 的砖版；
-   80° 侧对视线时板身靠描边保持存在感；哑光纪律：无 bloom 低 alpha） */
-.bp-brick-glow {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  background-color: rgba(74, 159, 229, 0.045);
-  box-shadow: inset 0 0 0 1px var(--mat-edge-strong);
-}
-/* 槽腔底衬 — 砖的 sibling（先入 DOM 画序在砖下）：不透明实底遮住其下的
-   静态 tile 砖面（v4.2 遮蔽机制——静态层恒在，逐格接管）；槽腔 = 墙后
-   深底（bg-base 实底 + 槽壁向心压暗，明度轴豁免），槽内光/溢光两层
-   opacity 由 JS ∝ 翻开角写入 = 「光从墙里照出来」（涌光豁免，spec §2.5：
-   光心 α≤0.8 / 溢光 α≤0.45，角度驱动、离开归零；全局静态光维持哑光档） */
-.bp-brick-under {
-  position: absolute;
-  background: var(--bg-base);
-}
-.bp-brick-under::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 80% 80% at 50% 50%,
-    transparent 30%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
-}
-.bp-brick-uglow {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  background: radial-gradient(
-    ellipse 70% 70% at 50% 45%,
-    rgba(74, 159, 229, 0.8),
-    rgba(74, 159, 229, 0.08) 68%,
-    transparent 82%
-  );
-}
-.bp-brick-spill {
-  position: absolute;
-  inset: -110%;
-  opacity: 0;
-  background: radial-gradient(
-    ellipse 50% 50% at 50% 50%,
-    rgba(74, 159, 229, 0.45),
-    transparent 70%
-  );
 }
 
 /* ═══════════════════════════════════════════════

@@ -21,7 +21,7 @@ export default function HomeHero() {
   return (
     // overflow-clip-safe：clip 不创建 scroll container，保证 view() 时间轴找到根滚动器
     // 移动端 items-start：items-center 在 <lg 会把超高内容推出折叠线（v2 实测缺陷）
-    // v4.1：背景 = layout 级随滚方砖墙（BlueprintWall），本节不再持有底色与网格
+    // v6：背景 = layout 级 fixed 场景砖墙（BlueprintWall，内容从墙前滚过），本节不再持有底色与网格
     <section className="relative flex min-h-svh-safe items-start overflow-clip-safe lg:items-center">
       {/* 背景光晕装饰 */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -80,7 +80,7 @@ export default function HomeHero() {
             ))}
           </p>
 
-          {/* CTA 按钮 — ModuleButton 悬空长条砖；phase 错峰两颗不同频。
+          {/* CTA 按钮 — ModuleButton 嵌墙砖（v4.2 起 rest 齐平嵌墙、hover 顶出；phase 呼吸已退役）。
               frame 不需要 flex 类：.btn-module-frame 的 inline-flex 按源序
               压过 utility，且作为外层 flex item 本就被 blockify */}
           <div
