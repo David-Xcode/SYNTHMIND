@@ -45,7 +45,7 @@ v6 Lantern Wall 的墙后有真光（右上余晖 + 随指针移动的 `bp-wall-
 ### 1.3 双降级机制（两者独立，勿混淆）
 
 1. **浏览器支持回退**（CSS 层，自动）：基础类写光滑玻璃档（`--glass-face-solid`，无 blur）；`@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))` 块内升级为毛玻璃档（`--glass-face` + blur，**双属性都写**——Safari ≤17 / iOS ≤17 只认 -webkit- 前缀）。老内核/微信 WebView 自动得到光滑玻璃，无 JS 参与。
-   ⚠️ **Backdrop 采样纪律**（审查第 1 轮 + 真机逐级挂载实验定位，毛玻璃三杀手）：玻璃卡任何祖先的 `filter` **与 `transform`** 计算值都必须是 `none`——非 none 的 filter 构成 Backdrop Root（规范行为）；非 none 的 transform（含 identity 值 `translate(0)`）在 Chromium 里同样截断子孙 backdrop-filter 的采样域。三条落地规则：① 内联/过渡路径 filter/transform 终态写 `'none'`（AnimateOnScroll）；② filter 不得进 scrub/fill 动画关键帧（插值输出永远是 list 形态，`to: none` 在 fill both 下 computed 仍为 `blur(0px)`——`sheetSettle` 已移除 filter 关键帧）；③ transform 是沉降动画本体无法剥离——玻璃卡 wrapper 经 `@supports` 块内 `.sheet-reveal:has(.card-glass) { animation: none }` 退出 scrub，落回 IO 内联路径（入场沉降保留，完成后 opacity/transform/filter 全落 none，毛玻璃全程有效；:has 与 animation-timeline 同代内核）。
+   ⚠️ **Backdrop 采样纪律**（审查两轮 + 真机逐级挂载/hover 态实验定位）：玻璃卡任何祖先的 `filter` 计算值必须是 `none`——非 none 的 filter（**含 identity 值 `blur(0px)`**）构成 Backdrop Root（规范行为），采样不到墙 = 毛玻璃静默失效。**transform 经 hover 态实测不截断采样**（CardTilt 逐帧 3D transform 悬停期毛玻璃照常生效——第 1 轮曾把 transform 误列为共犯，第 2 轮复测归因修正）。落地规则：① 内联/过渡路径 filter 终态写 `'none'`（transform 同写 none 属卫生习惯非必需）；② filter 不得进 scrub/fill 动画关键帧（插值输出永远是 list 形态——`sheetSettle` 已移除 filter 关键帧；现存豁免 `reveal`/`wordReveal` 仅限无玻璃卡后代的子树）；③ 玻璃卡 wrapper 经 `@supports` 块内 `.sheet-reveal:has(.card-glass) { animation: none }` 退出 scrub 落回 IO 路径——scrub fill transform 推定无害但未在 animation-timeline 内核实测，保守定案。
 2. **性能门槛**（构建时决策，一次性）：实施阶段 3 第一步做真机 spike——products 页 9+ 卡挂毛玻璃 + tilt 原型，用户真机 Chrome 指针快速扫过卡片群，**门槛 = 无可感掉帧（均值 ≥55fps）**。不过关 → 删除 `@supports` 升级块，全站定光滑玻璃，spec 与 CLAUDE.md 同步改记「光滑玻璃定案」。防工具假象纪律见 memory `browser-testing-3d-css-pitfalls`（hover/指针必须真实输入触发）。
 
 ### 1.4 厚度与可读性
@@ -188,7 +188,7 @@ interface CardProps {
   - 填写文字 `txt-primary`；placeholder 降为示例提示（quaternary 可用，有外置 label 后不再承担标签职责）；
   - focus = accent 边框增亮 + 2px accent alpha ring（`0 0 0 2px rgba(74,159,229,0.3)`——1px 边框换色在深底上太弱，ring 保键盘焦点可见性；`:focus-visible` 同口径）；**focus-line 中心展开下划线退役**——外置 label + 实底格后，它与格子边框语义重复。
   - 层次链：墙 → 玻璃卡 → 深色填写格，三层拉开——用户点名的「混在一起」就此消灭。
-- 成功态 = `Card variant="static" pad="lg"` + IconBadge(success)。
+- 成功态 = 裸内容 + IconBadge(success)（外层页面 container 单据卡继续包裹——再套 Card 即玻璃卡套玻璃卡，审查第 1 轮修正，与 §4 迁移表一致）。
 - **校验契约对齐**：`route.ts` 补 name/subject/message 必填（现仅强制 email），与前端 required 一致；长度上限沿用。
 
 ### 6.3 信任栏（右 2 列）

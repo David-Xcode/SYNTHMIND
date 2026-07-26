@@ -353,9 +353,12 @@ body {
   }
 }
 /* 全变体共用的边框微响应 — 玻璃板边缘受光；非可点击暗示（无位移/投影），
-   static/container 卡唯一允许的 hover 反馈 */
-.card-glass:hover {
-  border-color: var(--border-strong);
+   static/container 卡唯一允许的 hover 反馈。hover 媒体门控防触屏 tap
+   粘滞（与 Hero 模块 .bp-mod-hover 同一先例） */
+@media (hover: hover) {
+  .card-glass:hover {
+    border-color: var(--border-strong);
+  }
 }
 
 /* interactive 专属 — hover 玻璃板被拿近检视：per-element perspective
@@ -367,14 +370,18 @@ body {
     transform 0.3s var(--ease-out-expo),
     box-shadow 0.3s var(--ease-out-expo);
 }
-.card-glass-interactive:hover {
-  border-color: var(--border-strong);
-  transform: perspective(900px) translateZ(8px);
-  box-shadow:
-    inset 0 1px 0 var(--glass-edge-top),
-    inset 0 -1px 0 var(--glass-edge-bottom),
-    0 14px 32px rgba(8, 11, 16, 0.55),
-    0 6px 14px rgba(74, 159, 229, 0.12);
+/* hover 门控同上：触屏 tap 页内锚点卡（products 第 6 卡）后 sticky hover
+   会让卡永久顶着——真 hover 设备专属 */
+@media (hover: hover) {
+  .card-glass-interactive:hover {
+    border-color: var(--border-strong);
+    transform: perspective(900px) translateZ(8px);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge-top),
+      inset 0 -1px 0 var(--glass-edge-bottom),
+      0 14px 32px rgba(8, 11, 16, 0.55),
+      0 6px 14px rgba(74, 159, 229, 0.12);
+  }
 }
 /* active 微收 — 快过渡传达按压（同按钮 0.09s 口径），松手回 hover 长过渡 */
 .card-glass-interactive:active {
@@ -653,13 +660,14 @@ body {
     animation-range: entry var(--settle-offset, 0%) entry
       calc(50% + var(--settle-offset, 0%));
   }
-  /* 玻璃卡的 wrapper 退出 scrub（Backdrop Root/采样截断纪律）：
-     scroll-driven 动画永远 active，fill 帧的 transform 常驻 wrapper——
-     Chromium 里非 none 的祖先 transform 会把子孙 backdrop-filter 的
-     采样域截断在该祖先内（采样不到墙 = 毛玻璃静默失效，逐级挂载实验
-     定位）。退出后落回 AnimateOnScroll 的 IO 内联路径：入场仍有
-     沉降过渡，完成后 opacity/transform/filter 全落 none，毛玻璃全程
-     有效。:has 与 animation-timeline 同代内核，@supports 块内安全 */
+  /* 玻璃卡的 wrapper 退出 scrub（Backdrop 采样纪律③，保守定案）：
+     scroll-driven 动画永远 active。filter 已从关键帧移除（那是实锤
+     杀手）；fill 帧常驻的 transform 经 hover 态实测推定无害，但未在
+     支持 animation-timeline 的内核上实测过 scrub fill 场景——退出换
+     确定性。落回 AnimateOnScroll 的 IO 内联路径：入场沉降仍在，完成后
+     opacity/transform/filter 全落 none，毛玻璃稳态可靠生效（入场
+     过渡期内采样暂不可用，被自身 blur 揉入掩盖）。:has 与
+     animation-timeline 同代内核，@supports 块内安全 */
   .sheet-reveal:has(.card-glass) {
     animation: none;
   }
@@ -1184,6 +1192,16 @@ body {
   box-shadow:
     inset 0 1px 2px rgba(0, 0, 0, 0.35),
     0 0 0 2px rgba(74, 159, 229, 0.3);
+}
+/* Chrome autofill 会刷浅底黑字，砸穿「墙→玻璃卡→深色凹格」三层——
+   1000px inset 实底盖回（webkit autofill 唯一可靠通道；消费 --bg-base
+   token 非新字面色），文字色经 text-fill-color 收回冷白 */
+.form-field:-webkit-autofill,
+.form-field:-webkit-autofill:hover,
+.form-field:-webkit-autofill:focus {
+  -webkit-box-shadow: inset 0 0 0 1000px var(--bg-base);
+  -webkit-text-fill-color: var(--text-primary);
+  caret-color: var(--text-primary);
 }
 
 /* ═══════════════════════════════════════════════

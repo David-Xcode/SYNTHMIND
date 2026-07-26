@@ -29,7 +29,7 @@
 地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens）**不再有独立详情页**：
 - 数据层：`src/data/real-estate.ts`（`RealEstateSite` 接口）
 - 展示：`/products` 页内的 `<RealEstateShowcase />`（`id="real-estate"` 锚点），卡片外链真实站点
-- 旧详情页 slug 在 `next.config.js` 中 301 到 `/products#real-estate`
+- 旧详情页 slug 在 `next.config.js` 中 `permanent:true`（= 308）重定向到 `/products#real-estate`
 - 新增地产盘 = 在 `real-estate.ts` 加一条 + logo 放 `public/product/`；新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
 
 ---
@@ -177,24 +177,29 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
   只认前缀）内升级毛玻璃档（`--glass-face` + blur ≤12px）；厚度 = 顶棱受光 +
   底缘压暗（中性明度轴 inset）+ accent 低 alpha 内反射（225deg background 渐变栈，
   非伪元素；::after 归 accent 竖线）
-- 🚨 **Backdrop 采样纪律**（毛玻璃三杀手，全部真机逐级挂载实验定位）：玻璃卡任何
-  祖先的 `filter` **与 `transform`** 计算值都必须是 `none`——非 none 的 filter 构成
-  Backdrop Root（规范行为），非 none 的 transform（含 `translate(0)` 等 identity 值）
-  在 Chromium 里同样把子孙 backdrop-filter 的采样域截断在该祖先内——两者任一存在，
-  玻璃卡采样不到墙，毛玻璃**静默失效**（不报错）。三条落地规则：
-  ① 内联/过渡路径的 filter/transform 终态写 `'none'`（AnimateOnScroll 已按此口径）；
+- 🚨 **Backdrop 采样纪律**（真机逐级挂载实验 + hover 态复测定位）：玻璃卡任何祖先的
+  `filter` 计算值必须是 `none`——非 none 的 filter（**含 `blur(0px)` 等 identity 值**）
+  构成 Backdrop Root（规范行为），子孙 backdrop-filter 只能采样到该祖先内（透明）
+  而非墙面，毛玻璃**静默失效**（不报错）。落地规则：
+  ① 内联/过渡路径的 filter 终态写 `'none'`（transform 终态同写 none 是卫生习惯，
+  但实测**祖先 transform 不截断采样**——CardTilt 逐帧 3D transform 悬停期毛玻璃
+  照常生效，tilt 与本纪律无冲突）；
   ② **filter 不得进 scrub/fill 动画关键帧**——插值输出永远是 list 形态，`to: none`
-  在 fill both 下 computed 仍为 `blur(0px)`（sheetSettle 已移除 filter 关键帧）；
-  ③ transform 是沉降动画本体无法剥离——**玻璃卡的 wrapper 经
-  `.sheet-reveal:has(.card-glass) { animation: none }` 退出 scrub**，落回 IO 内联
-  路径（入场沉降仍在，完成后全落 none）。新增入场动画对号入座
+  在 fill both 下 computed 仍为 `blur(0px)`（sheetSettle 已移除 filter 关键帧；
+  现存豁免：`reveal` / `wordReveal` 关键帧仍含 filter，仅限 Hero 等**无玻璃卡后代**
+  的子树使用——把卡片放进 animate-reveal / .word-reveal 子树即静默复现）；
+  ③ 玻璃卡 wrapper 经 `.sheet-reveal:has(.card-glass) { animation: none }` 退出
+  scrub 落回 IO 内联路径——scrub fill 的 transform 虽按 ① 推定无害，但未在支持
+  animation-timeline 的内核实测，保守定案保确定性。新增入场动画对号入座
 - **transform 写入者分层**：CardTilt wrapper = JS 弹簧逐帧（≤2.5°，pointer-tilt-engine）/
   卡片本体 = hover 顶起 CSS transition（`perspective(900px) translateZ(8px)` + 投影落墙 +
   边框增亮）——永不同元素；per-element perspective 不建 preserve-3d 链；禁常驻 will-change
-- Card corner radius is always **8px**（按钮同 8px，全站圆角只有 8px 和 rounded-full 两种）
+- Card corner radius is always **8px**（按钮同 8px；全站圆角 = 8px 与 rounded-full 两种 + 唯一窄豁免：表单填写格 `.form-field` 4px，spec §6.2 授权的「格子小于卡」层级暗示）
 - 玻璃底上正文对比度 ≥4.5:1（毛玻璃/光滑两档分别成立）
-- 统计卡一律 `<StatCard>`（count-up 全站唯一实现）；卡片收尾行一律 `<CardActionRow>`
-  （站内/外链箭头 variant）——禁止内联箭头 SVG；chip 用 `<HighlightTag>`、圆徽用 `<IconBadge>`
+- 统计卡一律 `<StatCard>`（count-up 全站唯一实现）；**整卡可点的收尾行**一律
+  `<CardActionRow>`（group-hover 形态，站内/外链箭头 variant）——container 卡内的
+  自悬停链接不属此列（如 InDev CTA，自带 hover:gap）；禁止内联箭头 SVG；
+  chip 用 `<HighlightTag>`、圆徽用 `<IconBadge>`
 
 ---
 
@@ -221,7 +226,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 // 在 scrub 路径自动映射为 animation-range 偏移
 {items.map((item, index) => (
   <AnimateOnScroll key={item.id} delay={index * 80 + 100}>
-    <GlassCard>...</GlassCard>
+    <Card variant="static">...</Card>
   </AnimateOnScroll>
 ))}
 ```
