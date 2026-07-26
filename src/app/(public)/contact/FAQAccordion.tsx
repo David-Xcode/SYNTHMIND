@@ -37,7 +37,7 @@ export default function FAQAccordion({ faqs }: FAQAccordionProps) {
                   {faq.question}
                 </span>
                 <span
-                  className={`flex-shrink-0 w-5 h-5 flex items-center justify-center text-txt-quaternary transition-transform duration-300 ease-out-expo ${isOpen ? 'rotate-45' : ''}`}
+                  className={`flex-shrink-0 w-5 h-5 flex items-center justify-center text-txt-tertiary transition-transform duration-300 ease-out-expo ${isOpen ? 'rotate-45' : ''}`}
                 >
                   <svg
                     className="w-4 h-4"

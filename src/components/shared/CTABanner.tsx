@@ -50,7 +50,7 @@ export default function CTABanner({
         )}
 
         <AnimateOnScroll delay={200}>
-          <ModuleButton href="/contact" arrow phase={2}>
+          <ModuleButton href="/contact" arrow>
             {buttonText}
           </ModuleButton>
         </AnimateOnScroll>

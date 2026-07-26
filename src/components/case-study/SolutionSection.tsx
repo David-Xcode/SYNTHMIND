@@ -15,7 +15,6 @@ export default function SolutionSection({ solutions }: SolutionSectionProps) {
       titleLight="The"
       titleBold="Solution"
       items={solutions}
-      bgClass=""
     />
   );
 }

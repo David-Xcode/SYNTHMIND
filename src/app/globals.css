@@ -17,10 +17,12 @@
   --accent: #4a9fe5;
   --accent-hover: #5daae9;
 
-  /* ── 文字层级 (冷白色调) ── */
+  /* ── 文字层级 (冷白色调) — v4.2 无底纹排版提档：可读性全押字体对比度，
+     tertiary/quaternary 对墙面有效底（≈#10151E）实测 ≈6.5:1 / ≈4.6:1；
+     与 tailwind.config.js txt 表交叉锁定，改值两处同步 ── */
   --text-primary: #e8ecf0;
-  --text-tertiary: #868e9c;
-  --text-quaternary: #606876;
+  --text-tertiary: #929aa8;
+  --text-quaternary: #78818f;
 
   /* ── 边框层级 (蓝色调) ── */
   --border-subtle: rgba(74, 159, 229, 0.06);
@@ -54,34 +56,30 @@
   --mat-seam-soft: rgba(74, 159, 229, 0.55); /* = 物件竖缝光心/淡入终值 */
 
   /* ── 砖墙 pitch — 静态材质层与 WallBricks 同读（JS 只读不定，
-     永不产生第二事实源）；v4.1 方砖单变量（--wall-row-h 已退役），
-     缝宽恒 = pitch/16（整除保 DOM 砖与静态 tile 几何等价）；
+     永不产生第二事实源）；缝宽恒 = pitch/16（整除保 DOM 砖与静态 tile
+     几何等价）；v4.2 密度定案 48px（v4.1 的 1/4 面积），
      阶梯见下方媒体查询 ── */
-  --wall-brick-w: 96px;
-  --wall-seam: 6px;
+  --wall-brick-w: 48px;
+  --wall-seam: 3px;
 
   /* ── 动画缓动 ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 方砖 pitch 阶梯 — 预算恒 ≤400/视口（实测 368 砖满帧、600 砖掉帧
-   min 67fps）；窄屏加密、超宽屏放大；--wall-seam 同步 = pitch/16 */
-@media (max-width: 639.98px) {
-  :root {
-    --wall-brick-w: 80px;
-    --wall-seam: 5px;
-  }
-}
+/* 方砖 pitch 阶梯 — 超宽屏放大；--wall-seam 同步 = pitch/16。
+   v4.2 砖池架构下 DOM 成本与密度解耦（池上限 512，与视口尺寸无关），
+   v4.1 的「预算 400/视口」与 <640px 窄屏档全部退役（窄屏静态 tile
+   同 48 密度，390px 宽 8 列观感成立；移动端本就无 JS 砖） */
 @media (min-width: 2200px) {
   :root {
-    --wall-brick-w: 128px;
-    --wall-seam: 8px;
+    --wall-brick-w: 64px;
+    --wall-seam: 4px;
   }
 }
 @media (min-width: 3600px) {
   :root {
-    --wall-brick-w: 192px;
-    --wall-seam: 12px;
+    --wall-brick-w: 96px;
+    --wall-seam: 6px;
   }
 }
 
@@ -171,13 +169,14 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   BlueprintWall 随滚方砖墙 · Living Blueprint v4.1
-   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.1-design.md
+   BlueprintWall 随滚方砖墙 · Living Blueprint v4.2
+   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md
    全站唯一背景材质（单实例，(public)/layout 的 relative wrapper 内挂载）：
    文档级 absolute 静态墙（光槽层 + SVG tile 方砖面——CSS 直出，
    无 JS/触屏/RM 三路径可见且天然随页滚动）+ fixed 洗墙光（光源属视口，
-   墙动光不动）+ WallBricks fixed 砖场（mod 回卷追随滚动，
-   data-bricks 同帧接管像素等价）
+   墙动光不动）+ WallBricks 邻域砖池（指针半径内的砖沿边铰链外翻 ≤80°、
+   槽腔涌光；文档级锚定，滚动全程合成器精确——v4.1 的 fixed 回卷与
+   data-bricks 全场接管已退役，静态层恒在，遮蔽由逐格底衬承担）
    ═══════════════════════════════════════════════ */
 
 .bp-wall {
@@ -229,47 +228,13 @@ body {
   background-size: var(--wall-brick-w) var(--wall-brick-w);
 }
 
-/* JS 砖场（WallBricks 懒构建）— fixed + translateY(-(scrollY mod pitch))
-   回卷追随文档滚动（对齐阵列以 pitch 为完全周期 ⇒ 回卷逐像素无缝）；
-   高度由 JS 写入（视口行数 + 1 回卷备用行）。激活后静态砖面整层退场
-   （同帧切换像素等价）；光槽层/洗墙光不隐藏——遮挡关系由 DOM 砖接管 */
+/* 砖池容器（WallBricks 懒启动）— 文档级 absolute：池砖直接写文档坐标，
+   滚动由合成器逐像素承担（v4.1 fixed + mod 回卷退役）。静态砖面/光槽/
+   洗墙光全部恒在——物化格的遮蔽由逐格不透明底衬（.bp-brick-under）承担，
+   砖静止时逐像素盖回底衬 = 与静态墙无差 */
 .bp-wall-field {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-}
-.bp-wall[data-bricks="on"] .bp-wall-face {
-  opacity: 0;
-}
-/* 激活期光槽随场走：场的回卷 transform 由主线程 scroll 事件写入，恒落后
-   合成器滚动 ~1 帧——若缝光仍留在文档层（合成器精确随滚），快滚时砖面
-   与缝光互相错位。解法 = 光槽搬进场背景（同一 transform 下与砖逐帧一致），
-   文档层光槽同帧退场；静止态两者像素等价（同渐变、同相位、同底）。
-   渐变栈与 .bp-wall-light 严格同值——改光槽参数两处同步 */
-.bp-wall[data-bricks="on"] .bp-wall-light {
-  opacity: 0;
-}
-.bp-wall[data-bricks="on"] .bp-wall-field {
-  background-image:
-    repeating-linear-gradient(
-      180deg,
-      rgba(74, 159, 229, 0.1) 0px,
-      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
-      rgba(74, 159, 229, 0.1) var(--wall-seam),
-      transparent calc(var(--wall-seam) + 7px),
-      transparent calc(var(--wall-brick-w) - 7px),
-      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(74, 159, 229, 0.1) 0px,
-      rgba(74, 159, 229, 0.12) calc(var(--wall-seam) / 2),
-      rgba(74, 159, 229, 0.1) var(--wall-seam),
-      transparent calc(var(--wall-seam) + 7px),
-      transparent calc(var(--wall-brick-w) - 7px),
-      rgba(74, 159, 229, 0.1) var(--wall-brick-w)
-    );
+  position: absolute;
+  inset: 0;
 }
 
 /* 洗墙光 — fixed 恒在最上（静态面与 DOM 砖同受光，接管前后一致）；
@@ -287,15 +252,18 @@ body {
 
 /* DOM 砖面 — face 专用 SVG tile（与静态 tile 同渐变栈、无缝偏移版）：
    background-size 100% ⇒ 各 MQ 档与静态层等比缩放一致；
-   字面色值与 --mat-* token 交叉锁定（同上）；细分格已随 v4.1 禁绝 */
+   字面色值与 --mat-* token 交叉锁定（同上）；细分格已随 v4.1 禁绝。
+   z-index 1 = 恒压过全部底衬（含邻格溢光——溢光只洗在未物化的静态
+   砖面与缝隙上，层序确定）；翻起时 JS 提 2（压过邻砖面） */
 .bp-brick {
   position: absolute;
+  z-index: 1;
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.05'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.22'/></linearGradient></defs><rect width='90' height='90' fill='%23111620' fill-opacity='0.9'/><rect width='90' height='90' fill='url(%23t)'/><rect y='85' width='90' height='5' fill='url(%23s)'/><rect width='90' height='1' fill='%23ffffff' fill-opacity='0.04'/><rect width='1' height='90' fill='%23ffffff' fill-opacity='0.02'/><rect x='89' width='1' height='90' fill='%23000000' fill-opacity='0.16'/></svg>");
   background-size: 100% 100%;
 }
-/* 翘起增亮层 — opacity 由 JS 随抬升量写入（0 = 与静态砖面无差）：
+/* 翻起增亮层 — opacity 由 JS 随翻开角写入（0 = 与静态砖面无差）：
    面微亮 + hairline 描边趋 --mat-edge-strong（物件 hover boost 的砖版；
-   哑光纪律：无 bloom，全部低 alpha 元素） */
+   80° 侧对视线时板身靠描边保持存在感；哑光纪律：无 bloom 低 alpha） */
 .bp-brick-glow {
   position: absolute;
   inset: 0;
@@ -303,15 +271,44 @@ body {
   background-color: rgba(74, 159, 229, 0.045);
   box-shadow: inset 0 0 0 1px var(--mat-edge-strong);
 }
-/* 砖下投影 — 独立 sibling（不随砖 transform 移动：影子留在墙上）；
-   opacity 由 JS ∝ 抬升量写入，暗示悬浮高度（厚度暗示的另一半） */
-.bp-brick-shadow {
+/* 槽腔底衬 — 砖的 sibling（先入 DOM 画序在砖下）：不透明实底遮住其下的
+   静态 tile 砖面（v4.2 遮蔽机制——静态层恒在，逐格接管）；槽腔 = 墙后
+   深底（bg-base 实底 + 槽壁向心压暗，明度轴豁免），槽内光/溢光两层
+   opacity 由 JS ∝ 翻开角写入 = 「光从墙里照出来」（涌光豁免，spec §2.5：
+   光心 α≤0.8 / 溢光 α≤0.45，角度驱动、离开归零；全局静态光维持哑光档） */
+.bp-brick-under {
   position: absolute;
+  background: var(--bg-base);
+}
+.bp-brick-under::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 80% at 50% 50%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+.bp-brick-uglow {
+  position: absolute;
+  inset: 0;
   opacity: 0;
   background: radial-gradient(
-    ellipse 55% 60% at 50% 40%,
-    rgba(0, 0, 0, 0.5),
-    transparent 72%
+    ellipse 70% 70% at 50% 45%,
+    rgba(74, 159, 229, 0.8),
+    rgba(74, 159, 229, 0.08) 68%,
+    transparent 82%
+  );
+}
+.bp-brick-spill {
+  position: absolute;
+  inset: -110%;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(74, 159, 229, 0.45),
+    transparent 70%
   );
 }
 
@@ -385,35 +382,28 @@ body {
   bottom: 16px;
 }
 
-/* ═══════════════════════════════════════════════
-   Sheet Panel — 「图纸钉在砖墙上」的 L1 层（v4 层次纪律：
-   L0 满铺墙 / L1 半透明图纸面板 / L2 不透明卡片）
-   原 bg-bg-surface section 的替身：半透明实底让墙隐约透出，
-   密集正文的可读性锚点之一；禁 blur（图纸不是玻璃）
-   ═══════════════════════════════════════════════ */
-
-.sheet-panel {
-  background: rgba(12, 16, 23, 0.78);
-}
+/* .sheet-panel（v4 的 L1 图纸面板）已随 v4.2 无底纹排版整体退役：
+   层次纪律 L0/L1/L2 → L0 墙 / L2 卡片，section 一律透墙，
+   可读性由文字对比度提档承担（spec §3） */
 
 /* ═══════════════════════════════════════════════
-   按钮系统 v4.1 — 悬空长条砖（Brick Bar：与砖墙完全同族）
-   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.1-design.md（§3）
+   按钮系统 v4.2 — 嵌墙砖（Socketed Brick：rest 齐平 / hover 顶出 / active 按入）
+   设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md（§4）
    唯一授权入口 = ModuleButton 组件（shared/），业务代码不得直接写类。
-   面板 = 一块从墙上浮起的砖（砖 tile 同材质栈），底座插槽 = 墙上的
-   空砖槽（槽内透光，与缝隙灯槽同语言），frame 背后带 backglow 透光；
-   常态悬浮于插槽上方 5px（触屏/无 JS 静态即读出 3D 姿态），hover 抬起
-   −2px，按下 +4px 按入插槽收拢间隙。
-   状态机走单一变量 --btn-dy：面板 translateY(var(--btn-dy))；插槽（::before）
-   随父移动，用 translateY(calc(5px - var(--btn-dy))) 反向抵消 → 视觉恒静止。
-   双层同时长过渡 = 同步无撕裂。语义/命中区不变（伪元素仍属元素盒）。
-   呼吸+晃动（btnHoverIdle）在 .btn-module-frame wrapper、pointer tilt
-   （ButtonTilt 弹簧）在 .btn-tilt 中间层、按压 transition 在本体——
-   infinite / JS 逐帧 / transition 三个 transform 写入者各居一层（分层纪律）。
+   语义 = 砌进墙里的一块砖（BlueprintObject 模块交互的按钮版）：
+   rest 与墙齐平（四周 3px 槽缝环可见、槽内常态微光）→ hover 顶出
+   （per-element perspective 的 translateZ 近大投影 + 槽光涌出洗上墙，
+   与砖墙翻板涌光同一「光从墙里照出来」语言）→ active 按入槽内 →
+   disabled 齐平变暗。v4.1 的 --btn-dy 悬浮状态机 / 双伪元素反向抵消 /
+   btnHoverIdle 呼吸 / backglow 全部退役。
+   transform 写入者分层（纪律不变，infinite 写入者归零）：
+   本体 pop/press transition / .btn-tilt 悬停期 JS 弹簧 / frame 静态
+   （仅 ::after 涌光 opacity 过渡）。
    ═══════════════════════════════════════════════ */
 
 /* 尺寸由类锁定（padding / font-size）：本块在 @tailwind utilities 之后，
-   同特异性按源序压过工地 utility——不要在使用处写 px-* / py-* / text-* 覆写 */
+   同特异性按源序压过工地 utility——不要在使用处写 px-* / py-* / text-* 覆写。
+   材质面直接画在元素背景上（插槽已外移 frame，负 z 伪元素层序问题消失） */
 .btn-primary,
 .btn-secondary {
   position: relative;
@@ -423,48 +413,26 @@ body {
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
   border-radius: 8px;
-  border: none;
-  background: none;
   cursor: pointer;
-  --btn-dy: 0px;
-  transform: translateY(var(--btn-dy));
   transition:
-    transform 0.2s var(--ease-out-expo),
-    color 0.2s var(--ease-out-expo);
+    transform 0.28s var(--ease-out-expo),
+    box-shadow 0.28s var(--ease-out-expo),
+    border-color 0.28s var(--ease-out-expo),
+    background-color 0.28s var(--ease-out-expo),
+    color 0.28s var(--ease-out-expo);
 }
-/* 层序机理：元素带 transform 自建 stacking context，负 z 伪元素画在
-   元素自身背景之上、文字之下（CSS 2.1 App.E 步骤 2）——所以元素本体不带
-   任何面板视觉，面板面全部住进 ::after（z -1 晚于插槽 z -2，正确遮挡插槽） */
-/* 底座插槽 — hairline 框 + 内缝光，常态露出面板下缘 5px 的插口 */
-.btn-primary::before,
-.btn-secondary::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  border-radius: 8px;
-  border: 1px solid var(--border-default);
-  background: rgba(74, 159, 229, 0.06);
-  transform: translateY(calc(5px - var(--btn-dy)));
-  transition:
-    transform 0.2s var(--ease-out-expo),
-    border-color 0.2s var(--ease-out-expo),
-    background-color 0.2s var(--ease-out-expo);
-  pointer-events: none;
+/* hover 顶出 — perspective() 内嵌 per-element（不建 preserve-3d 链，
+   tilt wrapper 的扁平化不影响本层投影）；近大投影横向会多盖 ~3px 槽缝，
+   视觉叙事由涌光层接管（原型验证成立，非缺陷） */
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  transform: perspective(700px) translateZ(16px);
 }
-/* 悬浮面板面 — 随元素一起做 --btn-dy 位移（伪元素属元素盒） */
-.btn-primary::after,
-.btn-secondary::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: 8px;
-  transition:
-    border-color 0.2s var(--ease-out-expo),
-    background-color 0.2s var(--ease-out-expo),
-    box-shadow 0.2s var(--ease-out-expo);
-  pointer-events: none;
+/* active 按入槽内 — 快过渡传达机械按压；松手回 hover 态恢复长过渡 */
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled) {
+  transform: perspective(700px) translateZ(-5px);
+  transition-duration: 0.09s;
 }
 .btn-primary:focus-visible,
 .btn-secondary:focus-visible {
@@ -476,71 +444,50 @@ body {
   color: #ffffff;
   font-weight: 600;
   font-size: 0.875rem;
-}
-.btn-primary::after {
-  /* v4.1 砖同族：accent 渐变（CTA affordance）上叠砖 tile 同款顶部受光沉降
-     （中性白明度轴）；厚度暗示 = 顶棱受光 inset + 底缘压暗 inset + 悬浮光晕
-     （空间悬浮高度要读得出来，但不做强 bloom） */
+  border: none;
+  /* accent 渐变通电砖（CTA affordance）+ 砖 tile 同款顶部受光沉降
+     （中性白明度轴）；rest 齐平无外投影（嵌在墙里的东西没有影子） */
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
     linear-gradient(135deg, #4a9fe5, #3488cc);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
-    0 8px 18px rgba(74, 159, 229, 0.18);
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18);
 }
 .btn-primary:hover:not(:disabled) {
-  --btn-dy: -2px;
-}
-.btn-primary:hover:not(:disabled)::after {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
     linear-gradient(135deg, #5daae9, #4a9fe5);
+  /* 顶出才有投影落墙 — 悬浮高度的另一半证词 */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     inset 0 -2px 0 rgba(0, 0, 0, 0.18),
-    0 10px 22px rgba(74, 159, 229, 0.28);
-}
-.btn-primary:hover:not(:disabled)::before {
-  border-color: var(--border-heavy);
-  /* 插槽缝光增亮 — 抬起时插口内光更可感（缝光语言的低 α 变体，
-     非 --mat-seam-* token 值：槽内光要压在正文对比阈下） */
-  background: rgba(74, 159, 229, 0.1);
-  box-shadow: inset 0 0 10px rgba(74, 159, 229, 0.16);
+    0 12px 26px rgba(8, 11, 16, 0.7),
+    0 5px 12px rgba(74, 159, 229, 0.2);
 }
 .btn-primary:active:not(:disabled) {
-  --btn-dy: 4px;
-}
-.btn-primary:active:not(:disabled)::after {
+  /* 按入槽内 — 槽口沿的内阴影压上面板 */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.14),
-    0 2px 5px rgba(74, 159, 229, 0.14);
+    inset 0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .btn-secondary {
   color: var(--accent);
   font-weight: 500;
   font-size: 0.875rem;
-}
-.btn-secondary::after {
-  /* v4.1 secondary = 字面意义的一块长条砖：面板面改喝砖 tile 同栈——
-     面基底（--mat-face-base 同源高实度，实底遮插槽的硬功能不变）+
-     顶部受光沉降（--mat-face-tint）+ 顶棱白线/底缘压暗 inset（厚度暗示） */
+  /* 字面意义的一块砖：砖 tile 同栈（--mat-face-base 实底 +
+     --mat-face-tint 受光沉降 + 顶棱白线/底缘压暗 inset） */
   border: 1px solid var(--border-strong);
   background:
     linear-gradient(180deg, var(--mat-face-tint), transparent 55%),
     var(--mat-face-base);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.28),
-    0 8px 18px rgba(8, 11, 16, 0.55);
+    inset 0 -2px 0 rgba(0, 0, 0, 0.28);
 }
 .btn-secondary:hover:not(:disabled) {
-  --btn-dy: -2px;
   color: var(--accent-hover);
-}
-.btn-secondary:hover:not(:disabled)::after {
   border-color: var(--accent);
   /* accent 提亮叠在同一砖面基底上 — 不引入新字面色 */
   background:
@@ -549,97 +496,76 @@ body {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     inset 0 -2px 0 rgba(0, 0, 0, 0.28),
-    0 9px 20px rgba(8, 11, 16, 0.6);
-}
-.btn-secondary:hover:not(:disabled)::before {
-  border-color: var(--border-heavy);
-  background: rgba(74, 159, 229, 0.1);
-  box-shadow: inset 0 0 10px rgba(74, 159, 229, 0.16);
+    0 12px 26px rgba(8, 11, 16, 0.7),
+    0 5px 12px rgba(74, 159, 229, 0.14);
 }
 .btn-secondary:active:not(:disabled) {
-  --btn-dy: 4px;
-}
-.btn-secondary:active:not(:disabled)::after {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 2px 5px rgba(8, 11, 16, 0.45);
+    inset 0 2px 8px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* 禁用态 — 半落座（悬浮间隙收半）；hover/active 规则均带 :not(:disabled)，
-   禁用时不抬起、不增亮、不换色 */
+/* 禁用态 — 齐平变暗（半落座姿态随 --btn-dy 退役）；hover/active 规则均带
+   :not(:disabled)，禁用时不顶出、不增亮、不换色 */
 .btn-primary:disabled,
 .btn-secondary:disabled {
-  --btn-dy: 2px;
   cursor: not-allowed;
   opacity: 0.55;
 }
-.btn-primary:disabled::after,
-.btn-secondary:disabled::after {
-  box-shadow: none;
-}
 
-/* 呼吸 + 微晃 — ModuleButton 骨架 wrapper（全站按钮默认常态即活）；
-   float（translateY）与 sway（rotate）都写 transform，两个 infinite 动画
-   同属性互相覆盖——必须合并为单一 keyframes（分层不了就合帧）；
-   幅度 ≤±2px / ≤±0.4°，非对称关键帧 = 有机漂浮而非钟摆；
-   同屏多按钮由使用处 phase（负 animation-delay）错峰。
-   v4.1 transform 写入者三层分工：frame = 本 infinite 呼吸 /
-   .btn-tilt = ButtonTilt 的 JS 弹簧逐帧 / 本体 = --btn-dy 按压 transition
-   ——同元素同属性冲突纪律天然满足 */
-@keyframes btnHoverIdle {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  28% {
-    transform: translateY(-1.6px) rotate(0.3deg);
-  }
-  52% {
-    transform: translateY(-0.5px) rotate(-0.25deg);
-  }
-  76% {
-    transform: translateY(-2px) rotate(0.2deg);
-  }
-}
+/* frame — 静态骨架（呼吸/backglow 已随 v4.2 嵌墙语义退役，本层零动画）；
+   isolation 恒建 stacking context：负 z 的槽缝环/涌光层不漏到祖先背景之下 */
 .btn-module-frame {
   position: relative;
-  /* isolation 恒建 stacking context：RM 下 animation:none 会拆掉动画带来的
-     stacking context，负 z 的 backglow 会漏到祖先背景之下——显式锁层序 */
   isolation: isolate;
   display: inline-flex;
-  animation: btnHoverIdle 8s ease-in-out infinite;
 }
-/* backglow — 按钮背后透光（bp-object-backglow 语言小号版，与砖墙缝光
-   同族）：低 α 径向、哑光禁强 bloom；opacity-only 微增亮不入动画属性冲突 */
+/* 槽缝环 — 墙上的砖槽（按钮四周 3px 槽缝）：槽腔 = 墙后深底（bg-base
+   实底），hairline 框 + 槽内常态微光 + 槽口上缘压暗（凹陷读感）——
+   与砖墙槽腔底衬同语言；rest 可见 = 「嵌在墙里」的静态证词 */
 .btn-module-frame::before {
   content: "";
   position: absolute;
-  inset: -16px -24px;
+  inset: -3px;
   z-index: -1;
-  background: radial-gradient(
-    ellipse 62% 58% at 50% 60%,
-    rgba(74, 159, 229, 0.18),
-    transparent 72%
-  );
-  opacity: 0.75;
-  transition: opacity 0.2s var(--ease-out-expo);
+  border-radius: 10px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
+  box-shadow:
+    inset 0 0 6px rgba(74, 159, 229, 0.14),
+    inset 0 1px 2px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
-/* hover 背光微增亮 — :has 老内核不支持时软降级（恒 0.75，无害） */
-.btn-module-frame:has(:hover):not(:has(:disabled))::before {
+/* 涌光层 — hover 顶出时槽光涌出洗上墙（与砖墙翻板涌光同一豁免语言，
+   spec §2.5/§4）：opacity-only 过渡；:has 老内核不支持时软降级 =
+   涌光恒不亮（槽内常态微光仍在，无害） */
+.btn-module-frame::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 10px rgba(74, 159, 229, 0.38),
+    0 0 22px rgba(74, 159, 229, 0.2);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out-expo);
+  pointer-events: none;
+}
+.btn-module-frame:has(:hover):not(:has(:disabled))::after {
   opacity: 1;
 }
-/* ButtonTilt 的 JS 弹簧层 — transform 由 rAF 写入（每按钮独立小弹簧，
-   perspective 内嵌不建 3D 链）；无 JS/触屏/RM 时是纯透传 span。
+/* 按入时涌光回落半档 — 光被按回槽里 */
+.btn-module-frame:has(:active):not(:has(:disabled))::after {
+  opacity: 0.45;
+}
+/* ButtonTilt 的 JS 弹簧层 — transform 由 rAF 写入（悬停期跟随 ≤4°，
+   per-element perspective 不建 3D 链）；无 JS/触屏/RM 时是纯透传 span。
    flex:1 必须有：本层是 frame 内唯一 item，不撑满会 shrink-to-fit，
    按钮的 w-full 解析到收缩宽度而失效（移动端 CTA 满宽依赖此链路） */
 .btn-tilt {
   display: inline-flex;
   flex: 1 1 auto;
-}
-/* 半落座的禁用按钮不该还在呼吸 — :has 老内核不支持时软降级（继续呼吸，无害） */
-.btn-module-frame:has(:disabled) {
-  animation: none;
 }
 
 /* ═══════════════════════════════════════════════
@@ -1253,8 +1179,7 @@ body {
   .bp-object-shadow,
   .bp-mod-drift,
   .bp-seam-glow,
-  .bp-core-pulse,
-  .btn-module-frame {
+  .bp-core-pulse {
     /* biome-ignore lint/complexity/noImportantStyles: scroll-driven/infinite animations ignore duration reset, must disable explicitly */
     animation: none !important;
   }

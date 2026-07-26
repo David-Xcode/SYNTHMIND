@@ -1,6 +1,8 @@
 // ─── 通用编号文本列表区块 · Blueprint ───
-// 蓝色左边框 / IBM Plex Mono 编号（列表项编号 = 真实次序）/ 可配置标题和背景
+// 蓝色左边框 / IBM Plex Mono 编号（列表项编号 = 真实次序）/ 可配置标题
 // Server Component：自身无 hooks/事件，交互全在 client 叶子（AnimateOnScroll）
+// v4.2：bgClass prop 随 .sheet-panel 退役连根删除 — section 一律透墙，
+// 列表项自身的 bg-elevated 卡片是可读性锚点（L2）
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -12,8 +14,6 @@ interface TextListSectionProps {
   titleBold: string;
   /** 编号列表文本 */
   items: string[];
-  /** 背景层次 class（v4：sheet-panel = 图纸面板 / '' = 透墙），默认 sheet-panel */
-  bgClass?: string;
   /** 图纸编号 (如 "01") — 详情页 section 序号 */
   sheetNo?: string;
   /** 图签标签，配合 sheetNo 显示 */
@@ -24,12 +24,11 @@ export default function TextListSection({
   titleLight,
   titleBold,
   items,
-  bgClass = 'sheet-panel',
   sheetNo,
   eyebrow,
 }: TextListSectionProps) {
   return (
-    <section className={`py-16 px-4 ${bgClass}`.trim()}>
+    <section className="py-16 px-4">
       <div className="max-w-3xl mx-auto">
         <AnimateOnScroll>
           <SectionTitle

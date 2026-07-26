@@ -82,7 +82,7 @@ export default function FeaturedWork() {
         </div>
 
         <AnimateOnScroll delay={300} className="mt-10 text-center">
-          <ModuleButton href="/products" variant="secondary" phase={3}>
+          <ModuleButton href="/products" variant="secondary">
             View all products
           </ModuleButton>
         </AnimateOnScroll>

@@ -22,8 +22,8 @@ module.exports = {
         txt: {
           primary:    '#E8ECF0',
           secondary:  '#A6AEBA',
-          tertiary:   '#868E9C',
-          quaternary: '#606876',
+          tertiary:   '#929AA8',
+          quaternary: '#78818F',
         },
       },
       fontFamily: {

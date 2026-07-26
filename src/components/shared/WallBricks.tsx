@@ -1,33 +1,39 @@
 'use client';
 
-// ─── 砖场弹簧层 · Living Blueprint v4.1 ───
-// 设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.1-design.md（§2）
-// BlueprintWall 的动态层：指针滑过时邻域方砖翘起跟随、露出砖下光槽，
-// 离开后弹簧缓落归位；墙随页面滚动，砖场 fixed + mod 回卷追随。
+// ─── 砖池翻板层 · Living Blueprint v4.2 ───
+// 设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md（§2）
+// BlueprintWall 的动态层：指针邻域的方砖沿砖边铰链外翻（背指针方向，≤80°），
+// 露出槽腔、槽内光随翻开角涌出洗上邻砖；离开后弹簧缓落归位。
 //
-// 纪律与门控（v4 结论继承 + v4.1 变化）：
-// - 懒构建：挂载只判能力，首次 pointermove 才建砖 DOM——SSR 零增量、
-//   LCP 零影响；触屏 / RM / 无 JS 三条路径 = 静态材质墙原样（CSS 直出随滚）
-// - 随滚 = fixed 场 + translateY(-(scrollY mod pitch)) 回卷：网格化对齐
-//   阵列以 pitch 为完全周期，回卷逐像素无缝；跨 pitch 整数倍时弹簧状态
-//   沿行转移（滚出行归零补入另一端）——DOM 数恒定，零增删零文档高监听
-// - 砖 pitch 从 CSS var 读取（--wall-brick-w / --wall-seam 阶梯）：
-//   JS 只读不定，静态层与 DOM 砖永不产生第二事实源；算出砖数 >400
-//   （预算实测：368 砖满帧、600 砖掉帧）→ 彻底放弃增强，静态墙原样
-// - 每砖独立 perspective（transform 内自带），不建 preserve-3d 链
+// 架构（v4.1 全场接管 → v4.2 邻域砖池，纪律与门控继承）：
+// - 砖池：只物化指针影响半径内的格子（cell 按文档行列键控），弹簧落定即
+//   回收复用——DOM 成本与砖密度解耦（pitch 48 密度下全场 600 格，池峰值
+//   实测 ≤~483，上限 512 硬夹）
+// - 文档级锚定：砖位直接写文档坐标（.bp-wall 本就是文档级 absolute），
+//   滚动由合成器逐像素承担——v4.1 的 mod 回卷 / 状态行转移 / data-bricks
+//   全场接管 / 「JS 路径滚动落后一帧」代价全部退役
+// - 静态砖面恒在：每格物化时先铺不透明槽腔底衬（sibling，画序在砖下）遮住
+//   静态 tile，砖静止时又恰好逐像素盖回底衬 = 接管零跳变
+// - 铰链走「平移-旋转-回移」组合变换而非 transform-origin（origin 会把
+//   perspective() 灭点拖到铰链边，翻板透视张力尽失——原型实测）；
+//   只外翻 + 硬夹 88°：背面永不可见，无需双面砖 DOM
+// - 懒启动：挂载只判能力，首次 pointermove 才读 CSS var / 建池；
+//   触屏 / RM / 无 JS 三路径 = 静态材质墙原样（CSS 直出随滚）
+// - pitch 从 CSS var 读取（--wall-brick-w / --wall-seam）：JS 只读不定；
+//   解析失败即放弃增强
 // - 只写 transform / opacity（z-index 为活跃态一次性切换，非逐帧动画）；
 //   rAF 半隐式欧拉弹簧，全部收敛即停帧
-// - 砖 DOM 命令式创建（非 React state）：~百个短命装饰节点自管
+// - 砖 DOM 命令式创建（非 React state）：短命装饰节点自管
 
 import { useEffect, useRef } from 'react';
 import { listenMql } from '@/lib/listen-mql';
 
-const MAX_BRICKS = 400; // 瓦片预算硬上限（v4.1 实测重定：368 满帧 / 600 掉帧）
-const RADIUS = 240; // 指针影响半径
-const MAX_TILT = 12; // deg — 白名单口径 ≤12°
-const MAX_LIFT = 18; // px — 白名单口径 ≤18px
-const STIFFNESS = 40;
-const DAMPING = 7; // ζ≈0.55 — 轻微过冲（气流掠过的回弹感）
+const POOL_MAX = 512; // 砖池硬上限（风暴实测峰值 483；超限跳过新增物化）
+const RADIUS = 200; // 指针影响半径（240 档实测缓落长尾堆积出长帧，收窄）
+const MAX_FLIP = 80; // deg — 目标翻开角上限（David 原话「80 度左右」）
+const CLAMP_FLIP = 88; // deg — 过冲硬夹：永不过 90° 露 div 背面
+const STIFFNESS = 60;
+const DAMPING = 11; // ζ≈0.71 — 大角度防过冲穿夹板（k40 档长尾实测掉帧）
 const REST_EPS = 0.01;
 const MAX_DT = 0.033; // 秒 — tab 切回防积分爆炸
 
@@ -37,15 +43,25 @@ interface Spring {
   t: number; // target
 }
 
+// 铰链方位（背指针外翻）：axis/sign 定旋转，hx/hy 定铰链边相对砖心方向
+interface Hinge {
+  axis: 'x' | 'y';
+  sign: number;
+  hx: number;
+  hy: number;
+}
+
 interface Brick {
   el: HTMLDivElement;
   glow: HTMLDivElement;
-  shadow: HTMLDivElement;
-  cx: number; // 砖心（场内坐标 — 恒定，滚动由场 transform 承担）
+  under: HTMLDivElement;
+  uglow: HTMLDivElement;
+  spill: HTMLDivElement;
+  key: string; // "row,col" — 文档格坐标
+  cx: number; // 砖心（文档坐标）
   cy: number;
-  rx: Spring;
-  ry: Spring;
-  z: Spring;
+  s: Spring; // 翻开角弹簧（单自由度 — tilt 时代的 rx/ry/z 三簧退役）
+  hinge: Hinge;
   settled: boolean;
   raised: boolean; // z-index 已提升（状态切换非逐帧写入）
 }
@@ -62,6 +78,20 @@ function isSettled(s: Spring) {
   return Math.abs(s.x - s.t) < REST_EPS && Math.abs(s.v) < REST_EPS;
 }
 
+// 背指针外翻的铰链解算：铰链取砖的近指针边（按主轴四向量化），
+// 自由缘背指针掀开——v4.1「近缘翘起背向指针（气流掠过）」语言的完全体
+function hingeFor(dx: number, dy: number): Hinge {
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // 砖在指针左/右侧 → 竖边铰链（rotateY）
+    return dx > 0
+      ? { axis: 'y', sign: -1, hx: -1, hy: 0 } // 砖在右：左边铰、右缘出墙
+      : { axis: 'y', sign: 1, hx: 1, hy: 0 };
+  }
+  return dy > 0
+    ? { axis: 'x', sign: 1, hx: 0, hy: -1 } // 砖在下：上边铰、下缘出墙
+    : { axis: 'x', sign: -1, hx: 0, hy: 1 };
+}
+
 export default function WallBricks() {
   const fieldRef = useRef<HTMLDivElement>(null);
 
@@ -74,237 +104,196 @@ export default function WallBricks() {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (!capable.matches || reducedMotion.matches) return;
 
-    const wall = field.parentElement; // .bp-wall（data-bricks 切换宿主）
-
-    let bricks: Brick[] = [];
-    let rows = 0;
-    let cols = 0;
+    const byKey = new Map<string, Brick>();
+    let active: Brick[] = [];
+    let free: Brick[] = [];
+    let total = 0; // 已创建砖数（active + free）— POOL_MAX 的计量对象
     let pitch = 0;
-    let raisedCount = 0; // 非静止砖计数 — 全零时滚动可跳过状态转移/重瞄
-    let built = false;
+    let seam = 0;
+    let face = 0;
+    let half = 0;
+    let ready = false; // CSS var 已读取（懒启动 / resize 后重读）
+    let abandoned = false; // var 解析失败 → 本尺寸周期放弃增强
     let rafId = 0;
     let lastTime = 0;
-    let px = -1e4; // 指针（场内坐标）— 远置初值 = 无影响
+    let px = -1e4; // 指针（文档坐标）— 远置初值 = 无影响
     let py = -1e4;
-    let lastClientX = -1e4; // 指针视口坐标缓存 — 滚动时重算场内坐标用
+    let lastClientX = -1e4; // 视口坐标缓存 — 滚动时重算文档坐标用
     let lastClientY = -1e4;
-    let baseRow = 0; // floor(scrollY / pitch) — mod 回卷基准行
-    let offset = 0; // scrollY mod pitch
     let disposed = false;
     let resizeTimer = 0;
-    let rebuildPending = false; // resize 拆场后待重建（懒构建语义下区分「从未建过」）
 
-    const clearBricks = () => {
-      field.textContent = '';
-      field.style.transform = '';
-      field.style.height = '';
-      bricks = [];
-      built = false;
-      baseRow = 0;
-      offset = 0;
-      raisedCount = 0;
-      if (wall) delete wall.dataset.bricks;
-    };
-
-    // 依当前弹簧状态落样式 — 帧循环与状态行转移共用（转移后必须立即
-    // 重绘，否则 wrap 瞬间旧姿态残留一帧）
+    // 依当前弹簧状态落样式 — 角度→透视翻板 + 槽光随角涌出
     const applyStyle = (b: Brick) => {
-      const lift = Math.max(b.z.x, 0);
-      if (b.settled && !b.rx.x && !b.ry.x && !b.z.x) {
+      const a = Math.min(Math.max(b.s.x, 0), CLAMP_FLIP);
+      if (b.settled && a < 0.05) {
         b.el.style.transform = '';
         b.glow.style.opacity = '0';
-        b.shadow.style.opacity = '0';
+        b.uglow.style.opacity = '0';
+        b.spill.style.opacity = '0';
         if (b.raised) {
-          // 完全归位才撤层序提升 — 活跃期间保持稳定，避免翘起中被邻砖切割
           b.el.style.zIndex = '';
-          b.shadow.style.zIndex = '';
           b.raised = false;
-          raisedCount--;
         }
-      } else {
-        if (!b.raised) {
-          // 状态切换非逐帧动画：投影要压在邻砖面上、多砖同时翘起层序稳定
-          b.el.style.zIndex = '2';
-          b.shadow.style.zIndex = '1';
-          b.raised = true;
-          raisedCount++;
-        }
-        b.el.style.transform = `perspective(600px) rotateX(${b.rx.x.toFixed(3)}deg) rotateY(${b.ry.x.toFixed(3)}deg) translateZ(${b.z.x.toFixed(2)}px)`;
-        b.glow.style.opacity = (lift / MAX_LIFT).toFixed(3);
-        b.shadow.style.opacity = ((lift / MAX_LIFT) * 0.8).toFixed(3);
-      }
-    };
-
-    const zeroBrick = (b: Brick) => {
-      b.rx.x = b.rx.v = b.rx.t = 0;
-      b.ry.x = b.ry.v = b.ry.t = 0;
-      b.z.x = b.z.v = b.z.t = 0;
-      b.settled = true;
-      applyStyle(b);
-    };
-
-    const copyState = (dst: Brick, src: Brick) => {
-      dst.rx.x = src.rx.x;
-      dst.rx.v = src.rx.v;
-      dst.rx.t = src.rx.t;
-      dst.ry.x = src.ry.x;
-      dst.ry.v = src.ry.v;
-      dst.ry.t = src.ry.t;
-      dst.z.x = src.z.x;
-      dst.z.v = src.z.v;
-      dst.z.t = src.z.t;
-      dst.settled = src.settled;
-      applyStyle(dst);
-    };
-
-    // 滚动同步：场 transform 回卷 + 跨 pitch 整数倍时弹簧状态沿行转移
-    const syncScroll = () => {
-      if (!built || !bricks.length) return;
-      const y = window.scrollY;
-      // floor 版 mod：y<0（橡皮筋回弹）时 floor 取更小整数，offset 仍落 [0,pitch)
-      offset = y - Math.floor(y / pitch) * pitch;
-      field.style.transform = `translateY(${-offset}px)`;
-      const nb = Math.floor(y / pitch);
-      const d = nb - baseRow;
-      baseRow = nb;
-      if (!d) return;
-      if (!raisedCount) return; // 全场静止归零 — 状态转移是恒等操作，白跑 400 砖双循环
-      if (Math.abs(d) >= rows) {
-        // 一跳超过整场（锚点跳转/瞬时长滚）— 全场归零即等价
-        for (let i = 0; i < bricks.length; i++) zeroBrick(bricks[i]);
         return;
       }
-      // 滚下 d>0：视觉整场上移 d 行 — slot r 接管原 slot r+d 的状态；
-      // 滚上反向遍历防覆写；新滚入的边缘行清零（与静态砖面无差）
-      if (d > 0) {
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const dst = bricks[r * cols + c];
-            if (r + d < rows) copyState(dst, bricks[(r + d) * cols + c]);
-            else zeroBrick(dst);
-          }
-        }
-      } else {
-        for (let r = rows - 1; r >= 0; r--) {
-          for (let c = 0; c < cols; c++) {
-            const dst = bricks[r * cols + c];
-            if (r + d >= 0) copyState(dst, bricks[(r + d) * cols + c]);
-            else zeroBrick(dst);
-          }
-        }
+      if (!b.raised) {
+        // 翻起砖压过邻砖面（状态切换非逐帧动画；落定才撤销，活跃期层序稳定）
+        b.el.style.zIndex = '2';
+        b.raised = true;
       }
+      const k = a / MAX_FLIP;
+      const h = b.hinge;
+      const rot =
+        h.axis === 'x'
+          ? `rotateX(${(h.sign * a).toFixed(2)}deg)`
+          : `rotateY(${(h.sign * a).toFixed(2)}deg)`;
+      b.el.style.transform = `perspective(600px) translate3d(${h.hx * half}px, ${h.hy * half}px, 0) ${rot} translate3d(${-h.hx * half}px, ${-h.hy * half}px, 0)`;
+      b.glow.style.opacity = (k * 0.9).toFixed(3);
+      b.uglow.style.opacity = Math.min(1, k * 1.15).toFixed(3);
+      b.spill.style.opacity = Math.min(1, k).toFixed(3);
     };
 
-    const build = () => {
-      // documentElement.clientWidth 不含经典滚动条 — field 的 100vw 含滚动条，
-      // 用它算 cols 会白铺一列画在滚动条底下（预算与工作量浪费）
-      const w = document.documentElement.clientWidth;
-      const h = window.innerHeight;
-      if (!w || !h) return;
-      // pitch 单一事实源 = CSS 阶梯变量（静态层同读）；解析失败即放弃增强
+    const readVars = () => {
       const styles = getComputedStyle(field);
-      const brickW = Number.parseFloat(
-        styles.getPropertyValue('--wall-brick-w'),
-      );
-      const seam = Number.parseFloat(styles.getPropertyValue('--wall-seam'));
-      // !x 已覆盖 NaN 与 0（parseFloat 解析失败即放弃增强，静态墙原样）
-      if (!brickW || !seam) {
-        built = true;
+      const w = Number.parseFloat(styles.getPropertyValue('--wall-brick-w'));
+      const s = Number.parseFloat(styles.getPropertyValue('--wall-seam'));
+      // !x 已覆盖 NaN 与 0（解析失败即放弃增强，静态墙原样）
+      if (!w || !s) {
+        abandoned = true;
         return;
       }
-      pitch = brickW;
-      rows = Math.ceil(h / pitch) + 1; // +1 = mod 回卷备用行
-      cols = Math.ceil(w / pitch);
-      // 预算硬上限：MQ 阶梯已把主流屏压进预算，仍超（异形屏）→ 彻底放弃；
-      // built 置位阻止后续 pointermove 反复重试
-      if (rows * cols > MAX_BRICKS) {
-        built = true;
-        return;
-      }
-
-      const frag = document.createDocumentFragment();
-      const next: Brick[] = [];
-      const face = pitch - seam;
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          // 缝归每砖 cell 的上/左缘：面从 (+seam,+seam) 起（与静态 tile 一致）
-          const left = col * pitch + seam;
-          const top = row * pitch + seam;
-          // 投影是砖的 sibling（不随砖 transform 移动——影子留在墙上）；
-          // 先入 DOM，静止态画序在砖面之下
-          const shadow = document.createElement('div');
-          shadow.className = 'bp-brick-shadow';
-          // 投影几何按砖面比例（pitch 阶梯 80→192 跨 2.4 倍，绝对值会让
-          // 大屏投影显得过薄、悬浮高度暗示走味）
-          shadow.style.left = `${left + face * 0.06}px`;
-          shadow.style.top = `${top + face * 0.93}px`;
-          shadow.style.width = `${face * 0.88}px`;
-          shadow.style.height = `${face * 0.18}px`;
-          const el = document.createElement('div');
-          el.className = 'bp-brick';
-          el.style.left = `${left}px`;
-          el.style.top = `${top}px`;
-          el.style.width = `${face}px`;
-          el.style.height = `${face}px`;
-          const glow = document.createElement('div');
-          glow.className = 'bp-brick-glow';
-          el.appendChild(glow);
-          frag.appendChild(shadow);
-          frag.appendChild(el);
-          next.push({
-            el,
-            glow,
-            shadow,
-            cx: left + face / 2,
-            cy: top + face / 2,
-            rx: spring(),
-            ry: spring(),
-            z: spring(),
-            settled: true,
-            raised: false,
-          });
-        }
-      }
-      field.style.height = `${rows * pitch}px`;
-      field.appendChild(frag);
-      bricks = next;
-      built = true;
-      // 砖已入 DOM 再隐藏静态砖面 — 同帧切换，静止态像素等价无跳变
-      // （光槽层/洗墙光不隐藏：遮挡关系由 DOM 砖接管）
-      if (wall) wall.dataset.bricks = 'on';
-      // 建场即校准回卷相位与 baseRow（刷新/锚点跳转可能落在页中，
-      // clearBricks 把 baseRow 归 0，此处按当前 scrollY 重新对齐）
-      syncScroll();
+      pitch = w;
+      seam = s;
+      face = pitch - seam;
+      half = face / 2;
+      ready = true;
     };
 
-    // 依当前指针位置刷新全部砖的弹簧目标（半径外归零）
+    const makeBrick = (): Brick => {
+      // 槽腔底衬（sibling 先入 DOM = 画序在砖下）：不透明实底遮静态 tile，
+      // 槽壁压暗走 ::before（CSS），槽内光/溢光两层由 JS 写 opacity
+      const under = document.createElement('div');
+      under.className = 'bp-brick-under';
+      const spillEl = document.createElement('div');
+      spillEl.className = 'bp-brick-spill';
+      const uglow = document.createElement('div');
+      uglow.className = 'bp-brick-uglow';
+      under.appendChild(spillEl);
+      under.appendChild(uglow);
+      const el = document.createElement('div');
+      el.className = 'bp-brick';
+      const glow = document.createElement('div');
+      glow.className = 'bp-brick-glow';
+      el.appendChild(glow);
+      field.appendChild(under);
+      field.appendChild(el);
+      total++;
+      return {
+        el,
+        glow,
+        under,
+        uglow,
+        spill: spillEl,
+        key: '',
+        cx: 0,
+        cy: 0,
+        s: spring(),
+        hinge: { axis: 'x', sign: 1, hx: 0, hy: -1 },
+        settled: true,
+        raised: false,
+      };
+    };
+
+    const acquire = (row: number, col: number): Brick | null => {
+      let b = free.pop();
+      if (!b) {
+        if (total >= POOL_MAX) return null; // 池上限 — 跳过物化，存量自然回收
+        b = makeBrick();
+      }
+      const left = col * pitch + seam;
+      const top = row * pitch + seam;
+      b.key = `${row},${col}`;
+      b.cx = left + half;
+      b.cy = top + half;
+      b.s.x = 0;
+      b.s.v = 0;
+      b.s.t = 0;
+      b.settled = true;
+      b.raised = false;
+      b.el.style.left = `${left}px`;
+      b.el.style.top = `${top}px`;
+      b.el.style.width = `${face}px`;
+      b.el.style.height = `${face}px`;
+      b.el.style.display = '';
+      b.under.style.left = `${left}px`;
+      b.under.style.top = `${top}px`;
+      b.under.style.width = `${face}px`;
+      b.under.style.height = `${face}px`;
+      b.under.style.display = '';
+      byKey.set(b.key, b);
+      active.push(b);
+      return b;
+    };
+
+    // 落定归零的砖回池（display 切换隐藏，DOM 节点复用）
+    const release = (i: number) => {
+      const b = active[i];
+      byKey.delete(b.key);
+      active[i] = active[active.length - 1];
+      active.pop();
+      b.el.style.display = 'none';
+      b.el.style.transform = '';
+      b.el.style.zIndex = '';
+      b.under.style.display = 'none';
+      b.glow.style.opacity = '0';
+      b.uglow.style.opacity = '0';
+      b.spill.style.opacity = '0';
+      b.raised = false;
+      free.push(b);
+    };
+
+    const clearPool = () => {
+      for (let i = active.length - 1; i >= 0; i--) release(i);
+    };
+
+    // 指针（文档坐标）→ 物化邻域格 + 全量刷新弹簧目标
     const retarget = () => {
-      for (let i = 0; i < bricks.length; i++) {
-        const b = bricks[i];
+      // 先扫既有活跃砖：半径外目标归零（缓落，落定后 frame 回收）
+      for (let i = 0; i < active.length; i++) {
+        const b = active[i];
         const dx = b.cx - px;
         const dy = b.cy - py;
         const d = Math.sqrt(dx * dx + dy * dy);
         if (d < RADIUS) {
-          // 权重二次衰减；近缘翘起背向指针（气流掠过）
           const wgt = (1 - d / RADIUS) ** 2;
-          const inv = d > 1 ? 1 / d : 0;
-          b.rx.t = -MAX_TILT * wgt * dy * inv;
-          b.ry.t = MAX_TILT * wgt * dx * inv;
-          b.z.t = MAX_LIFT * wgt;
+          if (b.settled || b.s.x < 0.5) b.hinge = hingeFor(dx, dy); // 近静止才换铰 — 防中途跳边
+          b.s.t = MAX_FLIP * wgt;
         } else {
-          b.rx.t = 0;
-          b.ry.t = 0;
-          b.z.t = 0;
+          b.s.t = 0;
         }
-        // 判「目标 ≠ 当前」而非「目标非零」：指针离开时目标归零，
-        // 悬在半空的已收敛砖也必须被唤醒缓落
-        if (
-          b.settled &&
-          (Math.abs(b.rx.t - b.rx.x) > REST_EPS ||
-            Math.abs(b.ry.t - b.ry.x) > REST_EPS ||
-            Math.abs(b.z.t - b.z.x) > REST_EPS)
-        ) {
-          b.settled = false;
+        if (b.settled && Math.abs(b.s.t - b.s.x) > REST_EPS) b.settled = false;
+      }
+      // 再物化半径内尚无砖的格子
+      const r0 = Math.max(0, Math.floor((py - RADIUS) / pitch));
+      const r1 = Math.floor((py + RADIUS) / pitch);
+      const c0 = Math.max(0, Math.floor((px - RADIUS) / pitch));
+      const c1 = Math.floor((px + RADIUS) / pitch);
+      for (let r = r0; r <= r1; r++) {
+        for (let c = c0; c <= c1; c++) {
+          if (byKey.has(`${r},${c}`)) continue;
+          const bx = c * pitch + seam + half;
+          const by = r * pitch + seam + half;
+          const dx = bx - px;
+          const dy = by - py;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d >= RADIUS) continue;
+          const b = acquire(r, c);
+          if (!b) return; // 池满 — 本轮放弃新增
+          const wgt = (1 - d / RADIUS) ** 2;
+          b.hinge = hingeFor(dx, dy);
+          b.s.t = MAX_FLIP * wgt;
+          if (Math.abs(b.s.t) > REST_EPS) b.settled = false;
         }
       }
     };
@@ -314,23 +303,23 @@ export default function WallBricks() {
       const dt = Math.max(0, Math.min((time - lastTime) / 1000, MAX_DT));
       lastTime = time;
       let anyActive = false;
-      for (let i = 0; i < bricks.length; i++) {
-        const b = bricks[i];
-        if (b.settled) continue;
-        step(b.rx, dt);
-        step(b.ry, dt);
-        step(b.z, dt);
-        if (isSettled(b.rx) && isSettled(b.ry) && isSettled(b.z)) {
-          // 收敛吸附 — 归零砖清空内联样式，回到与静态砖面等价的姿态
-          b.rx.x = b.rx.t;
-          b.ry.x = b.ry.t;
-          b.z.x = b.z.t;
-          b.rx.v = b.ry.v = b.z.v = 0;
+      for (let i = active.length - 1; i >= 0; i--) {
+        const b = active[i];
+        if (b.settled) {
+          // 已落定且目标为零 — 回收（倒序遍历容忍 swap-pop）
+          if (b.s.t === 0 && b.s.x < REST_EPS) release(i);
+          continue;
+        }
+        step(b.s, dt);
+        if (isSettled(b.s)) {
+          b.s.x = b.s.t;
+          b.s.v = 0;
           b.settled = true;
         } else {
           anyActive = true;
         }
         applyStyle(b);
+        if (b.settled && b.s.t === 0 && b.s.x < REST_EPS) release(i);
       }
       if (anyActive) {
         rafId = requestAnimationFrame(frame);
@@ -345,20 +334,24 @@ export default function WallBricks() {
       rafId = requestAnimationFrame(frame);
     };
 
-    const onMove = (e: PointerEvent) => {
-      if (disposed) return;
-      if (!built) build(); // 懒构建 — 首次指针移动才付 DOM 成本
-      if (!bricks.length) return; // 预算放弃路径 — 不做无效工作
-      lastClientX = e.clientX;
-      lastClientY = e.clientY;
-      px = e.clientX; // 场内 x = 视口 x（横向无滚动）
-      py = e.clientY + offset; // 场内 y = 视口 y + 回卷相位
+    const pointerTo = (clientX: number, clientY: number) => {
+      lastClientX = clientX;
+      lastClientY = clientY;
+      px = clientX; // 文档 x = 视口 x（横向无滚动）
+      py = clientY + window.scrollY; // 文档 y
       retarget();
       kick();
     };
 
+    const onMove = (e: PointerEvent) => {
+      if (disposed || abandoned) return;
+      if (!ready) readVars(); // 懒启动 — 首次指针移动才读 var
+      if (!ready) return;
+      pointerTo(e.clientX, e.clientY);
+    };
+
     const onLeave = () => {
-      if (disposed) return;
+      if (disposed || !ready) return;
       px = -1e4;
       py = -1e4;
       lastClientX = -1e4;
@@ -368,38 +361,21 @@ export default function WallBricks() {
     };
 
     const onScroll = () => {
-      if (disposed || !built || !bricks.length) return;
-      syncScroll();
-      // 滚动时墙动指针不动 — 场内坐标漂移，必须以缓存视口坐标重瞄
-      if (lastClientY > -1e3) {
-        px = lastClientX;
-        py = lastClientY + offset;
-        retarget();
-        kick();
-      }
+      if (disposed || !ready || !active.length) return;
+      // 墙随文档滚动而指针不动 — 以缓存视口坐标重算文档坐标重瞄
+      if (lastClientY > -1e3) pointerTo(lastClientX, lastClientY);
     };
 
     const onResize = () => {
       if (disposed) return;
-      // 立即拆场恢复静态砖面：防抖窗口内旧尺寸的场盖不满新视口
-      // （拖拽窗口边缘时防抖迟迟不触发，底/右会露出无砖空带；跨 pitch
-      // 阈值时光槽与旧 DOM 砖周期还会错拍）——静态层始终是正确材质。
-      // rebuildPending 记住「拆的是已建过的场」：拆后 built=false，仍要续
-      // 防抖重建；从未建过的场（无指针交互）不因 resize 提前付构建成本
-      if (built) {
-        if (bricks.length) clearBricks();
-        // 预算/解析放弃态（built=true 但零砖）：新尺寸要重新评估，
-        // 否则竖屏超预算 → 转横屏进预算后砖场永久不再激活
-        else built = false;
-        rebuildPending = true;
-      }
-      if (!rebuildPending) return;
+      // MQ 阶梯可能换档（pitch 变）：清池 + 防抖后重读 var；
+      // 池砖按文档坐标定位，视口尺寸本身不影响存量——只为换档服务
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
-        if (disposed || !rebuildPending) return;
-        rebuildPending = false;
-        // 防抖窗口内 pointermove 可能已抢先懒构建 — 不重复建场
-        if (!built) build();
+        if (disposed) return;
+        clearPool();
+        ready = false;
+        abandoned = false; // 新尺寸重新评估（解析失败态可翻案）
       }, 200);
     };
 
@@ -411,13 +387,15 @@ export default function WallBricks() {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
       window.clearTimeout(resizeTimer);
-      rebuildPending = false;
       if (rafId) cancelAnimationFrame(rafId);
       rafId = 0;
-      clearBricks(); // 静态砖面随 data 属性移除自动恢复
+      byKey.clear();
+      active = [];
+      free = [];
+      field.textContent = ''; // 静态墙原样（底衬/砖全部移除）
     };
 
-    // 会话中途开启 reduced-motion → 拆除砖层，回到静态材质墙
+    // 会话中途开启 reduced-motion → 拆除砖池，回到静态材质墙
     // 能力判定单向（同 HeroObjectPhysics）：中途关闭 RM 不重建，导航后自愈
     const unlistenReduced = listenMql(reducedMotion, (e) => {
       if (e.matches) teardown();

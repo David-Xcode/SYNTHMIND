@@ -1,19 +1,20 @@
 'use client';
 
-// ─── 按钮 pointer tilt 弹簧层 · Living Blueprint v4.1 ───
-// 设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.1-design.md（§3.2）
-// ModuleButton 的交互中间层：按钮像砖一样跟随鼠标摆动（mouse-tracking
+// ─── 按钮 pointer tilt 弹簧层 · Living Blueprint v4.2 ───
+// 设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md（§4.3）
+// ModuleButton 的交互中间层：hover 顶出期间按钮随指针微摆（mouse-tracking
 // 豁免第 3 例窄列举——rAF 阻尼弹簧非 1:1 硬跟；前两例 HeroObjectPhysics /
-// WallBricks）。
+// WallBricks）。v4.2 起仅悬停期跟随（盒内满权重、盒外即零）：嵌墙砖在
+// 槽里不该晃，摆动只属于顶出后的悬空状态；v4.1 的 130px 邻域跟随退役。
 //
 // 纪律与门控：
-// - transform 写入者三层分工：frame 呼吸 infinite / 本层 JS 弹簧逐帧 /
-//   本体按压 transition——同元素同属性冲突纪律天然满足
+// - transform 写入者分层：本层 JS 弹簧逐帧 / 本体 pop+按压 transition /
+//   frame 静态——同元素同属性冲突纪律天然满足
 // - 模块级单例引擎：一个 window pointermove 驱动全站 ≤7 颗按钮（每按钮
-//   独立小弹簧 k30 ζ0.6，幅度 ≤5°——按钮是功能件，不到砖的 12°）
-// - 门控 hover+fine 且非 RM；触屏/RM/无 JS = 纯透传 span（静态悬空姿态
+//   独立小弹簧 k30 ζ0.6，幅度 ≤4°——按钮是功能件，摆动只是顶出的余韵）
+// - 门控 hover+fine 且非 RM；触屏/RM/无 JS = 纯透传 span（静态嵌墙姿态
 //   + :active 按入照常）；RM 中途开启 → 引擎 teardown 清零（单向，同
-//   WallBricks）；disabled 按钮目标恒零（呼吸停摆由 :has(:disabled) 负责）
+//   WallBricks）；disabled 按钮目标恒零
 // - rect 缓存，scroll/resize 失效重取（滚动中按钮松开归零，下次
 //   pointermove 重瞄）；perspective 内嵌 transform，不建 preserve-3d 链
 // - 只写 transform；收敛停帧
@@ -23,8 +24,7 @@ import { listenMql } from '@/lib/listen-mql';
 
 const STIFFNESS = 30;
 const DAMPING = 6.6; // ζ≈0.6 — HeroObjectPhysics ROT 同族
-const MAX_TILT = 5; // deg
-const RANGE = 130; // px — 按钮盒边缘起算的影响邻域
+const MAX_TILT = 4; // deg
 const REST_EPS = 0.01;
 const MAX_DT = 0.033;
 
@@ -67,6 +67,8 @@ function applyStyle(e: Entry) {
   if (e.settled && !e.rx.x && !e.ry.x) {
     e.el.style.transform = '';
   } else {
+    // per-element perspective：本层扁平化不影响本体的 translateZ 顶出
+    // （本体 transform 自带 perspective()，两层投影互相独立）
     e.el.style.transform = `perspective(500px) rotateX(${e.rx.x.toFixed(3)}deg) rotateY(${e.ry.x.toFixed(3)}deg)`;
   }
 }
@@ -136,17 +138,13 @@ function startEngine() {
       const r = e.rect;
       const mx = ev.clientX - (r.left + r.width / 2);
       const my = ev.clientY - (r.top + r.height / 2);
-      // 到按钮盒的切比雪夫距离（盒内 = 0 邻域满权重）
-      const d = Math.max(
-        Math.abs(mx) - r.width / 2,
-        Math.abs(my) - r.height / 2,
-      );
-      if (d < RANGE) {
-        // 分母 = 按钮半径的略放大版：指针在盒缘 ≈ 半幅、盒外邻域内趋满幅
-        // （×2/×1.2 的首版几乎不动——盒内 my 最大才 h/2，映射后 ≤0.25 幅）
-        const wgt = 1 - Math.max(0, d) / RANGE;
-        e.rx.t = -MAX_TILT * wgt * clampUnit(my / (r.height * 0.9));
-        e.ry.t = MAX_TILT * wgt * clampUnit(mx / (r.width * 0.6));
+      // 悬停期门控：指针在盒内才跟随（盒外即零——嵌墙砖在槽里不晃）；
+      // 进出盒缘的目标跳变由弹簧平滑，与本体 pop 过渡同步展开
+      const inside =
+        Math.abs(mx) <= r.width / 2 && Math.abs(my) <= r.height / 2;
+      if (inside) {
+        e.rx.t = -MAX_TILT * clampUnit(my / (r.height * 0.9));
+        e.ry.t = MAX_TILT * clampUnit(mx / (r.width * 0.6));
       } else {
         e.rx.t = 0;
         e.ry.t = 0;

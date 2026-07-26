@@ -8,10 +8,10 @@ import { footerNav } from '@/data/navigation';
 import { CONTACT_EMAIL } from '@/lib/constants';
 
 export default function SiteFooter() {
-  // v4.1：bg-base/70 半透明收尾 — 墙材质要看得见（/90 读作单一色调平底，
-  // 触 v4.1「无单一色调平底」验收线）；文字为居中小字号，实测仍清晰
+  // v4.2：底色整体摘除（无底纹排版 — section 一律透墙）；
+  // 文字层级已提档（tertiary ≈6.5:1），ruled-line 承担视觉收尾
   return (
-    <footer className="relative text-white bg-bg-base/70">
+    <footer className="relative text-white">
       {/* 顶部蓝色分割线 — 页面的视觉句号 */}
       <hr className="ruled-line" />
 
@@ -46,8 +46,8 @@ export default function SiteFooter() {
           ))}
         </nav>
 
-        {/* 版权 + 邮箱 — tertiary 而非 quaternary：quaternary 是「禁用/装饰」档，
-            压在墙材质上只有 3.4:1 不达 WCAG AA；tertiary 为 5.9:1 */}
+        {/* 版权 + 邮箱 — tertiary 而非 quaternary：quaternary 是「装饰/metadata」
+            档（v4.2 起正文禁用）；tertiary 对墙 ≈6.5:1（v4.2 提档后） */}
         <div className="mt-8 space-y-1">
           <p className="text-txt-tertiary text-xs">
             &copy; {new Date().getFullYear()} Synthmind. Toronto, Canada.

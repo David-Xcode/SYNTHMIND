@@ -42,7 +42,8 @@ export default function AnimatedStat({
           value
         )}
       </div>
-      <div className="text-xs text-txt-quaternary">{label}</div>
+      {/* v4.2：label 是可读数据标签，提 tertiary（quaternary 正文禁用） */}
+      <div className="text-xs text-txt-tertiary">{label}</div>
     </div>
   );
 }

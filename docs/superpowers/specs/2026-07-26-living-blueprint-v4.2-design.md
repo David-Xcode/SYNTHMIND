@@ -179,8 +179,8 @@ skip-link focus 态。
 
 | token | 旧值（对墙对比度） | **新值**（对墙对比度） | 口径 |
 |---|---|---|---|
-| txt-tertiary | #868E9C（5.7:1 ✓） | **#929AA8（≈6.6:1）** | 正文长段落舒适档 |
-| txt-quaternary | #606876（3.3:1 ✗AA） | **#6E7787（≈4.5:1）** | 仅装饰/metadata；正文禁用 |
+| txt-tertiary | #868E9C（5.7:1 ✓） | **#929AA8（≈6.5:1）** | 正文长段落舒适档 |
+| txt-quaternary | #606876（3.3:1 ✗AA） | **#78818F（≈4.6:1）** | 仅装饰/metadata；正文禁用（首拟 #6E7787 复核实算仅 4.05:1，不达 AA，弃） |
 | txt-primary / secondary | 不动（12+ / 8.4:1） | 不动 | — |
 
 globals.css `:root` 的 `--text-tertiary/--text-quaternary` 同步（双处声明

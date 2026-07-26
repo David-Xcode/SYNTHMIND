@@ -63,7 +63,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
                 ) : (
                   <Link
                     href={item.href}
-                    className="text-txt-quaternary hover:text-txt-secondary transition-colors duration-200"
+                    className="text-txt-tertiary hover:text-txt-secondary transition-colors duration-200"
                   >
                     {item.label}
                   </Link>

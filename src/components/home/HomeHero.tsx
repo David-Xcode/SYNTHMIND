@@ -93,7 +93,6 @@ export default function HomeHero() {
             <ModuleButton
               href="/products"
               variant="secondary"
-              phase={4}
               className="w-full sm:w-auto"
             >
               View Our Work
