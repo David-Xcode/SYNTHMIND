@@ -383,10 +383,19 @@ body {
       0 6px 14px rgba(74, 159, 229, 0.12);
   }
 }
-/* active 微收 — 快过渡传达按压（同按钮 0.09s 口径），松手回 hover 长过渡 */
-.card-glass-interactive:active {
-  transform: perspective(900px) translateZ(2px);
-  transition-duration: 0.09s;
+/* active 微收 — 快过渡传达按压（同按钮 0.09s 口径），投影随按压回落半档，
+   松手回 hover 长过渡。与 hover 同门控：触屏上 0→+2px 是「微凸出」而非
+   按压，语义反转——触屏卡是链接，tap 即跳转，无需按压反馈 */
+@media (hover: hover) {
+  .card-glass-interactive:active {
+    transform: perspective(900px) translateZ(2px);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge-top),
+      inset 0 -1px 0 var(--glass-edge-bottom),
+      0 6px 16px rgba(8, 11, 16, 0.45),
+      0 3px 8px rgba(74, 159, 229, 0.08);
+    transition-duration: 0.09s;
+  }
 }
 
 /* accent 左竖线 — 重点标记（正交于变体；静态：标记不是交互反馈，
@@ -665,7 +674,7 @@ body {
      杀手）；fill 帧常驻的 transform 经 hover 态实测推定无害，但未在
      支持 animation-timeline 的内核上实测过 scrub fill 场景——退出换
      确定性。落回 AnimateOnScroll 的 IO 内联路径：入场沉降仍在，完成后
-     opacity/transform/filter 全落 none，毛玻璃稳态可靠生效（入场
+     opacity 落 1、transform/filter 落 none，毛玻璃稳态可靠生效（入场
      过渡期内采样暂不可用，被自身 blur 揉入掩盖）。:has 与
      animation-timeline 同代内核，@supports 块内安全 */
   .sheet-reveal:has(.card-glass) {
@@ -1197,9 +1206,17 @@ body {
    1000px inset 实底盖回（webkit autofill 唯一可靠通道；消费 --bg-base
    token 非新字面色），文字色经 text-fill-color 收回冷白 */
 .form-field:-webkit-autofill,
-.form-field:-webkit-autofill:hover,
-.form-field:-webkit-autofill:focus {
+.form-field:-webkit-autofill:hover {
   -webkit-box-shadow: inset 0 0 0 1000px var(--bg-base);
+  -webkit-text-fill-color: var(--text-primary);
+  caret-color: var(--text-primary);
+}
+/* autofill + focus 必须单独声明：-webkit-box-shadow 是 box-shadow 别名，
+   整表替换——不带 ring 的 autofill 规则若赢了级联，键盘焦点环会被吞掉 */
+.form-field:-webkit-autofill:focus {
+  -webkit-box-shadow:
+    inset 0 0 0 1000px var(--bg-base),
+    0 0 0 2px rgba(74, 159, 229, 0.3);
   -webkit-text-fill-color: var(--text-primary);
   caret-color: var(--text-primary);
 }

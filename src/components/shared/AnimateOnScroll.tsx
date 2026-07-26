@@ -3,8 +3,10 @@
 // ─── 滚动入场动画 · Blueprint ───
 // 双路径实现（对外 API 不变）：
 // 1. 支持 animation-timeline 的浏览器：.sheet-reveal 走 CSS scroll-driven
-//    图纸沉降（rotateX 5° + translateY 随滚动 scrub），本组件内联样式被
-//    CSS 动画级联覆盖，IO 状态切换无视觉影响
+//    图纸沉降（rotateX 5° + translateY 随滚动 scrub；opacity/transform 被
+//    动画级联覆盖，filter 自 v7 起只由本组件内联控制——Backdrop 采样纪律）
+//    ⚠️ 玻璃卡 wrapper 例外：`.sheet-reveal:has(.card-glass)` 在 CSS 侧
+//    退出 scrub，本组件的 IO 内联路径即其唯一视觉路径（v7 保守定案）
 // 2. 旧浏览器：IntersectionObserver + 内联过渡（原 Neural reveal 路径）
 // SSR 基态可见（useDeferredReveal）：iOS/WKWebView 无 animation-timeline
 // 且 hydration 失败（微信 WebView 真机实测）时，整页 section 仍完整可读

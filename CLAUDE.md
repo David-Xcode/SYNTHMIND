@@ -93,7 +93,8 @@ import SheetLabel from '@/components/shared/SheetLabel';
 - 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
 - `BlueprintObject` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha），及其逐面着色 fill 的中性黑压暗渐变（`rgba(0,0,0,α)` — 明度轴不是第二色相）。
 - 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）。**secondary 面基色消费 `var(--mat-face-base)`**（砖面同源实底）；槽缝环 = `var(--bg-base)` 实底（v6 起墙侧无槽腔层，此口径仅按钮消费）——基色一律走 token，不得回退字面 rgba。
-- 背景 token 的 rgba 形态（半透明基面与投影）：`rgba(8,11,16,α)` = `--bg-base` #080B10、`rgba(12,16,23,α)` = bg-surface #0C1017——`.card-surface` / 按钮投影在用。**只允许这两个既有 hex 的 rgba 化，不得引入新的字面背景色**。
+- 背景 token 的 rgba 形态（半透明基面与投影）：`rgba(8,11,16,α)` = `--bg-base` #080B10、`rgba(12,16,23,α)` = bg-surface #0C1017——玻璃卡面底 / 按钮投影在用。**只允许这两个既有 hex 的 rgba 化，不得引入新的字面背景色**。
+- 功能反馈色（成功/错误状态专用，非装饰色相）：`emerald-400` / `red-400` 仅限 `IconBadge` 圆徽与表单错误提示文字——状态语义是国际惯例，不受单色相纪律约束，但**禁止把功能色用于装饰**。
 - 砖墙材质（globals.css `.bp-wall*` / `.bp-brick*` 块）：同蓝色相 alpha 阶 + 中性明度轴，与物件同一豁免逻辑；砖面 SVG data-URI tile 内的字面色值属此豁免（data URI 无法消费 var()，与 `--mat-*` token 交叉锁定，改值两处同步）。
 - 玻璃卡材质（globals.css `.card-glass*` 块 + `:root` 的 `--glass-*` 簇，v7）：面底 = 既有背景 hex 的 rgba 化（`rgba(12,16,23,α)` / `rgba(8,11,16,α)`），棱线/压暗 = 中性明度轴，内反射 = accent 低 alpha——全部落在上述既有豁免口径内，**不得引入新字面色**；新玻璃材质决策优先消费 `--glass-*` token（正本对照表见 v7 spec §1.2）。
 
@@ -171,7 +172,9 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
 ### Card Rules — IMPORTANT
 - **变体 = 交互语义**：整卡可点才配 interactive（hover 顶起 + tilt + 投影落墙）；纯展示
   一律 static（恒定材质，零 hover 位移——「不可点的卡带可点式反馈」是 v7 修复的病灶，禁止回潮）；
-  container 外壳静、交互属于内部子元素
+  container 外壳静、交互属于内部子元素。**卡片全部 hover/active 反馈（含边框微响应）
+  都包在 `@media (hover: hover)` 内**——触屏 tap 页内锚点卡防 sticky（Hero 模块先例）；
+  触屏卡是链接，tap 即跳转，无按压反馈
 - **材质 = 玻璃检视窗**：光滑玻璃档为基态（`--glass-face-solid` 实底，无 blur），
   `@supports`（backdrop-filter or -webkit-backdrop-filter，双属性都写——Safari ≤17
   只认前缀）内升级毛玻璃档（`--glass-face` + blur ≤12px）；厚度 = 顶棱受光 +
@@ -197,8 +200,9 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
 - Card corner radius is always **8px**（按钮同 8px；全站圆角 = 8px 与 rounded-full 两种 + 唯一窄豁免：表单填写格 `.form-field` 4px，spec §6.2 授权的「格子小于卡」层级暗示）
 - 玻璃底上正文对比度 ≥4.5:1（毛玻璃/光滑两档分别成立）
 - 统计卡一律 `<StatCard>`（count-up 全站唯一实现）；**整卡可点的收尾行**一律
-  `<CardActionRow>`（group-hover 形态，站内/外链箭头 variant）——container 卡内的
-  自悬停链接不属此列（如 InDev CTA，自带 hover:gap）；禁止内联箭头 SVG；
+  `<CardActionRow>`（group-hover 形态；箭头经 `icon` prop 传入——默认站内
+  ArrowRightIcon，外链传 `<ExternalArrowIcon/>`）——container 卡内的自悬停链接
+  不属此列（如 InDev CTA，自带 hover:gap）；禁止内联箭头 SVG；
   chip 用 `<HighlightTag>`、圆徽用 `<IconBadge>`
 
 ---
