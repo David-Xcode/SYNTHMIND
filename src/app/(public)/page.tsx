@@ -1,14 +1,11 @@
 // ─── 首页 · Blueprint ───
-// Lead Generation 着陆页：Hero 活蓝图 + 信任带 + 能力 / 精选作品 / 流程 + CTA
-// SiteHeader + SiteFooter 由 (public)/layout.tsx 提供
+// 极简着陆页（2026-07-26 瘦身定案）：Hero 活蓝图 + 信任带，到此为止——
+// 能力/作品/流程叙事全部收进 /products（Our Work），转化入口 = Hero 双按钮 +
+// 可点击 marquee logo。SiteHeader + SiteFooter 由 (public)/layout.tsx 提供
 
 import type { Metadata } from 'next';
-import CapabilitiesSection from '@/components/home/CapabilitiesSection';
-import FeaturedWork from '@/components/home/FeaturedWork';
 import HomeHero from '@/components/home/HomeHero';
-import ProcessSection from '@/components/home/ProcessSection';
 import SocialProofBar from '@/components/home/SocialProofBar';
-import CTABanner from '@/components/shared/CTABanner';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import JsonLd from '@/components/shared/JsonLd';
 import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
@@ -60,13 +57,6 @@ export default function HomePage() {
       <ErrorBoundary fallback={null}>
         <SocialProofBar />
       </ErrorBoundary>
-      <CapabilitiesSection />
-      <FeaturedWork />
-      <ProcessSection />
-      <CTABanner
-        headline="Ready to put AI to work?"
-        subtitle="Tell us what eats your team's time — we'll sketch the blueprint."
-      />
     </>
   );
 }

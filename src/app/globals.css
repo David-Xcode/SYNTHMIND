@@ -370,7 +370,7 @@ body {
     transform 0.3s var(--ease-out-expo),
     box-shadow 0.3s var(--ease-out-expo);
 }
-/* hover 门控同上：触屏 tap 页内锚点卡（products 第 6 卡）后 sticky hover
+/* hover 门控同上：触屏 tap 卡片链接（站内路由卡/外链卡）后 sticky hover
    会让卡永久顶着——真 hover 设备专属 */
 @media (hover: hover) {
   .card-glass-interactive:hover {

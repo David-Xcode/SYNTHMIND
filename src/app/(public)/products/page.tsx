@@ -1,33 +1,32 @@
-// ─── 产品总览页 · Blueprint ───
-// 三段式结构：软件产品网格（进详情页，含开发中产品 teaser 卡）
-// + 地产营销站统一模块（外链真实站点）+ 开发中产品详述（CSIO 会员背书）
+// ─── Our Work 总览页 · Blueprint ───
+// 两段式结构（2026-07-26 重排：旗舰在建产品从页尾升到页首）：
+// ① AI-Native BMS 旗舰模块（CSIO 会员 + 官方新闻稿双背书）
+// ② Shipped 作品网格：5 软件产品（进详情页）+ 1 地产项目卡（进聚合详情页）
 // 产品卡 = 图纸卡：S.NN 图纸编号 + crop marks 角标
 
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import Breadcrumb from '@/components/layout/Breadcrumb';
-import CsioMemberBadge from '@/components/products/CsioMemberBadge';
 import InDevelopmentShowcase from '@/components/products/InDevelopmentShowcase';
-import RealEstateShowcase from '@/components/products/RealEstateShowcase';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
-import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
 import Card from '@/components/shared/Card';
 import CardActionRow from '@/components/shared/CardActionRow';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { caseStudies } from '@/data/case-studies';
+import { realEstateSites } from '@/data/real-estate';
 import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Synthmind Products | Real Solutions for Real Businesses',
+  title: 'Our Work — Synthmind | Real Solutions for Real Businesses',
   description:
-    'AI-powered software products and real estate marketing sites built for real businesses. See our work.',
+    "The AI-native brokerage platform we are building for Canada's insurance industry, and the software already live and running businesses today.",
   alternates: { canonical: '/products' },
   openGraph: {
     ...BASE_OPEN_GRAPH,
     url: `${SITE_URL}/products`,
-    title: 'Products — Synthmind',
+    title: 'Our Work — Synthmind',
     description: 'Real solutions built for real businesses.',
   },
 };
@@ -35,26 +34,29 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   return (
     <>
-      <Breadcrumb items={[{ label: 'Products' }]} />
+      <Breadcrumb items={[{ label: 'Our Work' }]} />
 
       <PageHero
-        eyebrow="OUR PRODUCTS"
+        eyebrow="OUR WORK"
         light="Real Solutions for"
         bold="Real Businesses."
-        subtitle="From AI-powered document systems to modern marketing platforms — every project starts with understanding the problem and ends with working software."
+        subtitle="The platform we're building for Canada's insurance industry, and every project we've already shipped."
       />
 
-      {/* ── 软件产品网格 ── */}
+      {/* ── 旗舰在建产品 · CSIO 会员背书 ── */}
+      <InDevelopmentShowcase />
+
+      {/* ── Shipped 作品网格 ── */}
       <section className="relative py-24 px-4">
         <hr className="ruled-line absolute top-0 left-0 right-0" />
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
-              sheetNo="01"
-              eyebrow="SOFTWARE PRODUCTS"
-              light="Custom"
-              bold="Software"
-              subtitle="Platforms and tools we designed, built, and shipped — each with its own case study."
+              sheetNo="02"
+              eyebrow="SHIPPED WORK"
+              light="Work That"
+              bold="Shipped"
+              subtitle="Every project below is live and running someone's business today."
               size="md"
             />
           </AnimateOnScroll>
@@ -67,11 +69,12 @@ export default function ProductsPage() {
                   className="block h-full group"
                 >
                   {/* 图纸编号 sheetNo — 产品即图纸集里的一张 sheet */}
+                  {/* flex-col + mt-auto：六卡收尾行统一钉在卡底（等高网格对齐） */}
                   <Card
                     variant="interactive"
                     sheetNo={`S.${String(index + 1).padStart(2, '0')}`}
                     cropMarks
-                    className="h-full"
+                    className="h-full flex flex-col"
                   >
                     <div className="h-10 mb-5 flex items-center">
                       <Image
@@ -91,7 +94,7 @@ export default function ProductsPage() {
                       {cs.tagline}
                     </p>
 
-                    <div className="flex items-center justify-end">
+                    <div className="mt-auto flex items-center justify-end">
                       <CardActionRow>View</CardActionRow>
                     </div>
                   </Card>
@@ -99,39 +102,35 @@ export default function ProductsPage() {
               </AnimateOnScroll>
             ))}
 
-            {/* 第 6 卡 — 开发中产品 teaser，补齐网格空角，锚点跳到页底 InDevelopmentShowcase */}
+            {/* 第 6 卡 — 地产项目卡：五盘打包为一个项目，进聚合详情页。
+                卡头 mono 注记 = 真实数量序列（结构性编号，不占自由标注预算） */}
             <AnimateOnScroll delay={caseStudies.length * 80 + 100}>
-              <Link
-                href="#in-development"
-                className="block h-full group"
-                aria-label="Learn more about our in-development brokerage platform"
-              >
+              {/* 不加 aria-label：卡内容（注记/标题/描述）自描述，覆盖它反而
+                  让可访问名丢失细节，且与五张软件卡的行为不一致 */}
+              <Link href="/products/real-estate" className="block h-full group">
                 <Card
                   variant="interactive"
-                  accent
+                  sheetNo={`S.${String(caseStudies.length + 1).padStart(2, '0')}`}
+                  cropMarks
                   className="h-full flex flex-col"
                 >
                   <div className="h-10 mb-5 flex items-center">
-                    <CsioMemberBadge />
+                    <span className="font-mono text-sm font-semibold text-accent">
+                      {String(realEstateSites.length).padStart(2, '0')} / LIVE
+                      SITES
+                    </span>
                   </div>
 
                   <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
-                    AI-Driven Brokerage Platform
+                    Real Estate Launch Sites
                   </h3>
                   <p className="text-txt-tertiary text-sm leading-relaxed mb-4">
-                    Brokerage management system for Ontario insurance brokerages
-                    — designed around industry data standards.
+                    Pre-construction marketing sites for GTA developments — one
+                    brokerage client, every launch live in production.
                   </p>
 
                   <div className="mt-auto flex items-center justify-end">
-                    <CardActionRow
-                      icon={
-                        /* 下箭头 — 页内锚点语义，区别于详情页的右箭头 */
-                        <ArrowRightIcon className="w-3.5 h-3.5 rotate-90" />
-                      }
-                    >
-                      In development
-                    </CardActionRow>
+                    <CardActionRow>View the portfolio</CardActionRow>
                   </div>
                 </Card>
               </Link>
@@ -139,12 +138,6 @@ export default function ProductsPage() {
           </div>
         </div>
       </section>
-
-      {/* ── 地产营销站统一模块 ── */}
-      <RealEstateShowcase />
-
-      {/* ── 开发中产品 · CSIO 会员背书 ── */}
-      <InDevelopmentShowcase />
     </>
   );
 }

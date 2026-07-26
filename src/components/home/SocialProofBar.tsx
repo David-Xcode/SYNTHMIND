@@ -1,6 +1,6 @@
 // ─── 客户 Logo 展示条 · Blueprint ───
 // 双容器无缝 marquee / SheetLabel 图签
-// 9 个 logo × 4 重复 → 轨道宽度覆盖 4K (3840px)
+// 10 个 logo × 4 重复 → 轨道宽度覆盖 4K (3840px)
 // Server Component — CSS marquee 不需要 JS，AnimateOnScroll 作为 Client 子组件自动处理
 
 import Image from 'next/image';
@@ -12,7 +12,7 @@ import { realEstateSites } from '@/data/real-estate';
 
 const REPEAT_COUNT = 4;
 
-// 软件产品 → 各自详情页；地产盘 → products 页 Real Estate 模块锚点
+// 软件产品 → 各自详情页；地产盘 → 地产聚合详情页
 const logoItems = [
   ...caseStudies.map((cs) => ({
     key: cs.slug,
@@ -24,7 +24,7 @@ const logoItems = [
     key: site.slug,
     src: site.logo,
     label: site.name,
-    href: '/products#real-estate',
+    href: '/products/real-estate',
   })),
 ];
 
@@ -36,7 +36,8 @@ export default function SocialProofBar() {
     // overflow-clip-safe：clip 不创建 scroll container（overflow-hidden 会让
     // 子元素的 view() 时间轴绑到本节，sheet-reveal 退化）
     // v4：透墙 section（背景 = 满铺砖墙）；两端渐隐改 mask（.marquee-fade）
-    <section className="py-16 overflow-clip-safe">
+    // 瘦身后本节是主页收尾 section — 底部放宽避免 marquee 紧贴 footer
+    <section className="pt-16 pb-24 overflow-clip-safe">
       <AnimateOnScroll className="text-center">
         <SheetLabel tone="tertiary" className="mb-8">
           Trusted by businesses across industries

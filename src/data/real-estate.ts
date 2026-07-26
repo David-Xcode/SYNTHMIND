@@ -1,7 +1,8 @@
 // ─── 地产营销站数据层 ───
-// 4 个已上线楼盘营销站，统一在 /products 的 Real Estate 模块展示
-// 不再有独立详情页 — 卡片直接外链到真实站点（旧 slug 在 next.config.js
-// 中 permanent:true 重定向 = 308，与 constants.ts 注释口径一致）
+// 已上线楼盘营销站，打包为一个项目：/products 作品网格一张项目卡 +
+// /products/real-estate 聚合详情页（卡片外链真实站点）。
+// 旧盘详情页 slug 在 next.config.js 中 permanent:true（= 308）重定向到聚合页。
+// 收录纪律：只收已上线的盘 — 未上线站点（域名未解析）不进这份数组
 
 export interface RealEstateSite {
   /** 用于 React key 与旧路由 301 对照 */
@@ -69,5 +70,19 @@ export const realEstateSites: RealEstateSite[] = [
     ],
     url: 'https://www.unionglens.com',
     logo: '/product/unionglens.svg',
+  },
+  {
+    slug: 'rosaleen',
+    name: 'Rosaleen',
+    location: 'Richmond Hill, ON',
+    description:
+      'Print-inspired marketing site for a semi-town collection at Auden Grand — serif editorial typography, engraved linework, a six-page architecture, and modal-driven lead capture.',
+    highlights: [
+      'Print-inspired design',
+      'Six-page site',
+      'Modal lead capture',
+    ],
+    url: 'https://www.rosaleenataudengrand.ca',
+    logo: '/product/rosaleen.svg',
   },
 ];

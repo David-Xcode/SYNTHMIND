@@ -26,11 +26,12 @@
 - Generic reusable components go in `shared/`
 
 ### Real Estate Module — IMPORTANT
-地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens）**不再有独立详情页**：
-- 数据层：`src/data/real-estate.ts`（`RealEstateSite` 接口）
-- 展示：`/products` 页内的 `<RealEstateShowcase />`（`id="real-estate"` 锚点），卡片外链真实站点
-- 旧详情页 slug 在 `next.config.js` 中 `permanent:true`（= 308）重定向到 `/products#real-estate`
-- 新增地产盘 = 在 `real-estate.ts` 加一条 + logo 放 `public/product/`；新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
+地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens / Rosaleen）**打包为一个项目**（2026-07-26 定案）：
+- 数据层：`src/data/real-estate.ts`（`RealEstateSite` 接口，**只收已上线的盘**——域名未解析不收录）
+- 展示：`/products` 作品网格一张项目卡（S.06，站内链接）+ `/products/real-estate` 聚合详情页（叙事 + stats + `<RealEstateSiteGrid />` 每盘外链真实站点）
+- 旧详情页 slug 在 `next.config.js` 中 `permanent:true`（= 308）重定向到 `/products/real-estate`（`#real-estate` 页内锚点已退役）
+- 新增地产盘 = 上线后在 `real-estate.ts` 加一条 + logo 放 `public/product/`；新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
+- 导航 label = **Our Work**（路由仍是 `/products`，2026-07-26 起）；主页 = Hero + SocialProofBar 两段极简结构，作品叙事全部在 `/products`
 
 ---
 
@@ -175,7 +176,7 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
   container 外壳静、交互属于内部子元素。**卡片全部 hover/active 反馈都门控在
   hover-capable 设备**——CSS 引擎侧（`.card-glass*`）手写 `@media (hover:hover)`，
   Tailwind utility 侧（group-hover 箭头/logo 提亮等）由 tailwind.config 的
-  `future.hoverOnlyWhenSupported` 全站统一编译进同一媒体查询；触屏 tap 页内锚点卡
+  `future.hoverOnlyWhenSupported` 全站统一编译进同一媒体查询；触屏 tap 站内路由卡
   与外链卡不再粘滞（Hero 模块先例）；触屏卡是链接，tap 即跳转，无按压反馈
 - **材质 = 玻璃检视窗**：光滑玻璃档为基态（`--glass-face-solid` 实底，无 blur），
   `@supports`（backdrop-filter or -webkit-backdrop-filter，双属性都写——Safari ≤17

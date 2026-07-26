@@ -66,7 +66,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
     <>
       <JsonLd data={caseStudyJsonLd} />
       <Breadcrumb
-        items={[{ label: 'Products', href: '/products' }, { label: cs.title }]}
+        items={[{ label: 'Our Work', href: '/products' }, { label: cs.title }]}
       />
       <CaseStudyHero caseStudy={cs} />
       {/* v7：Challenge/SolutionSection 薄包装（仅传字面量）已内联省掉 */}
