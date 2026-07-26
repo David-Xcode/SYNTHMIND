@@ -41,7 +41,7 @@ export default function InDevelopmentShowcase() {
         </AnimateOnScroll>
 
         <AnimateOnScroll delay={100}>
-          <Card variant="static" accent>
+          <Card variant="container" accent>
             {/* CSIO 会员徽章行 */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
               <CsioMemberBadge />

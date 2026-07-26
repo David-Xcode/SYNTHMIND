@@ -159,10 +159,13 @@ import Card from '@/components/shared/Card';
 <Card variant="container" pad="lg">...</Card>                   // 外壳静、内部子元素自带交互（FAQ 形态）
 ```
 
-Props：`variant`（interactive / static / container，**按交互语义选择，不按视觉浓淡**）、
-`accent`（左侧蓝色渐变竖线 = 重点标记，正交于变体）、`sheetNo`（图纸编号 mono 角标，
-全站唯一编号实现——水印大数字已退役）、`cropMarks`、`pad`（sm/md/lg = p-5/p-6/p-8，
-默认 md——**禁止为改 padding 绕开组件直写 CSS 类**）、`className`。
+Props：`variant`（interactive / static / container，**按交互语义选择，不按视觉浓淡**；
+⚠️ static 与 container 渲染完全相同的 class——差异纯语义，错配无视觉信号，对着定义选）、
+`accent`（左侧蓝色渐变竖线 = 重点标记，正交于变体）、`sheetNo`（图纸**页码**mono 角标
+的全站唯一实现——水印大数字已退役；流程/列表的**步骤序号**是另一统一形态：行内
+`font-mono text-sm font-semibold text-accent`，about 流程卡与 TextListSection 共用）、
+`cropMarks`、`pad`（none/sm/md/lg = p-0/p-5/p-6/p-8，默认 md；none 供 container 形态
+内部子元素自带 padding 用——**禁止为改 padding 绕开组件直写 CSS 类**）、`className`。
 组件不带 `'use client'`（双栖；CardTilt client 岛仅 interactive 变体渲染）。
 
 ### Card Rules — IMPORTANT
@@ -170,8 +173,21 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
   一律 static（恒定材质，零 hover 位移——「不可点的卡带可点式反馈」是 v7 修复的病灶，禁止回潮）；
   container 外壳静、交互属于内部子元素
 - **材质 = 玻璃检视窗**：光滑玻璃档为基态（`--glass-face-solid` 实底，无 blur），
-  `@supports (backdrop-filter: blur(1px))` 内升级毛玻璃档（`--glass-face` + blur ≤12px）；
-  厚度 = 顶棱受光 + 底缘压暗（中性明度轴 inset）+ accent 低 alpha 内反射（::before）
+  `@supports`（backdrop-filter or -webkit-backdrop-filter，双属性都写——Safari ≤17
+  只认前缀）内升级毛玻璃档（`--glass-face` + blur ≤12px）；厚度 = 顶棱受光 +
+  底缘压暗（中性明度轴 inset）+ accent 低 alpha 内反射（225deg background 渐变栈，
+  非伪元素；::after 归 accent 竖线）
+- 🚨 **Backdrop 采样纪律**（毛玻璃三杀手，全部真机逐级挂载实验定位）：玻璃卡任何
+  祖先的 `filter` **与 `transform`** 计算值都必须是 `none`——非 none 的 filter 构成
+  Backdrop Root（规范行为），非 none 的 transform（含 `translate(0)` 等 identity 值）
+  在 Chromium 里同样把子孙 backdrop-filter 的采样域截断在该祖先内——两者任一存在，
+  玻璃卡采样不到墙，毛玻璃**静默失效**（不报错）。三条落地规则：
+  ① 内联/过渡路径的 filter/transform 终态写 `'none'`（AnimateOnScroll 已按此口径）；
+  ② **filter 不得进 scrub/fill 动画关键帧**——插值输出永远是 list 形态，`to: none`
+  在 fill both 下 computed 仍为 `blur(0px)`（sheetSettle 已移除 filter 关键帧）；
+  ③ transform 是沉降动画本体无法剥离——**玻璃卡的 wrapper 经
+  `.sheet-reveal:has(.card-glass) { animation: none }` 退出 scrub**，落回 IO 内联
+  路径（入场沉降仍在，完成后全落 none）。新增入场动画对号入座
 - **transform 写入者分层**：CardTilt wrapper = JS 弹簧逐帧（≤2.5°，pointer-tilt-engine）/
   卡片本体 = hover 顶起 CSS transition（`perspective(900px) translateZ(8px)` + 投影落墙 +
   边框增亮）——永不同元素；per-element perspective 不建 preserve-3d 链；禁常驻 will-change
@@ -192,7 +208,7 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
 3. **`prefers-reduced-motion` 三件套**：scroll-driven 动画必须显式 `animation: none`（时长重置对其无效）；`animation-delay`/`transition-delay` 必须通配归零（否则分段 delay 变成逐个"闪现"）；infinite 动画（marquee / scroll-pulse 类）必须显式关闭（0.01ms 周期 = 每帧乱跳）。三者都已在 globals.css 的 reduced-motion 块落实，新增动画时对号入座。
 
 ### The ONE Scroll Entrance
-所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：rotateX 5° + translateY + blur 随滚动沉降平整）。深度层异速位移（depth-drift）已于 v4 退役；v6 起墙属场景固定（fixed）、内容从墙前滚过，深度由材质层次（墙/卡片）与墙后灯光承担——**内容层之间**禁止引入异速滚动层。
+所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：scrub 关键帧只动 rotateX 5° + translateY + opacity；blur 揉入只活在 IO 内联路径——filter 进 scrub 关键帧会废掉毛玻璃，见 §5 Backdrop Root 纪律）。深度层异速位移（depth-drift）已于 v4 退役；v6 起墙属场景固定（fixed）、内容从墙前滚过，深度由材质层次（墙/卡片）与墙后灯光承担——**内容层之间**禁止引入异速滚动层。
 
 ```tsx
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
@@ -235,7 +251,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
 - ✅ `scaleIn` — 表单成功态缩放弹入
 - ✅ `scroll-pulse` / `scale-in-dot` — 滚动指示器
-- ✅ `border-color` 微响应 — static/container 卡 hover 边框 subtle→default（非 interactive 卡唯一允许的 hover 反馈；位移/投影/光晕禁止）
+- ✅ `border-color` 微响应 — static/container 卡 hover 边框 default→strong（非 interactive 卡唯一允许的 hover 反馈；位移/投影/光晕禁止）
 - ✅ count-up 数字滚动（useCountUp）
 
 ### FORBIDDEN Animations

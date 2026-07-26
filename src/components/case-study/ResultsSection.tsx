@@ -20,11 +20,14 @@ function extractStat(text: string): { value: string; label: string } | null {
 }
 
 export default function ResultsSection({ results }: ResultsSectionProps) {
-  // 分离有数字和无数字的结果
-  const statsResults = results
-    .map((r) => extractStat(r))
-    .filter((s): s is NonNullable<typeof s> => s !== null);
-  const textResults = results.filter((r) => !extractStat(r));
+  // 分离有数字和无数字的结果（单次遍历，extractStat 每项只调一次）
+  const statsResults: { value: string; label: string }[] = [];
+  const textResults: string[] = [];
+  results.forEach((r) => {
+    const stat = extractStat(r);
+    if (stat) statsResults.push(stat);
+    else textResults.push(r);
+  });
 
   return (
     <section className="py-16 px-4">

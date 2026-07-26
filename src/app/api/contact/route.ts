@@ -231,8 +231,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 字段长度校验 — 防止超大 payload 滥用
-    // mini/inline 变体可能不发送 name/subject/message，用可选链避免 TypeError
+    // 字段长度校验 — 防止超大 payload 滥用（必填已在上方强制，
+    // 可选链仅防御非法 JSON 形态的 TypeError）
     if (
       (name?.length ?? 0) > FIELD_LIMITS.name ||
       (subject?.length ?? 0) > FIELD_LIMITS.subject ||
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error:
-            'Failed to send your message. Please try again or email us directly.',
+            'Failed to send your message. Please try again in a moment.',
           details:
             process.env.NODE_ENV === 'development'
               ? notificationError

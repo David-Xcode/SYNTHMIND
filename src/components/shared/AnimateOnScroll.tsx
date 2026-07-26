@@ -51,10 +51,17 @@ export default function AnimateOnScroll({
     transition: 'none',
   };
 
+  // filter 与 transform 终态都必须是 'none' 而非 identity 值（blur(0)/
+  // translate(0)）：非 none 的 filter 构成 Backdrop Root；非 none 的
+  // transform 在 Chromium 里同样截断子孙 backdrop-filter 的采样域——
+  // 两者任一存在，玻璃卡都只能采样到 wrapper 内（透明）而非墙面，
+  // 毛玻璃静默失效（v7 审查第 1 轮 + 逐级挂载实验定位）。
+  // scrub 路径同理由 CSS 侧 `.sheet-reveal:has(.card-glass)` 退出
+  // 关键帧动画（transform 是沉降动画本体，无法从关键帧剥离）
   const visibleStyle: React.CSSProperties = {
     opacity: 1,
-    transform: 'translate(0)',
-    filter: 'blur(0)',
+    transform: 'none',
+    filter: 'none',
     transition: transitionWithDelay(delay),
   };
 

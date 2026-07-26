@@ -66,7 +66,12 @@ export default function StatCard({
         <div className={`font-mono font-bold ${s.value} ${valueClassName}`}>
           {numberMatch ? (
             <>
-              {isVisible ? animatedNumber : 0}
+              {/* SSR/未见基态直出真值（不是 0）：hydration 失败或 JS 被拦时
+                  页面显示的是正确数据；确认可见后才从 0 起跳 count-up。
+                  toLocaleString 保住 '1,000+' 的千分位 */}
+              {(isVisible ? animatedNumber : numericValue).toLocaleString(
+                'en-US',
+              )}
               {suffix}
             </>
           ) : (

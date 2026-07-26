@@ -7,7 +7,8 @@
 // 纪律与门控（全部继承自 ButtonTilt 原实现）：
 // - transform 写入者分层：本引擎 JS 弹簧逐帧写 wrapper / 本体 transition
 //   永不同元素（消费者结构负责）
-// - 模块级单例：一个 pointermove 遍历全部 entries（按钮 ≤7 + 可视卡片），
+// - 模块级单例：一个 pointermove 遍历全部已挂载消费者（按钮 ≤7 + 当前页
+//   全部 interactive 卡，不做视口裁剪——当前规模全量遍历成本可忽略），
 //   弹簧数学每帧几次乘加，成本大头在监听份数——集中即便宜
 // - 门控 hover+fine 且非 RM；不满足 registerTilt 返回 undefined，元素纯静态；
 //   RM 中途开启 → 引擎整体 teardown 清零（单向，导航 remount 自愈）
@@ -129,6 +130,10 @@ function startEngine() {
   engineOn = true;
 
   const onMove = (ev: PointerEvent) => {
+    // 设备级门控（hover+fine）挡不住混合触屏笔记本的手指——事件级再滤
+    // （与 WallBricks 同一口径）：手指 pointermove 后无 pointerleave，
+    // 倾角会永久粘在触点姿态
+    if (ev.pointerType === 'touch') return;
     for (let i = 0; i < entries.length; i++) {
       const e = entries[i];
       if (e.disabled) {

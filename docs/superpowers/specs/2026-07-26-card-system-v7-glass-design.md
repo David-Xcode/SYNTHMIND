@@ -44,12 +44,13 @@ v6 Lantern Wall 的墙后有真光（右上余晖 + 随指针移动的 `bp-wall-
 
 ### 1.3 双降级机制（两者独立，勿混淆）
 
-1. **浏览器支持回退**（CSS 层，自动）：基础类写光滑玻璃档（`--glass-face-solid`，无 blur）；`@supports (backdrop-filter: blur(1px))` 块内升级为毛玻璃档（`--glass-face` + blur）。老内核/微信 WebView 自动得到光滑玻璃，无 JS 参与。
+1. **浏览器支持回退**（CSS 层，自动）：基础类写光滑玻璃档（`--glass-face-solid`，无 blur）；`@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))` 块内升级为毛玻璃档（`--glass-face` + blur，**双属性都写**——Safari ≤17 / iOS ≤17 只认 -webkit- 前缀）。老内核/微信 WebView 自动得到光滑玻璃，无 JS 参与。
+   ⚠️ **Backdrop 采样纪律**（审查第 1 轮 + 真机逐级挂载实验定位，毛玻璃三杀手）：玻璃卡任何祖先的 `filter` **与 `transform`** 计算值都必须是 `none`——非 none 的 filter 构成 Backdrop Root（规范行为）；非 none 的 transform（含 identity 值 `translate(0)`）在 Chromium 里同样截断子孙 backdrop-filter 的采样域。三条落地规则：① 内联/过渡路径 filter/transform 终态写 `'none'`（AnimateOnScroll）；② filter 不得进 scrub/fill 动画关键帧（插值输出永远是 list 形态，`to: none` 在 fill both 下 computed 仍为 `blur(0px)`——`sheetSettle` 已移除 filter 关键帧）；③ transform 是沉降动画本体无法剥离——玻璃卡 wrapper 经 `@supports` 块内 `.sheet-reveal:has(.card-glass) { animation: none }` 退出 scrub，落回 IO 内联路径（入场沉降保留，完成后 opacity/transform/filter 全落 none，毛玻璃全程有效；:has 与 animation-timeline 同代内核）。
 2. **性能门槛**（构建时决策，一次性）：实施阶段 3 第一步做真机 spike——products 页 9+ 卡挂毛玻璃 + tilt 原型，用户真机 Chrome 指针快速扫过卡片群，**门槛 = 无可感掉帧（均值 ≥55fps）**。不过关 → 删除 `@supports` 升级块，全站定光滑玻璃，spec 与 CLAUDE.md 同步改记「光滑玻璃定案」。防工具假象纪律见 memory `browser-testing-3d-css-pitfalls`（hover/指针必须真实输入触发）。
 
 ### 1.4 厚度与可读性
 
-- 厚度三件套：顶棱受光 + 底缘压暗（`box-shadow: inset`，与按钮/砖 tile 同一中性明度轴语言）+ 内反射（`::before` 对角 `linear-gradient(135deg, --glass-reflect-a, --glass-reflect-b)`，`pointer-events: none`）。
+- 厚度三件套：顶棱受光 + 底缘压暗（`box-shadow: inset`，与按钮/砖 tile 同一中性明度轴语言）+ 内反射（**background 渐变栈第一层** `linear-gradient(225deg, --glass-reflect-a, --glass-reflect-b)`——225deg 高光朝右上与余晖同向；不占伪元素，`::after` 归 accent 竖线，`::before` 空闲备用）。
 - 圆角 8px、hairline 边框（`--border-default` / hover `--border-strong`）沿用。
 - **可读性红线**：玻璃底上正文对比度 ≥4.5:1（tertiary 及以上），毛玻璃/光滑两档分别实测抽查；不达标调 face alpha，不降文字档。
 
@@ -104,7 +105,9 @@ interface CardProps {
   accent?: boolean;      // 左侧蓝色渐变竖线 = 重点标记（正交，任何变体可用）
   sheetNo?: string;      // 图纸编号 mono 角标（如 "S.01"）——三种旧编号实现统一于此
   cropMarks?: boolean;   // 四角裁切标记（内部渲染 CropMarks，自带 relative）
-  pad?: 'sm' | 'md' | 'lg';  // p-5 / p-6 / p-8，默认 md——消灭「要自定义就绕开组件」的破口
+  pad?: 'none' | 'sm' | 'md' | 'lg';  // p-0 / p-5 / p-6 / p-8，默认 md——消灭「要自定义
+                                      // 就绕开组件」的破口；none 供 container 形态
+                                      //（内部子元素自带 padding，如 FAQ 手风琴）
   className?: string;
 }
 ```
@@ -114,8 +117,8 @@ interface CardProps {
 | 变体 | 语义 | 行为 |
 |---|---|---|
 | `interactive` | 整卡可点（自身被 Link/`<a>` 包裹） | CardTilt wrapper（JS 逐帧 ≤2.5°）+ 本体 hover 顶起（CSS transition：`perspective(900px) translateZ(8px)` + 投影落墙 + 边框增亮）+ active 微收 |
-| `static` | 纯展示 | 恒定玻璃材质，零 hover 位移零 tilt；仅边框在 hover 时从 subtle → default 的极弱受光响应 |
-| `container` | 外壳静、内部子元素自带交互（FAQ 手风琴形态） | 同 static 外观，语义上声明「交互在内部」 |
+| `static` | 纯展示 | 恒定玻璃材质，零 hover 位移零 tilt；仅边框在 hover 时从 default → strong 的极弱受光响应 |
+| `container` | 外壳静、内部子元素自带交互（FAQ 手风琴 / 含链接或按钮的展示卡） | 与 static 渲染**完全相同的 class**——差异纯语义，错配无视觉信号，选型对定义不对效果 |
 
 - **transform 写入者分层**（照抄 ModuleButton 三层先例）：CardTilt wrapper = JS 逐帧 transform；卡片本体 = CSS transition（顶起/边框/投影）。两者永不同元素。
 - per-element perspective 内嵌 transform 值，不建 preserve-3d 链；禁常驻 will-change。
@@ -145,13 +148,13 @@ interface CardProps {
 | products 在建 teaser（Link 锚点） | `interactive` + `accent` |
 | about What We Build ×3 | `static` + `accent` |
 | about Our Values ×3 | `static` |
-| about 流程卡 ×4（自制水印数字） | `static` + `sheetNo`（水印大数字退役，流程是真实序列编号合法） |
+| about 流程卡 ×4（自制水印数字） | `static`（水印大数字退役；步骤号保留为行内 mono 小号 accent 形态——步骤序号与图纸页码 sheetNo 是两种语义，见 §5 编号行） |
 | FeaturedWork（Link） | `interactive` + `accent` |
 | CapabilitiesSection | `static` + `cropMarks` |
 | RealEstateShowcase（外链 `<a>`） | `interactive` + `accent` |
-| InDevelopmentShowcase（不可点） | `static` + `accent`（全站最误导 hover 就此修复） |
+| InDevelopmentShowcase（不可点，卡内含 CSIO 外链与站内 CTA 链） | `container` + `accent`（全站最误导 hover 就此修复；含内部交互故非 static——审查第 1 轮修正） |
 | FAQAccordion（直写 card-surface） | `container` |
-| ContactForm 成功卡（直写 card-elevated p-8） | `static` + `pad="lg"` |
+| ContactForm 成功卡（直写 card-elevated p-8） | 裸内容（外层页面已有 container 单据卡包裹，再套 Card = 玻璃卡套玻璃卡——审查第 1 轮修正） |
 | AnimatedStat（直写 card-surface p-5） | `static` + `pad="sm"`（并入 StatCard，见 §5） |
 | ResultsSection ResultCard（直写 card-elevated p-6） | `static`（并入 StatCard） |
 | TextListSection 仿卡片（手写 rounded-lg border-l-2） | `static` + `accent` + `pad="sm"` |
@@ -165,7 +168,7 @@ interface CardProps {
 | **外链箭头** | 抽独立共享 `ExternalArrowIcon`（外链「出框」语义与 ArrowRightIcon 行进语义不同，不合并），两份逐字符相同内联 SVG 删除 |
 | **卡片收尾行** | 抽 `CardActionRow`（label + 站内/外链箭头 variant + group-hover:gap），4 处重复收编 |
 | **IconBadge** | 抽 shared 圆徽（size + tone: success/error）；emerald/red 为功能反馈色沿用，不属装饰色相 |
-| **图纸编号** | 统一为 Card `sheetNo` 一种实现；TextListSection 列表序号非卡片编号，改用 `.annotation` 语言即可 |
+| **图纸编号** | 双语义两形态：图纸**页码** = Card `sheetNo` 角标（唯一实现）；流程/列表**步骤序号** = 行内 `font-mono text-sm font-semibold text-accent`（about 流程卡与 TextListSection 共用同一形态）。水印大数字与 text-2xl 水印序号两种旧实现退役 |
 | Challenge/SolutionSection 薄包装 | 内联进使用处，删两个文件（顺手项） |
 
 ## 6. Contact 页重构
@@ -183,7 +186,7 @@ interface CardProps {
   - 外置 mono 小标签（`.annotation` 语言，10px 大写，txt-tertiary）——label 从 placeholder 提出；
   - input 实底凹格：`rgba(8, 11, 16, 0.8)`（bg-base 豁免 rgba 化，比玻璃面深一档成「凹进单据的格子」）+ `--border-subtle` 边框 + 4px 圆角 + 顶缘极轻内阴影；
   - 填写文字 `txt-primary`；placeholder 降为示例提示（quaternary 可用，有外置 label 后不再承担标签职责）；
-  - focus = accent 边框增亮（`:focus-visible` 同口径）；**focus-line 中心展开下划线退役**——外置 label + 实底格后，它与格子边框语义重复。
+  - focus = accent 边框增亮 + 2px accent alpha ring（`0 0 0 2px rgba(74,159,229,0.3)`——1px 边框换色在深底上太弱，ring 保键盘焦点可见性；`:focus-visible` 同口径）；**focus-line 中心展开下划线退役**——外置 label + 实底格后，它与格子边框语义重复。
   - 层次链：墙 → 玻璃卡 → 深色填写格，三层拉开——用户点名的「混在一起」就此消灭。
 - 成功态 = `Card variant="static" pad="lg"` + IconBadge(success)。
 - **校验契约对齐**：`route.ts` 补 name/subject/message 必填（现仅强制 email），与前端 required 一致；长度上限沿用。

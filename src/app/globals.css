@@ -335,8 +335,11 @@ body {
 }
 /* 毛玻璃档 — 支持 backdrop-filter 才升级（老内核/微信 WebView 自动停留
    光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——墙后指针灯
-   透过玻璃揉成柔光晕。性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3） */
-@supports (backdrop-filter: blur(1px)) {
+   透过玻璃揉成柔光晕。性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3）。
+   -webkit- 前缀必须写：Safari ≤17 / iOS ≤17 只认前缀形态 */
+@supports (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
   .card-glass {
     background:
       linear-gradient(
@@ -345,6 +348,7 @@ body {
         var(--glass-reflect-b) 55%
       ),
       var(--glass-face);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
     backdrop-filter: blur(var(--glass-blur));
   }
 }
@@ -623,17 +627,21 @@ body {
    （CSS 动画级联高于内联样式，两条路径可安全共存）
    ═══════════════════════════════════════════════ */
 
-/* 图纸沉降入场 — 轻微 3D：rotateX ≤5°，随滚动沉降平整 */
+/* 图纸沉降入场 — 轻微 3D：rotateX ≤5°，随滚动沉降平整。
+   🚨 filter 不得进本关键帧（Backdrop Root 纪律）：CSS 动画对 filter 的
+   插值输出永远是 list 形态——即使 to 写 none，fill both 下 computed 也是
+   blur(0px)，wrapper 恒为 Backdrop Root，子孙玻璃卡的 backdrop-filter
+   只能采样到透明 wrapper 而非墙面（毛玻璃静默失效，真机实测确认）。
+   blur 揉入感由 AnimateOnScroll 的 IO 内联路径承担（filter 不在关键帧内
+   即不被动画级联覆盖，其内联终态 'none' 是真 none） */
 @keyframes sheetSettle {
   from {
     opacity: 0;
     transform: perspective(1200px) rotateX(5deg) translateY(24px);
-    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: perspective(1200px) rotateX(0deg) translateY(0);
-    filter: blur(0);
   }
 }
 
@@ -644,6 +652,16 @@ body {
     /* --settle-offset: 同排卡片交错（scrub 模式下 delay 无效，改用 range 偏移） */
     animation-range: entry var(--settle-offset, 0%) entry
       calc(50% + var(--settle-offset, 0%));
+  }
+  /* 玻璃卡的 wrapper 退出 scrub（Backdrop Root/采样截断纪律）：
+     scroll-driven 动画永远 active，fill 帧的 transform 常驻 wrapper——
+     Chromium 里非 none 的祖先 transform 会把子孙 backdrop-filter 的
+     采样域截断在该祖先内（采样不到墙 = 毛玻璃静默失效，逐级挂载实验
+     定位）。退出后落回 AnimateOnScroll 的 IO 内联路径：入场仍有
+     沉降过渡，完成后 opacity/transform/filter 全落 none，毛玻璃全程
+     有效。:has 与 animation-timeline 同代内核，@supports 块内安全 */
+  .sheet-reveal:has(.card-glass) {
+    animation: none;
   }
 }
 
@@ -1156,11 +1174,16 @@ body {
 .form-field:hover {
   border-color: var(--border-default);
 }
-/* focus = accent 边框增亮 + 底色再压实——正在填写的格子是页面焦点 */
+/* focus = accent 边框增亮 + 2px accent ring + 底色再压实——1px 边框换色
+   在深底玻璃卡上太弱，ring 保住键盘用户的焦点可见性（accent 既有 alpha，
+   不引入新色；inset 凹陷影保留） */
 .form-field:focus {
   outline: none;
   border-color: var(--accent);
   background: rgba(8, 11, 16, 0.92);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.35),
+    0 0 0 2px rgba(74, 159, 229, 0.3);
 }
 
 /* ═══════════════════════════════════════════════

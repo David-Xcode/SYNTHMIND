@@ -22,7 +22,10 @@ const PAD_CLASS = {
 
 interface CardProps {
   children: ReactNode;
-  /** 交互语义变体 — 整卡可点才配 interactive；纯展示一律 static */
+  /** 交互语义变体 — 整卡可点才配 interactive；纯展示 static；卡内含
+   * 交互子元素（链接/按钮/手风琴）用 container。⚠️ static 与 container
+   * 渲染出完全相同的 class——差异纯语义，错配不会被视觉信号暴露，
+   * 选型时对着定义选，别对着效果试 */
   variant: 'interactive' | 'static' | 'container';
   /** 左侧蓝色渐变竖线 = 重点标记（正交，任何变体可用） */
   accent?: boolean;

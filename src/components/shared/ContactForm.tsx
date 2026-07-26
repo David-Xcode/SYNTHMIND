@@ -71,7 +71,8 @@ export default function ContactForm() {
     }
   };
 
-  // ─── 成功态 — static 玻璃卡（纯展示，零 hover 反馈）───
+  // ─── 成功态 — 裸内容（外层页面已有 container 玻璃卡包裹，
+  // 此处再套 Card 会出现「玻璃卡套玻璃卡」双层棱线，审查第 1 轮修复）───
   if (status === 'sent') {
     return (
       // biome-ignore lint/a11y/useSemanticElements: <output> only permits phrasing content; this status card holds block children (h3/button), so role="status" on a div is the correct ARIA pattern
@@ -80,37 +81,35 @@ export default function ContactForm() {
         tabIndex={-1}
         role="status"
         aria-live="polite"
-        className="focus:outline-none"
+        className="focus:outline-none text-center py-4"
         style={{ animation: 'scaleIn 0.5s cubic-bezier(0.16,1,0.3,1)' }}
       >
-        <Card variant="static" pad="lg" className="text-center">
-          <IconBadge tone="success" size="lg" className="mx-auto mb-5">
-            <svg
-              className="w-7 h-7"
-              aria-hidden="true"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </IconBadge>
-          <h3 className="text-lg font-medium text-txt-primary mb-2">
-            Message Sent
-          </h3>
-          <p className="text-txt-tertiary text-sm mb-6">
-            A confirmation is on its way to your inbox. We&apos;ll get back to
-            you within 24 hours.
-          </p>
-          <ModuleButton variant="secondary" onClick={() => setStatus('idle')}>
-            Send another message
-          </ModuleButton>
-        </Card>
+        <IconBadge tone="success" size="lg" className="mx-auto mb-5">
+          <svg
+            className="w-7 h-7"
+            aria-hidden="true"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </IconBadge>
+        <h3 className="text-lg font-medium text-txt-primary mb-2">
+          Message Sent
+        </h3>
+        <p className="text-txt-tertiary text-sm mb-6">
+          A confirmation is on its way to your inbox. We&apos;ll get back to
+          you within 24 hours.
+        </p>
+        <ModuleButton variant="secondary" onClick={() => setStatus('idle')}>
+          Send another message
+        </ModuleButton>
       </div>
     );
   }
