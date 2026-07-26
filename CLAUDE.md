@@ -42,7 +42,7 @@
 - 排版精度 > 空间/材质 > 动效 > 色彩数量
 - 编号只用于**真实序列**（图纸页码、流程步骤）；能力/价值等非序列内容禁止装饰性编号
 - 标注预算：**自由文本** mono 测量标注（如坐标、尺寸）每屏 ≤2 处；图签（SheetLabel）与卡片图纸编号（S.NN）属结构性编号，不计入预算
-- **真砖重力井墙（v6 Lantern Wall）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——概念 = **墙是光前面的一排真砖，指针是压在墙上的重力井 + 墙后一盏灯**。墙属场景（`.bp-wall` fixed 视口级，**内容从墙前滚过、墙与光不动**，零滚动耦合——v4 的「随滚」已退役）；**单层砖纪律**：桌面指针路径 = WallBricks 首次 pointermove 铺满视口的真砖 div 阵（缝隙是真空隙，墙后光直接透出，无任何底衬/假光层），触屏/RM/无 JS = 静态 SVG tile（像素等价），经 `.bp-wall[data-live]` 互斥切换——**任何时刻只有一层砖**；指针交互 = **重力井塌陷**（近针砖向墙内陷成碗 ≤16px、坑壁沿坡度朝坑心倾 ≤15°、材料向坑心微聚、井深处砖面渐透 ≤25%——墙后灯光从塌陷缝与砖体渗出）；灯光 = 右上角落余晖 + 指针灯（均墙后），**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（指针灯/井心透光是唯一窄豁免：强度弹簧驱动、离开归零，口径见 §6）；内容层次二级：**L0 墙 / L2 不透明卡片**——**任何 section 不得持有底色**（L1 已于 v4.2 退役；v6 定案见 2026-07-26-lantern-wall-v6-design spec）
+- **真砖重力井墙（v6 Lantern Wall）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——概念 = **墙是光前面的一排真砖，指针是压在墙上的重力井 + 墙后一盏灯**。墙属场景（`.bp-wall` fixed 视口级，**内容从墙前滚过、墙与光不动**，零滚动耦合——v4 的「随滚」已退役）；**单层砖纪律**：桌面指针路径 = WallBricks 首次 pointermove 铺满视口的真砖 div 阵（缝隙是真空隙，墙后光直接透出，无任何底衬/假光层），触屏/RM/无 JS = 静态 SVG tile（像素等价），经 `.bp-wall[data-live]` 互斥切换——**任何时刻只有一层砖**；指针交互 = **重力井塌陷**（近针砖向墙内陷成碗 ≤16px、坑壁沿坡度朝坑心倾 ≤15°、材料向坑心微聚、井深处砖面渐透 ≤25%——墙后灯光从塌陷缝与砖体渗出）；灯光 = 右上角落余晖 + 指针灯（均墙后），**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（指针灯/井心透光是唯一窄豁免：强度弹簧驱动、离开归零，口径见 §6）；内容层次二级：**L0 墙 / L2 玻璃检视窗卡片**——**任何 section 不得持有底色**（L1 已于 v4.2 退役；v6 定案见 2026-07-26-lantern-wall-v6-design spec）。**卡片 = 压在灯箱墙前的玻璃检视窗（v7）**：墙后灯光透过毛玻璃揉成柔光晕、砖缝光磨成雾光（`@supports` 无 backdrop-filter 自动回退光滑玻璃档）——v4「图纸不是玻璃」条款已随 v6 灯箱物理修订退役（v7 定案见 2026-07-26-card-system-v7-glass-design spec）
 
 ## 3. Typography — Archivo + Manrope + IBM Plex Mono
 
@@ -74,7 +74,7 @@ import SheetLabel from '@/components/shared/SheetLabel';
 <span className="font-display font-semibold stretch-wide">Approach</span>
 ```
 
-**Page heroes** — about/products/contact 页头统一用 `<PageHero eyebrow light bold subtitle />`（径向光晕 + 图签 + 标题；背景 = layout 级满铺砖墙，组件自身不再持有网格/深度层）。
+**Page heroes** — about/products 页头统一用 `<PageHero eyebrow light bold subtitle />`（径向光晕 + 图签 + 标题；背景 = layout 级满铺砖墙，组件自身不再持有网格/深度层）；contact 页自 v7 起用紧凑标题行（SheetLabel + h1 + 一句副标题），首屏让位给表单卡。
 
 **Responsive font sizes** (use Tailwind tokens, NOT arbitrary values):
 - `text-display` — hero titles (clamp 2.5rem → 4.5rem)
@@ -95,6 +95,7 @@ import SheetLabel from '@/components/shared/SheetLabel';
 - 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）。**secondary 面基色消费 `var(--mat-face-base)`**（砖面同源实底）；槽缝环 = `var(--bg-base)` 实底（v6 起墙侧无槽腔层，此口径仅按钮消费）——基色一律走 token，不得回退字面 rgba。
 - 背景 token 的 rgba 形态（半透明基面与投影）：`rgba(8,11,16,α)` = `--bg-base` #080B10、`rgba(12,16,23,α)` = bg-surface #0C1017——`.card-surface` / 按钮投影在用。**只允许这两个既有 hex 的 rgba 化，不得引入新的字面背景色**。
 - 砖墙材质（globals.css `.bp-wall*` / `.bp-brick*` 块）：同蓝色相 alpha 阶 + 中性明度轴，与物件同一豁免逻辑；砖面 SVG data-URI tile 内的字面色值属此豁免（data URI 无法消费 var()，与 `--mat-*` token 交叉锁定，改值两处同步）。
+- 玻璃卡材质（globals.css `.card-glass*` 块 + `:root` 的 `--glass-*` 簇，v7）：面底 = 既有背景 hex 的 rgba 化（`rgba(12,16,23,α)` / `rgba(8,11,16,α)`），棱线/压暗 = 中性明度轴，内反射 = accent 低 alpha——全部落在上述既有豁免口径内，**不得引入新字面色**；新玻璃材质决策优先消费 `--glass-*` token（正本对照表见 v7 spec §1.2）。
 
 **材质 token（v4 / v4.1）**：物件面/线/光系的共享原语已提为 `:root` 的 `--mat-*` 变量（`--mat-face-base/tint/shade`、`--mat-edge-strong/faint`、`--mat-seam-glow/soft`，正本对照表见 v4 spec A.2；`--mat-face-base` 已按 v4.1 spec §2.5 重定为 `rgba(17,22,32,0.9)` 高实度档，砖面与 secondary 按钮面同源消费）——砖墙/按钮的新材质决策**优先消费 token**，不得另起字面 rgba；改 `BlueprintObject` 的 STROKE/face 色阶必须同步 `--mat-*`（TSX 侧与砖面 SVG data-URI tile 保持字面量是 SVG 的 var() 兼容豁免，均与 token 交叉锁定）。
 
@@ -143,32 +144,41 @@ import SheetLabel from '@/components/shared/SheetLabel';
 
 ---
 
-## 5. Card System — Sheet 材质（GlassCard 组件）
+## 5. Card System — 玻璃检视窗（Card 组件 · v7）
 
-**ALWAYS** use `<GlassCard>` from `src/components/shared/GlassCard.tsx`（组件名沿用，材质已从玻璃换为图纸片）。
+全站卡片**唯一授权入口** = `<Card>`（`src/components/shared/Card.tsx`）。
+`.card-glass` / `.card-glass-interactive` / `.card-glass-accent` / `.card-tilt` 是组件私有
+CSS 引擎（globals.css §5 块），**业务代码禁止直接写这些类**（与 ModuleButton 同款纪律）。
+旧 GlassCard / `.card-surface|elevated|spotlight` 已于 v7 退役——全库 grep 零命中是迁移完成的定义。
 
 ```tsx
-import GlassCard from '@/components/shared/GlassCard';
+import Card from '@/components/shared/Card';
 
-<GlassCard variant="surface">...</GlassCard>   // 最轻量 — 半透明实底（无模糊）
-<GlassCard variant="elevated">...</GlassCard>  // 默认 — 实色背景 + hover 上浮 + 蓝色光晕
-<GlassCard variant="spotlight">...</GlassCard> // 特色 — 左侧蓝色渐变竖线
+<Card variant="interactive" sheetNo="S.01" cropMarks>...</Card> // 整卡可点（使用处外层自行包 Link/a）
+<Card variant="static" accent>...</Card>                        // 纯展示重点卡
+<Card variant="container" pad="lg">...</Card>                   // 外壳静、内部子元素自带交互（FAQ 形态）
 ```
 
-Props: `variant`, `className`。内边距固定 `p-6` — 需要自定义 padding 时直接用 `.card-surface` / `.card-elevated` CSS 类（如 AnimatedStat、FAQAccordion）。
+Props：`variant`（interactive / static / container，**按交互语义选择，不按视觉浓淡**）、
+`accent`（左侧蓝色渐变竖线 = 重点标记，正交于变体）、`sheetNo`（图纸编号 mono 角标，
+全站唯一编号实现——水印大数字已退役）、`cropMarks`、`pad`（sm/md/lg = p-5/p-6/p-8，
+默认 md——**禁止为改 padding 绕开组件直写 CSS 类**）、`className`。
+组件不带 `'use client'`（双栖；CardTilt client 岛仅 interactive 变体渲染）。
 
 ### Card Rules — IMPORTANT
-- **图纸不是玻璃**：禁止 `backdrop-filter` / blur 玻璃拟态
-- Card corner radius is always **8px**（制图方正感；按钮同 8px，全站圆角只有 8px 和 rounded-full 两种）
-- Hover: `translateY(-2px)` + `box-shadow: 0 4px 16px rgba(74, 159, 229, 0.08)` + `border-color` change（**保持 2D** — 3D 预算全花在滚动入场）
-- **NO** `mouseGlow` or mouse-tracking effects
-- 关键卡片可加 `<CropMarks />` 四角裁切标记（需 `relative` 父容器；克制使用）
-- 产品卡带图纸编号 annotation（`S.01`…），编号即图纸集页码
-
-### Underlying CSS Classes (in globals.css)
-- `.card-surface` — semi-transparent solid bg + border-subtle（无 blur）
-- `.card-elevated` — bg-elevated + border-default + hover translateY + blue glow
-- `.card-spotlight` — bg-elevated + border-default + left blue gradient line (::before)
+- **变体 = 交互语义**：整卡可点才配 interactive（hover 顶起 + tilt + 投影落墙）；纯展示
+  一律 static（恒定材质，零 hover 位移——「不可点的卡带可点式反馈」是 v7 修复的病灶，禁止回潮）；
+  container 外壳静、交互属于内部子元素
+- **材质 = 玻璃检视窗**：光滑玻璃档为基态（`--glass-face-solid` 实底，无 blur），
+  `@supports (backdrop-filter: blur(1px))` 内升级毛玻璃档（`--glass-face` + blur ≤12px）；
+  厚度 = 顶棱受光 + 底缘压暗（中性明度轴 inset）+ accent 低 alpha 内反射（::before）
+- **transform 写入者分层**：CardTilt wrapper = JS 弹簧逐帧（≤2.5°，pointer-tilt-engine）/
+  卡片本体 = hover 顶起 CSS transition（`perspective(900px) translateZ(8px)` + 投影落墙 +
+  边框增亮）——永不同元素；per-element perspective 不建 preserve-3d 链；禁常驻 will-change
+- Card corner radius is always **8px**（按钮同 8px，全站圆角只有 8px 和 rounded-full 两种）
+- 玻璃底上正文对比度 ≥4.5:1（毛玻璃/光滑两档分别成立）
+- 统计卡一律 `<StatCard>`（count-up 全站唯一实现）；卡片收尾行一律 `<CardActionRow>`
+  （站内/外链箭头 variant）——禁止内联箭头 SVG；chip 用 `<HighlightTag>`、圆徽用 `<IconBadge>`
 
 ---
 
@@ -218,12 +228,14 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）
 - ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤16px / 坡斜 ≤15° / 向心聚拢 ≤3px / 微缩 ≤5% / 透光 ≤25% 全部是井心位置的纯函数，零砖级状态；影响半径 ~200px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；井心透光与指针灯是哑光纪律唯一窄豁免：强度弹簧驱动、离开归零、灯光心 α≤0.9；per-element perspective 不建 preserve-3d 链；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 隐藏 tile，像素等价无感切换），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
-- ✅ `btn-tilt` — 按钮悬停期微摆（ButtonTilt 中间层 rAF 阻尼弹簧，每按钮独立 k30 ζ0.6；倾角 ≤4°、仅指针在按钮盒内跟随（盒外即零——嵌墙砖在槽里不晃，v4.1 的 130px 邻域跟随已退役）；仅 hover+fine 且非 RM 挂引擎，触屏/RM/无 JS = 纯透传 span；与本体顶出 transition 分层两元素——JS 逐帧 / transition 永不同层；mouse-tracking 豁免第 3 例，仅限 ModuleButton）
+- ✅ `btn-tilt` — 按钮悬停期微摆（ButtonTilt → `src/lib/pointer-tilt-engine.ts` 共享单例引擎，每按钮独立参数 k30 ζ0.6；倾角 ≤4°、仅指针在按钮盒内跟随（盒外即零——嵌墙砖在槽里不晃，v4.1 的 130px 邻域跟随已退役）；仅 hover+fine 且非 RM 挂引擎，触屏/RM/无 JS = 纯透传 span；与本体顶出 transition 分层两元素——JS 逐帧 / transition 永不同层；mouse-tracking 豁免第 3 例，仅限 ModuleButton）
+- ✅ `card-tilt` — interactive 卡指针倾斜（CardTilt → pointer-tilt-engine 同一共享引擎、per-entry 参数：≤2.5° k22 ζ0.65 慢弹簧「厚玻璃板惯性」，perspective 900px；盒内跟随盒外即零；仅 hover+fine 且非 RM 挂载，触屏/RM/无 JS = 纯静态透传；**全站禁止第二份引擎代码**；mouse-tracking 豁免第 4 例，仅限 Card interactive 变体）
+- ✅ 卡片 hover 顶起 — interactive 卡本体 `perspective(900px) translateZ(8px)` transition + 投影落墙 + 边框增亮（与 tilt 分层两元素，照 ModuleButton 先例；static/container 卡零 hover 位移）
 - ✅ 按钮顶出/按入 — 本体 `perspective() translateZ` transition（rest 齐平嵌墙 / hover +16px 顶出 / active −5px 按入 0.09s 快过渡；per-element perspective 不建 preserve-3d 链）+ 槽缝涌光 opacity 过渡（frame ::after，`:has(:hover)` 驱动，老内核软降级恒不亮；与砖墙涌光同一豁免语言；仅 .btn-primary/.btn-secondary。v4.1 的 btnHoverIdle 呼吸、backglow、`--btn-dy` 双层反向位移已全部退役）
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
 - ✅ `scaleIn` — 表单成功态缩放弹入
 - ✅ `scroll-pulse` / `scale-in-dot` — 滚动指示器
-- ✅ `translateY(-2px)` on card hover / `box-shadow` blue glow / `border-color` transitions
+- ✅ `border-color` 微响应 — static/container 卡 hover 边框 subtle→default（非 interactive 卡唯一允许的 hover 反馈；位移/投影/光晕禁止）
 - ✅ count-up 数字滚动（useCountUp）
 
 ### FORBIDDEN Animations
@@ -233,7 +245,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ❌ `noise` texture overlays
 - ❌ 满屏 parallax（v6 起墙属场景固定、内容从墙前滚过；**内容层之间**禁止异速滚动层——v3 的 depth-drift 已退役）
 - ❌ `particle` effects
-- ❌ mouse-tracking tilt / mouseGlow（豁免仅三例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintWall 砖层 WallBricks 重力井塌陷——含墙后指针灯 `.bp-wall-lamp`（光斑随井心弹簧移动，三例中唯一的发光跟随；光心 α≤0.9、离开归零，正本 = v6 spec）；③ ModuleButton 的 ButtonTilt 悬停微摆。卡片与其余一切元素一律不做）
+- ❌ mouse-tracking tilt / mouseGlow（豁免仅四例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintWall 砖层 WallBricks 重力井塌陷——含墙后指针灯 `.bp-wall-lamp`（光斑随井心弹簧移动，四例中唯一的发光跟随；光心 α≤0.9、离开归零，正本 = v6 spec）；③ ModuleButton 的 ButtonTilt 悬停微摆；④ Card interactive 变体的 CardTilt 指针倾斜——③④ 共享 `src/lib/pointer-tilt-engine.ts` 单例引擎（全站一套监听、per-entry 参数），禁止第二份引擎。static/container 卡与其余一切元素一律不做）
 - ❌ 动画属性超出 transform / opacity / filter / stroke-dashoffset
 
 ### 性能纪律
@@ -271,7 +283,8 @@ props 是**判别联合**：`href` 与 `disabled`/`type`/`onClick` 互斥——L
   （−5px + 槽口内阴影，0.09s 快过渡）→ disabled 齐平变暗（opacity 0.55）
 - **组件结构（transform 写入者分层）**：frame（`.btn-module-frame` 静态骨架，
   `isolation: isolate` 锁负 z 层序；`::before` = 槽缝环、`::after` = 涌光层）
-  → `ButtonTilt`（`.btn-tilt` 悬停期 JS 弹簧微摆 ≤4°，client 岛）→ 本体
+  → `ButtonTilt`（`.btn-tilt` 悬停期 JS 弹簧微摆 ≤4°，client 岛，消费
+  `src/lib/pointer-tilt-engine.ts` 共享引擎——与 CardTilt 同引擎不同参数）→ 本体
   （pop/press transition）——JS 逐帧 / transition 永不共存于同一元素；
   v4.1 的呼吸 infinite / backglow / `--btn-dy` 双伪元素反向抵消已全部退役
 - **顶出用 per-element perspective**：`perspective(700px) translateZ(...)`
