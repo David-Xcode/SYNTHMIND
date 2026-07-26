@@ -33,7 +33,8 @@ src/
 │   ├── layout/            # 布局: SiteHeader, SiteFooter, Breadcrumb
 │   ├── home/              # 首页: HomeHero, BlueprintObject, HeroObjectPhysics,
 │   │                      #   SocialProofBar, CapabilitiesSection, FeaturedWork, ProcessSection
-│   ├── products/          # 产品页: RealEstateShowcase (地产营销站统一模块)
+│   ├── products/          # 产品页: RealEstateShowcase (地产营销站统一模块),
+│   │                      #   InDevelopmentShowcase + CsioMemberBadge (开发中产品/CSIO 背书)
 │   └── case-study/        # 产品详情页: CaseStudyHero, ChallengeSection, SolutionSection,
 │                          #   TextListSection, TechStackBadges, ResultsSection
 ├── data/                  # TS 常量 (非 CMS): case-studies.ts (5 软件产品),
