@@ -11,7 +11,7 @@ import SocialProofBar from '@/components/home/SocialProofBar';
 import CTABanner from '@/components/shared/CTABanner';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import JsonLd from '@/components/shared/JsonLd';
-import { BASE_OPEN_GRAPH, CONTACT_EMAIL, SITE_URL } from '@/lib/constants';
+import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Synthmind | AI-Powered Software Studio',
@@ -40,11 +40,7 @@ const organizationJsonLd = {
     addressRegion: 'ON',
     addressCountry: 'CA',
   },
-  contactPoint: {
-    '@type': 'ContactPoint',
-    email: CONTACT_EMAIL,
-    contactType: 'customer service',
-  },
+  // contactPoint 已随 v7 邮箱撤展示移除（表单是唯一联系入口）
   // CSIO 会员身份 — 与 /products 的 InDevelopmentShowcase 模块对应
   memberOf: {
     '@type': 'Organization',

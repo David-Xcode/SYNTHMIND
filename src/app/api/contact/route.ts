@@ -192,16 +192,22 @@ export async function POST(request: NextRequest) {
       ? (source as AllowedSource)
       : 'contact';
 
-    // 验证必需字段
-    // - email 始终必须
-    // - inline 变体只提交 email，mini 变体提交 name + email + message
-    // - full 变体提交全部字段
-    // 逻辑：email 必须 + 至少提供 name/subject/message 之一（inline 变体除外，email 足够）
+    // 验证必需字段 — v7 校验契约对齐：前端四字段全 required，后端同步
+    // 强制（mini/inline 变体已于表单 v2 删除，「email 足够」的旧口径随之废弃）
     if (!email) {
       return NextResponse.json(
         {
           success: false,
           error: 'Email is required',
+        },
+        { status: 400 },
+      );
+    }
+    if (!name?.trim() || !subject?.trim() || !message?.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Name, subject, and message are required',
         },
         { status: 400 },
       );

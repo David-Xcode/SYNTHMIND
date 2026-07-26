@@ -1,232 +1,26 @@
 'use client';
 
-// ─── 按钮 pointer tilt 弹簧层 · Living Blueprint v4.2 ───
+// ─── 按钮 pointer tilt 弹簧层 · Living Blueprint v4.2 / v7 引擎抽取 ───
 // 设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md（§4.3）
+// v7 起弹簧引擎移居 src/lib/pointer-tilt-engine.ts（与 CardTilt 共享单例，
+// per-entry 参数）——本组件只剩参数表 + 注册生命周期，行为与 v4.2 逐参数等价。
 // ModuleButton 的交互中间层：hover 顶出期间按钮随指针微摆（mouse-tracking
-// 豁免第 3 例窄列举——rAF 阻尼弹簧非 1:1 硬跟；前两例 HeroObjectPhysics /
-// WallBricks）。v4.2 起仅悬停期跟随（盒内满权重、盒外即零）：嵌墙砖在
-// 槽里不该晃，摆动只属于顶出后的悬空状态；v4.1 的 130px 邻域跟随退役。
-//
-// 纪律与门控：
-// - transform 写入者分层：本层 JS 弹簧逐帧 / 本体 pop+按压 transition /
-//   frame 静态——同元素同属性冲突纪律天然满足
-// - 模块级单例引擎：一个 window pointermove 驱动全站 ≤7 颗按钮（每按钮
-//   独立小弹簧 k30 ζ0.6，幅度 ≤4°——按钮是功能件，摆动只是顶出的余韵）
-// - 门控 hover+fine 且非 RM；触屏/RM/无 JS = 纯透传 span（静态嵌墙姿态
-//   + :active 按入照常）；RM 中途开启 → 引擎 teardown 清零（单向，同
-//   WallBricks）；disabled 按钮目标恒零
-// - rect 缓存，scroll/resize 失效重取（滚动中按钮松开归零，下次
-//   pointermove 重瞄）；perspective 内嵌 transform，不建 preserve-3d 链
-// - 只写 transform；收敛停帧
+// 豁免第 3 例窄列举——rAF 阻尼弹簧非 1:1 硬跟）。仅悬停期跟随（盒内满权重、
+// 盒外即零）：嵌墙砖在槽里不该晃，摆动只属于顶出后的悬空状态。
+// 门控/RM teardown/rect 缓存/收敛停帧纪律全部在引擎内，见引擎头注。
 
 import { type ReactNode, useEffect, useRef } from 'react';
-import { listenMql } from '@/lib/listen-mql';
+import { registerTilt, type TiltParams } from '@/lib/pointer-tilt-engine';
 
-const STIFFNESS = 30;
-const DAMPING = 6.6; // ζ≈0.6 — HeroObjectPhysics ROT 同族
-const MAX_TILT = 4; // deg
-const REST_EPS = 0.01;
-const MAX_DT = 0.033;
-
-interface Spring {
-  x: number;
-  v: number;
-  t: number;
-}
-
-interface Entry {
-  el: HTMLSpanElement;
-  rx: Spring;
-  ry: Spring;
-  rect: DOMRect | null;
-  disabled: boolean;
-  settled: boolean;
-}
-
-const spring = (): Spring => ({ x: 0, v: 0, t: 0 });
-
-function step(s: Spring, dt: number) {
-  s.v += (-STIFFNESS * (s.x - s.t) - DAMPING * s.v) * dt;
-  s.x += s.v * dt;
-}
-
-function isSettled(s: Spring) {
-  return Math.abs(s.x - s.t) < REST_EPS && Math.abs(s.v) < REST_EPS;
-}
-
-const clampUnit = (n: number) => Math.max(-1, Math.min(1, n));
-
-// ── 模块级单例引擎（client bundle 内共享，7 个实例一套监听）──
-const entries: Entry[] = [];
-let engineOn = false;
-let rafId = 0;
-let lastTime = 0;
-let stopEngine: (() => void) | null = null;
-
-function applyStyle(e: Entry) {
-  if (e.settled && !e.rx.x && !e.ry.x) {
-    e.el.style.transform = '';
-  } else {
-    // per-element perspective：本层扁平化不影响本体的 translateZ 顶出
-    // （本体 transform 自带 perspective()，两层投影互相独立）
-    e.el.style.transform = `perspective(500px) rotateX(${e.rx.x.toFixed(3)}deg) rotateY(${e.ry.x.toFixed(3)}deg)`;
-  }
-}
-
-function frame(time: number) {
-  const dt = Math.max(0, Math.min((time - lastTime) / 1000, MAX_DT));
-  lastTime = time;
-  let anyActive = false;
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    if (e.settled) continue;
-    step(e.rx, dt);
-    step(e.ry, dt);
-    if (isSettled(e.rx) && isSettled(e.ry)) {
-      // 收敛吸附 — 归零时清空内联 transform，回到纯 CSS 姿态
-      e.rx.x = e.rx.t;
-      e.ry.x = e.ry.t;
-      e.rx.v = e.ry.v = 0;
-      e.settled = true;
-    } else {
-      anyActive = true;
-    }
-    applyStyle(e);
-  }
-  rafId = anyActive ? requestAnimationFrame(frame) : 0;
-}
-
-function kick() {
-  if (rafId) return;
-  lastTime = performance.now();
-  rafId = requestAnimationFrame(frame);
-}
-
-function wake(e: Entry) {
-  if (
-    e.settled &&
-    (Math.abs(e.rx.t - e.rx.x) > REST_EPS ||
-      Math.abs(e.ry.t - e.ry.x) > REST_EPS)
-  ) {
-    e.settled = false;
-  }
-}
-
-function zeroTargets() {
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    e.rx.t = 0;
-    e.ry.t = 0;
-    wake(e);
-  }
-}
-
-function startEngine() {
-  if (engineOn) return;
-  engineOn = true;
-
-  const onMove = (ev: PointerEvent) => {
-    for (let i = 0; i < entries.length; i++) {
-      const e = entries[i];
-      if (e.disabled) {
-        e.rx.t = 0;
-        e.ry.t = 0;
-        wake(e);
-        continue;
-      }
-      if (!e.rect) e.rect = e.el.getBoundingClientRect();
-      const r = e.rect;
-      const mx = ev.clientX - (r.left + r.width / 2);
-      const my = ev.clientY - (r.top + r.height / 2);
-      // 悬停期门控：指针在盒内才跟随（盒外即零——嵌墙砖在槽里不晃）；
-      // 进出盒缘的目标跳变由弹簧平滑，与本体 pop 过渡同步展开
-      const inside =
-        Math.abs(mx) <= r.width / 2 && Math.abs(my) <= r.height / 2;
-      if (inside) {
-        e.rx.t = -MAX_TILT * clampUnit(my / (r.height * 0.9));
-        e.ry.t = MAX_TILT * clampUnit(mx / (r.width * 0.6));
-      } else {
-        e.rx.t = 0;
-        e.ry.t = 0;
-      }
-      wake(e);
-    }
-    kick();
-  };
-
-  const onLeave = () => {
-    zeroTargets();
-    kick();
-  };
-
-  // 滚动中按钮随页移动而指针不动 — rect 失效即松开归零，下次 pointermove 重瞄
-  const onScroll = () => {
-    for (let i = 0; i < entries.length; i++) entries[i].rect = null;
-    zeroTargets();
-    kick();
-  };
-
-  const onResize = () => {
-    for (let i = 0; i < entries.length; i++) entries[i].rect = null;
-  };
-
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  // 会话中途开启 RM → 引擎整体拆除清零（单向，导航后自愈）
-  const unlistenReduced = listenMql(reducedMotion, (ev) => {
-    if (ev.matches && stopEngine) stopEngine();
-  });
-
-  window.addEventListener('pointermove', onMove, { passive: true });
-  document.documentElement.addEventListener('pointerleave', onLeave, {
-    passive: true,
-  });
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onResize);
-
-  stopEngine = () => {
-    window.removeEventListener('pointermove', onMove);
-    document.documentElement.removeEventListener('pointerleave', onLeave);
-    window.removeEventListener('scroll', onScroll);
-    window.removeEventListener('resize', onResize);
-    unlistenReduced();
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = 0;
-    for (let i = 0; i < entries.length; i++) {
-      const e = entries[i];
-      // 弹簧状态一并清零：只清 transform 不清状态的话，引擎日后重启
-      // （RM 关闭后导航 remount）会从旧倾角瞬跳再弹回
-      e.rx.x = e.rx.v = e.rx.t = 0;
-      e.ry.x = e.ry.v = e.ry.t = 0;
-      e.settled = true;
-      e.rect = null; // 停摆期间的布局变化不会有 scroll/resize 兜底，重启必重取
-      e.el.style.transform = '';
-    }
-    engineOn = false;
-    stopEngine = null;
-  };
-}
-
-function register(el: HTMLSpanElement, disabled: boolean) {
-  const capable = window.matchMedia('(hover: hover) and (pointer: fine)');
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (!capable.matches || reducedMotion.matches) return undefined;
-  const entry: Entry = {
-    el,
-    rx: spring(),
-    ry: spring(),
-    rect: null,
-    disabled,
-    settled: true,
-  };
-  entries.push(entry);
-  startEngine();
-  return () => {
-    const i = entries.indexOf(entry);
-    if (i >= 0) entries.splice(i, 1);
-    el.style.transform = '';
-    if (!entries.length && stopEngine) stopEngine();
-  };
-}
+// 按钮参数 — 功能件小盒子：快弹簧、4° 上限（v4.2 定案值，一个都不许漂移）
+const BUTTON_TILT: TiltParams = {
+  maxTilt: 4,
+  stiffness: 30,
+  damping: 6.6, // ζ≈0.6 — HeroObjectPhysics ROT 同族
+  perspective: 500,
+  xDiv: 0.9,
+  yDiv: 0.6,
+};
 
 export default function ButtonTilt({
   children,
@@ -240,7 +34,7 @@ export default function ButtonTilt({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    return register(el, disabled);
+    return registerTilt(el, BUTTON_TILT, disabled);
   }, [disabled]);
 
   return (

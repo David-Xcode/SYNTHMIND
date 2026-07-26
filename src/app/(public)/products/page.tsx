@@ -12,8 +12,8 @@ import InDevelopmentShowcase from '@/components/products/InDevelopmentShowcase';
 import RealEstateShowcase from '@/components/products/RealEstateShowcase';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
-import CropMarks from '@/components/shared/CropMarks';
-import GlassCard from '@/components/shared/GlassCard';
+import Card from '@/components/shared/Card';
+import CardActionRow from '@/components/shared/CardActionRow';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { caseStudies } from '@/data/case-studies';
@@ -62,13 +62,18 @@ export default function ProductsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {caseStudies.map((cs, index) => (
               <AnimateOnScroll key={cs.slug} delay={index * 80 + 100}>
-                <Link href={`/products/${cs.slug}`} className="block h-full">
-                  <GlassCard
-                    variant="elevated"
-                    className="relative h-full group cursor-pointer"
+                <Link
+                  href={`/products/${cs.slug}`}
+                  className="block h-full group"
+                >
+                  {/* 图纸编号 sheetNo — 产品即图纸集里的一张 sheet */}
+                  <Card
+                    variant="interactive"
+                    sheetNo={`S.${String(index + 1).padStart(2, '0')}`}
+                    cropMarks
+                    className="h-full"
                   >
-                    <CropMarks />
-                    <div className="h-10 mb-5 flex items-center justify-between">
+                    <div className="h-10 mb-5 flex items-center">
                       <Image
                         src={cs.logo}
                         alt={`${cs.title} logo`}
@@ -77,10 +82,6 @@ export default function ProductsPage() {
                         className="h-8 w-auto object-contain filter brightness-0 invert opacity-50 group-hover:opacity-90 transition-opacity duration-300"
                         suppressHydrationWarning
                       />
-                      {/* 图纸编号 — 产品即图纸集里的一张 sheet */}
-                      <span className="annotation" aria-hidden="true">
-                        {`S.${String(index + 1).padStart(2, '0')}`}
-                      </span>
                     </div>
 
                     <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
@@ -91,12 +92,9 @@ export default function ProductsPage() {
                     </p>
 
                     <div className="flex items-center justify-end">
-                      <span className="inline-flex items-center gap-1 text-accent text-sm font-medium group-hover:gap-1.5 transition-all duration-300">
-                        View
-                        <ArrowRightIcon className="w-3.5 h-3.5" />
-                      </span>
+                      <CardActionRow>View</CardActionRow>
                     </div>
-                  </GlassCard>
+                  </Card>
                 </Link>
               </AnimateOnScroll>
             ))}
@@ -105,12 +103,13 @@ export default function ProductsPage() {
             <AnimateOnScroll delay={caseStudies.length * 80 + 100}>
               <Link
                 href="#in-development"
-                className="block h-full"
+                className="block h-full group"
                 aria-label="Learn more about our in-development brokerage platform"
               >
-                <GlassCard
-                  variant="spotlight"
-                  className="h-full group cursor-pointer flex flex-col"
+                <Card
+                  variant="interactive"
+                  accent
+                  className="h-full flex flex-col"
                 >
                   <div className="h-10 mb-5 flex items-center">
                     <CsioMemberBadge />
@@ -125,13 +124,16 @@ export default function ProductsPage() {
                   </p>
 
                   <div className="mt-auto flex items-center justify-end">
-                    <span className="inline-flex items-center gap-1 text-accent text-sm font-medium group-hover:gap-1.5 transition-all duration-300">
+                    <CardActionRow
+                      icon={
+                        /* 下箭头 — 页内锚点语义，区别于详情页的右箭头 */
+                        <ArrowRightIcon className="w-3.5 h-3.5 rotate-90" />
+                      }
+                    >
                       In development
-                      {/* 下箭头 — 页内锚点语义，区别于详情页的右箭头 */}
-                      <ArrowRightIcon className="w-3.5 h-3.5 rotate-90" />
-                    </span>
+                    </CardActionRow>
                   </div>
-                </GlassCard>
+                </Card>
               </Link>
             </AnimateOnScroll>
           </div>

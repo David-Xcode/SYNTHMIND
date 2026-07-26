@@ -5,6 +5,7 @@
 // 列表项自身的 bg-elevated 卡片是可读性锚点（L2）
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import Card from '@/components/shared/Card';
 import SectionTitle from '@/components/shared/SectionTitle';
 
 interface TextListSectionProps {
@@ -44,14 +45,17 @@ export default function TextListSection({
         <div className="space-y-4">
           {items.map((paragraph, index) => (
             <AnimateOnScroll key={index} delay={index * 80 + 100}>
-              <div className="flex gap-5 rounded-lg border-l-2 border-accent/30 bg-bg-elevated p-5">
-                <span className="font-mono text-2xl font-semibold text-accent/20 leading-none pt-0.5">
+              {/* v7：手写仿 spotlight 卡退役，统一 Card static + accent 竖线；
+                  列表序号与 about 流程步骤号同一形态（mono 小号 accent，
+                  真实次序专用）——大号水印式序号随编号统一退役 */}
+              <Card variant="static" accent pad="sm" className="flex gap-4">
+                <span className="font-mono text-sm font-semibold text-accent pt-0.5">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <p className="text-txt-secondary leading-relaxed text-base">
                   {paragraph}
                 </p>
-              </div>
+              </Card>
             </AnimateOnScroll>
           ))}
         </div>

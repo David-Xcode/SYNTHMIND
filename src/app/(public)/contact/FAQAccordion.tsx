@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import Card from '@/components/shared/Card';
 
 interface FAQ {
   question: string;
@@ -25,7 +26,9 @@ export default function FAQAccordion({ faqs }: FAQAccordionProps) {
         const panelId = `faq-panel-${index}`;
         return (
           <AnimateOnScroll key={index} delay={index * 60}>
-            <div className="card-surface overflow-hidden">
+            {/* container 变体：外壳静（玻璃卡不带可点反馈），交互属于内部
+                button；overflow-clip-safe 裁掉 button hover 高亮的圆角溢出 */}
+            <Card variant="container" pad="none" className="overflow-clip-safe">
               <button
                 type="button"
                 onClick={() => setOpenIndex(isOpen ? null : index)}
@@ -70,7 +73,7 @@ export default function FAQAccordion({ faqs }: FAQAccordionProps) {
                   </p>
                 </div>
               </section>
-            </div>
+            </Card>
           </AnimateOnScroll>
         );
       })}

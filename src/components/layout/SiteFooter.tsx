@@ -5,7 +5,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { footerNav } from '@/data/navigation';
-import { CONTACT_EMAIL } from '@/lib/constants';
 
 export default function SiteFooter() {
   // v4.2：底色整体摘除（无底纹排版 — section 一律透墙）；
@@ -46,18 +45,13 @@ export default function SiteFooter() {
           ))}
         </nav>
 
-        {/* 版权 + 邮箱 — tertiary 而非 quaternary：quaternary 是「装饰/metadata」
-            档（v4.2 起正文禁用）；tertiary 对墙 ≈6.5:1（v4.2 提档后） */}
-        <div className="mt-8 space-y-1">
+        {/* 版权 — tertiary 而非 quaternary：quaternary 是「装饰/metadata」
+            档（v4.2 起正文禁用）；tertiary 对墙 ≈6.5:1（v4.2 提档后）。
+            邮箱行已随 v7 全站撤下展示（Contact 表单是唯一联系入口） */}
+        <div className="mt-8">
           <p className="text-txt-tertiary text-xs">
             &copy; {new Date().getFullYear()} Synthmind. Toronto, Canada.
           </p>
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="inline-block text-txt-tertiary hover:text-accent text-xs transition-colors duration-200"
-          >
-            {CONTACT_EMAIL}
-          </a>
         </div>
       </div>
     </footer>

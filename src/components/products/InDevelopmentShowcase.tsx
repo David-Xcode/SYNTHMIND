@@ -7,8 +7,10 @@ import Link from 'next/link';
 import CsioMemberBadge from '@/components/products/CsioMemberBadge';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
+import Card from '@/components/shared/Card';
+import ExternalArrowIcon from '@/components/shared/ExternalArrowIcon';
 import Eyebrow from '@/components/shared/Eyebrow';
-import GlassCard from '@/components/shared/GlassCard';
+import HighlightTag from '@/components/shared/HighlightTag';
 import SectionTitle from '@/components/shared/SectionTitle';
 
 // CSIO 官方会员名录 — 可验证的会员身份证明
@@ -39,7 +41,7 @@ export default function InDevelopmentShowcase() {
         </AnimateOnScroll>
 
         <AnimateOnScroll delay={100}>
-          <GlassCard variant="spotlight">
+          <Card variant="static" accent>
             {/* CSIO 会员徽章行 */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
               <CsioMemberBadge />
@@ -51,21 +53,7 @@ export default function InDevelopmentShowcase() {
                 className="inline-flex items-center gap-1 text-txt-tertiary hover:text-accent text-xs transition-colors duration-300"
               >
                 Verify in the CSIO Member Directory
-                <svg
-                  className="w-3 h-3"
-                  aria-hidden="true"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  {/* 右上箭头 — 外链语义，区别于站内的 ArrowRightIcon */}
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M7 17L17 7m0 0H8m9 0v9"
-                  />
-                </svg>
+                <ExternalArrowIcon className="w-3 h-3" />
               </a>
             </div>
 
@@ -93,12 +81,7 @@ export default function InDevelopmentShowcase() {
             {/* 能力标签 */}
             <div className="mt-5 flex flex-wrap gap-1.5">
               {HIGHLIGHTS.map((highlight) => (
-                <span
-                  key={highlight}
-                  className="text-xs text-txt-secondary bg-accent/[0.06] border border-accent/[0.12] rounded-lg px-2 py-0.5"
-                >
-                  {highlight}
-                </span>
+                <HighlightTag key={highlight}>{highlight}</HighlightTag>
               ))}
             </div>
 
@@ -112,7 +95,7 @@ export default function InDevelopmentShowcase() {
                 <ArrowRightIcon className="w-3.5 h-3.5" />
               </Link>
             </div>
-          </GlassCard>
+          </Card>
         </AnimateOnScroll>
       </div>
     </section>

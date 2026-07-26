@@ -3,8 +3,7 @@
 // hairline 玻璃线风格小图标内联绘制，与活蓝图同语言
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
-import CropMarks from '@/components/shared/CropMarks';
-import GlassCard from '@/components/shared/GlassCard';
+import Card from '@/components/shared/Card';
 import SectionTitle from '@/components/shared/SectionTitle';
 
 // 24px hairline 玻璃线图标 — 与蓝图 SVG 同一制图语言
@@ -80,8 +79,7 @@ export default function CapabilitiesSection() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {capabilities.map((cap, index) => (
             <AnimateOnScroll key={cap.title} delay={index * 80 + 100}>
-              <GlassCard variant="elevated" className="relative h-full">
-                <CropMarks />
+              <Card variant="static" cropMarks className="h-full">
                 <div className="mb-5">{cap.glyph}</div>
                 <h3 className="mb-2 text-base font-medium tracking-tight text-txt-primary">
                   {cap.title}
@@ -89,7 +87,7 @@ export default function CapabilitiesSection() {
                 <p className="text-sm leading-relaxed text-txt-tertiary">
                   {cap.copy}
                 </p>
-              </GlassCard>
+              </Card>
             </AnimateOnScroll>
           ))}
         </div>

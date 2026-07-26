@@ -1,15 +1,17 @@
 'use client';
 
-// ─── 联系表单 v2 ───
-// 蓝色中心展开 focus 下划线 / 成功态变换动画
-// 此前的 mini/inline 变体全站零调用，已删除 — 仅保留完整表单
+// ─── 联系表单 v7 — 单据填写格 ───
+// 设计定案：card-system-v7-glass spec §6.2。
+// 旧「透明底下划线」字段在砖墙上与背景混融（用户点名病灶），v7 改
+// 单据填写格：外置 mono label（Eyebrow tertiary）+ 实底凹格（.form-field，
+// 比玻璃卡面深一档）——墙 → 玻璃卡 → 填写格三层拉开。
+// 表单是全站唯一联系入口（邮箱已撤下展示）：提交走 Resend 双向确认闭环。
 
 import React, { useEffect, useRef, useState } from 'react';
+import Card from './Card';
+import Eyebrow from './Eyebrow';
+import IconBadge from './IconBadge';
 import ModuleButton from './ModuleButton';
-
-// 带 focus 动画的输入框样式
-const inputClass =
-  'w-full bg-transparent border-0 border-b border-accent/[0.10] px-0 py-3 text-txt-primary placeholder-txt-quaternary focus:outline-none text-sm transition-colors duration-300';
 
 export default function ContactForm() {
   const [form, setForm] = useState({
@@ -69,7 +71,7 @@ export default function ContactForm() {
     }
   };
 
-  // ─── 成功态 ───
+  // ─── 成功态 — static 玻璃卡（纯展示，零 hover 反馈）───
   if (status === 'sent') {
     return (
       // biome-ignore lint/a11y/useSemanticElements: <output> only permits phrasing content; this status card holds block children (h3/button), so role="status" on a div is the correct ARIA pattern
@@ -78,104 +80,115 @@ export default function ContactForm() {
         tabIndex={-1}
         role="status"
         aria-live="polite"
-        className="card-elevated p-8 text-center focus:outline-none"
+        className="focus:outline-none"
         style={{ animation: 'scaleIn 0.5s cubic-bezier(0.16,1,0.3,1)' }}
       >
-        <div className="w-14 h-14 rounded-full bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center mx-auto mb-5">
-          <svg
-            className="w-7 h-7 text-emerald-400"
-            aria-hidden="true"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-txt-primary mb-2">
-          Message Sent
-        </h3>
-        <p className="text-txt-tertiary text-sm mb-6">
-          We&apos;ll get back to you within 24 hours.
-        </p>
-        <ModuleButton variant="secondary" onClick={() => setStatus('idle')}>
-          Send another message
-        </ModuleButton>
+        <Card variant="static" pad="lg" className="text-center">
+          <IconBadge tone="success" size="lg" className="mx-auto mb-5">
+            <svg
+              className="w-7 h-7"
+              aria-hidden="true"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </IconBadge>
+          <h3 className="text-lg font-medium text-txt-primary mb-2">
+            Message Sent
+          </h3>
+          <p className="text-txt-tertiary text-sm mb-6">
+            A confirmation is on its way to your inbox. We&apos;ll get back to
+            you within 24 hours.
+          </p>
+          <ModuleButton variant="secondary" onClick={() => setStatus('idle')}>
+            Send another message
+          </ModuleButton>
+        </Card>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-7">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* Name + Email */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
-        <div className="input-group">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label htmlFor="contact-name" className="block mb-2">
+            <Eyebrow tone="tertiary">Name</Eyebrow>
+          </label>
           <input
+            id="contact-name"
             type="text"
             name="name"
-            placeholder="Name"
+            placeholder="Your name"
             required
             value={form.name}
             onChange={handleChange}
-            aria-label="Name"
             autoComplete="name"
-            className={inputClass}
+            className="form-field"
           />
-          <div className="focus-line" />
         </div>
-        <div className="input-group">
+        <div>
+          <label htmlFor="contact-email" className="block mb-2">
+            <Eyebrow tone="tertiary">Email</Eyebrow>
+          </label>
           <input
+            id="contact-email"
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="you@company.com"
             required
             value={form.email}
             onChange={handleChange}
-            aria-label="Email"
             autoComplete="email"
-            className={inputClass}
+            className="form-field"
           />
-          <div className="focus-line" />
         </div>
       </div>
 
       {/* Subject */}
-      <div className="input-group">
+      <div>
+        <label htmlFor="contact-subject" className="block mb-2">
+          <Eyebrow tone="tertiary">Subject</Eyebrow>
+        </label>
         <input
+          id="contact-subject"
           type="text"
           name="subject"
-          placeholder="Subject"
+          placeholder="What's this about?"
           required
           value={form.subject}
           onChange={handleChange}
-          aria-label="Subject"
-          className={inputClass}
+          className="form-field"
         />
-        <div className="focus-line" />
       </div>
 
       {/* Message */}
-      <div className="input-group">
+      <div>
+        <label htmlFor="contact-message" className="block mb-2">
+          <Eyebrow tone="tertiary">Message</Eyebrow>
+        </label>
         <textarea
+          id="contact-message"
           name="message"
           placeholder="Tell us about your project"
           required
           rows={5}
           value={form.message}
           onChange={handleChange}
-          aria-label="Message"
-          className={`${inputClass} resize-none`}
+          className="form-field resize-none"
         />
-        <div className="focus-line" />
       </div>
 
       {/* 提交 */}
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 pt-2">
         <ModuleButton
           type="submit"
           disabled={status === 'sending'}

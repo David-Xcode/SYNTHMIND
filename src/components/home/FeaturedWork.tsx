@@ -5,8 +5,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
-import ArrowRightIcon from '@/components/shared/ArrowRightIcon';
-import GlassCard from '@/components/shared/GlassCard';
+import Card from '@/components/shared/Card';
+import CardActionRow from '@/components/shared/CardActionRow';
 import ModuleButton from '@/components/shared/ModuleButton';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { caseStudies } from '@/data/case-studies';
@@ -48,11 +48,11 @@ export default function FeaturedWork() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {featured.map((cs, index) => (
             <AnimateOnScroll key={cs.slug} delay={index * 80 + 100}>
-              <Link href={`/products/${cs.slug}`} className="block h-full">
-                <GlassCard
-                  variant="spotlight"
-                  className="group h-full cursor-pointer"
-                >
+              <Link
+                href={`/products/${cs.slug}`}
+                className="block h-full group"
+              >
+                <Card variant="interactive" accent className="h-full">
                   <div className="mb-5 flex h-10 items-center">
                     <Image
                       src={cs.logo}
@@ -70,12 +70,9 @@ export default function FeaturedWork() {
                     {cs.tagline}
                   </p>
                   <div className="flex items-center justify-end">
-                    <span className="inline-flex items-center gap-1 text-sm font-medium text-accent transition-all duration-300 group-hover:gap-1.5">
-                      View case study
-                      <ArrowRightIcon className="h-3.5 w-3.5" />
-                    </span>
+                    <CardActionRow>View case study</CardActionRow>
                   </div>
-                </GlassCard>
+                </Card>
               </Link>
             </AnimateOnScroll>
           ))}

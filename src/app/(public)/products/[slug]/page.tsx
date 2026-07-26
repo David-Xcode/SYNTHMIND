@@ -4,10 +4,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import CaseStudyHero from '@/components/case-study/CaseStudyHero';
-import ChallengeSection from '@/components/case-study/ChallengeSection';
 import ResultsSection from '@/components/case-study/ResultsSection';
-import SolutionSection from '@/components/case-study/SolutionSection';
 import TechStackBadges from '@/components/case-study/TechStackBadges';
+import TextListSection from '@/components/case-study/TextListSection';
 import Breadcrumb from '@/components/layout/Breadcrumb';
 import JsonLd from '@/components/shared/JsonLd';
 import { getAllSlugs, getCaseStudyBySlug } from '@/data/case-studies';
@@ -70,8 +69,21 @@ export default async function CaseStudyPage({ params }: PageProps) {
         items={[{ label: 'Products', href: '/products' }, { label: cs.title }]}
       />
       <CaseStudyHero caseStudy={cs} />
-      <ChallengeSection challenges={cs.challenge} />
-      <SolutionSection solutions={cs.solution} />
+      {/* v7：Challenge/SolutionSection 薄包装（仅传字面量）已内联省掉 */}
+      <TextListSection
+        sheetNo="01"
+        eyebrow="CHALLENGE"
+        titleLight="The"
+        titleBold="Challenge"
+        items={cs.challenge}
+      />
+      <TextListSection
+        sheetNo="02"
+        eyebrow="SOLUTION"
+        titleLight="The"
+        titleBold="Solution"
+        items={cs.solution}
+      />
       <TechStackBadges techStack={cs.techStack} />
       <ResultsSection results={cs.results} />
     </>

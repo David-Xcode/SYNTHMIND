@@ -3,13 +3,13 @@
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';
-import AnimatedStat from '@/components/shared/AnimatedStat';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import Card from '@/components/shared/Card';
 import CTABanner from '@/components/shared/CTABanner';
 import Eyebrow from '@/components/shared/Eyebrow';
-import GlassCard from '@/components/shared/GlassCard';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
+import StatCard from '@/components/shared/StatCard';
 import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -161,11 +161,12 @@ export default function AboutPage() {
             <AnimateOnScroll delay={200}>
               <div className="space-y-4">
                 {stats.map((stat) => (
-                  <AnimatedStat
+                  <StatCard
                     key={stat.label}
                     value={stat.value}
                     label={stat.label}
-                    color={stat.color}
+                    valueClassName={stat.color}
+                    duration={1200}
                   />
                 ))}
               </div>
@@ -189,7 +190,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {solutions.map((solution, index) => (
               <AnimateOnScroll key={solution.title} delay={index * 80 + 100}>
-                <GlassCard variant="spotlight" className="h-full">
+                <Card variant="static" accent className="h-full">
                   <Eyebrow>{solution.eyebrow}</Eyebrow>
                   <h3 className="mt-3 font-display font-semibold stretch-wide text-lg text-txt-primary tracking-tight">
                     {solution.title}
@@ -197,7 +198,7 @@ export default function AboutPage() {
                   <p className="mt-2 text-txt-tertiary text-sm leading-relaxed">
                     {solution.description}
                   </p>
-                </GlassCard>
+                </Card>
               </AnimateOnScroll>
             ))}
           </div>
@@ -221,14 +222,14 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {values.map((value, index) => (
               <AnimateOnScroll key={value.title} delay={index * 80 + 100}>
-                <GlassCard variant="elevated" className="h-full">
+                <Card variant="static" className="h-full">
                   <h3 className="font-display font-semibold stretch-wide text-lg text-txt-primary mb-2 tracking-tight">
                     {value.title}
                   </h3>
                   <p className="text-txt-tertiary text-sm leading-relaxed">
                     {value.description}
                   </p>
-                </GlassCard>
+                </Card>
               </AnimateOnScroll>
             ))}
           </div>
@@ -251,24 +252,18 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {processSteps.map((step, index) => (
               <AnimateOnScroll key={step.title} delay={index * 80 + 100}>
-                <GlassCard variant="surface" className="relative h-full">
-                  {/* 大号水印编号 */}
-                  <span className="absolute top-3 right-4 font-mono text-5xl font-bold text-txt-quaternary/15 leading-none select-none">
+                <Card variant="static" className="h-full">
+                  {/* 步骤号 = 真实序列（水印大数字已随 v7 编号统一退役） */}
+                  <span className="font-mono text-sm font-semibold text-accent">
                     {String(index + 1).padStart(2, '0')}
                   </span>
-
-                  <div className="relative">
-                    <span className="font-mono text-sm font-semibold text-accent">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <h3 className="mt-2 text-base font-medium text-txt-primary tracking-tight">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 text-txt-tertiary text-sm leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
-                </GlassCard>
+                  <h3 className="mt-2 text-base font-medium text-txt-primary tracking-tight">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-txt-tertiary text-sm leading-relaxed">
+                    {step.description}
+                  </p>
+                </Card>
               </AnimateOnScroll>
             ))}
           </div>

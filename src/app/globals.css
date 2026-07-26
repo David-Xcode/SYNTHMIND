@@ -58,6 +58,29 @@
   --mat-seam-glow: rgba(74, 159, 229, 0.7); /* = 物件横缝光心 */
   --mat-seam-soft: rgba(74, 159, 229, 0.55); /* = 物件竖缝光心/淡入终值 */
 
+  /* ── v7 玻璃检视窗 token（Card System v7）──
+     正本对照表 = 2026-07-26-card-system-v7-glass-design spec §1.2。
+     与哑光 --mat-*（砖/按钮）分开：玻璃与砖是两种材质，共享明度轴
+     逻辑不共享值。全部 rgba 基于既有豁免色（bg-surface / bg-base 的
+     rgba 化 + 中性明度轴 + accent 低 alpha），不引入新字面色 ── */
+  --glass-blur: 12px; /* 毛玻璃采样半径上限（性能门槛见 spec §1.3） */
+  --glass-face: rgba(12, 16, 23, 0.58); /* 毛玻璃档面底 — blur 已提供分离 */
+  --glass-face-solid: rgba(
+    12,
+    16,
+    23,
+    0.84
+  ); /* 光滑玻璃档面底 — 无 blur 保对比 */
+  --glass-edge-top: rgba(255, 255, 255, 0.07); /* 顶棱受光白线 */
+  --glass-edge-bottom: rgba(0, 0, 0, 0.35); /* 底缘压暗 */
+  --glass-reflect-a: rgba(
+    74,
+    159,
+    229,
+    0.05
+  ); /* 内反射渐变起（右上，朝余晖） */
+  --glass-reflect-b: rgba(74, 159, 229, 0); /* 内反射渐变止 */
+
   /* ── 砖墙 pitch — 静态材质层与 WallBricks 同读（JS 只读不定，
      永不产生第二事实源）；缝宽恒 = pitch/16（tile viewBox 等比缩放保
      DOM 砖与静态 tile 几何等价）；v5 密度定案 56px（灯半径 200px ≈
@@ -284,51 +307,81 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   Sheet 三级卡片系统（图纸片材质）
-   实底 + hairline 边 — 玻璃拟态已移除，圆角收紧 8px
-   hover 维持 2D（3D 预算全花在滚动入场上）
+   Card System v7 — 玻璃检视窗（压在灯箱墙前的玻璃）
+   设计定案：docs/superpowers/specs/2026-07-26-card-system-v7-glass-design.md
+   唯一授权入口 = Card 组件（shared/），业务代码不得直接写这些类。
+   材质叙事：v6 的墙后有真光（余晖 + 指针灯），玻璃第一次有光学意义——
+   毛玻璃把墙后灯光揉成柔光晕、砖缝光磨成雾光（零新增光源）。
+   变体 = 交互语义：interactive 可点（顶起 + tilt）/ static 纯展示 /
+   container 外壳静——「不可点却带可点式 hover」的旧病灶就此修复。
+   transform 写入者分层：.card-tilt JS 弹簧逐帧 / 本体 hover 顶起
+   transition——永不同元素（照 ModuleButton frame/tilt/本体先例）。
    ═══════════════════════════════════════════════ */
 
-/* Level 1: 半透明底层（无模糊 — 图纸不是玻璃） */
-.card-surface {
-  background: rgba(12, 16, 23, 0.72);
-  border: 1px solid var(--border-subtle);
+/* 基态 = 光滑玻璃档（无 blur，恒定成本 ≈0，兼作老内核回退）：
+   厚度三件套 = 顶棱受光白线 + 底缘压暗（中性明度轴，与按钮/砖同语言）
+   + accent 低 alpha 内反射（225deg：高光朝右上，与墙后余晖同向） */
+.card-glass {
+  position: relative;
   border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background:
+    linear-gradient(225deg, var(--glass-reflect-a), var(--glass-reflect-b) 55%),
+    var(--glass-face-solid);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge-top),
+    inset 0 -1px 0 var(--glass-edge-bottom);
   transition: border-color 0.3s var(--ease-out-expo);
 }
-.card-surface:hover {
-  border-color: var(--border-default);
+/* 毛玻璃档 — 支持 backdrop-filter 才升级（老内核/微信 WebView 自动停留
+   光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——墙后指针灯
+   透过玻璃揉成柔光晕。性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3） */
+@supports (backdrop-filter: blur(1px)) {
+  .card-glass {
+    background:
+      linear-gradient(
+        225deg,
+        var(--glass-reflect-a),
+        var(--glass-reflect-b) 55%
+      ),
+      var(--glass-face);
+    backdrop-filter: blur(var(--glass-blur));
+  }
 }
-
-/* Level 2: 标准交互卡片 — hover 上浮 + 蓝色光晕 */
-.card-elevated {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  transition:
-    border-color 0.3s var(--ease-out-expo),
-    transform 0.3s var(--ease-out-expo),
-    box-shadow 0.3s var(--ease-out-expo);
-}
-.card-elevated:hover {
+/* 全变体共用的边框微响应 — 玻璃板边缘受光；非可点击暗示（无位移/投影），
+   static/container 卡唯一允许的 hover 反馈 */
+.card-glass:hover {
   border-color: var(--border-strong);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(74, 159, 229, 0.08);
 }
 
-/* Level 3: 特色卡片 — 左侧蓝色渐变竖线 (hover 延展) */
-.card-spotlight {
-  position: relative;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  overflow: hidden;
+/* interactive 专属 — hover 玻璃板被拿近检视：per-element perspective
+   translateZ 顶起（近大）+ 投影落墙 + active 微收。与按钮顶出同语言、
+   幅度减半（8px vs 16px：大平面动得少才显厚重） */
+.card-glass-interactive {
   transition:
     border-color 0.3s var(--ease-out-expo),
     transform 0.3s var(--ease-out-expo),
     box-shadow 0.3s var(--ease-out-expo);
 }
-.card-spotlight::before {
+.card-glass-interactive:hover {
+  border-color: var(--border-strong);
+  transform: perspective(900px) translateZ(8px);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge-top),
+    inset 0 -1px 0 var(--glass-edge-bottom),
+    0 14px 32px rgba(8, 11, 16, 0.55),
+    0 6px 14px rgba(74, 159, 229, 0.12);
+}
+/* active 微收 — 快过渡传达按压（同按钮 0.09s 口径），松手回 hover 长过渡 */
+.card-glass-interactive:active {
+  transform: perspective(900px) translateZ(2px);
+  transition-duration: 0.09s;
+}
+
+/* accent 左竖线 — 重点标记（正交于变体；静态：标记不是交互反馈，
+   旧 spotlight 的 hover 延展随交互语义重划退役）。::after 专用——
+   background 已被内反射渐变栈占用 */
+.card-glass-accent::after {
   content: "";
   position: absolute;
   top: 25%;
@@ -337,20 +390,15 @@ body {
   width: 2px;
   background: linear-gradient(180deg, var(--accent), rgba(74, 159, 229, 0.2));
   opacity: 0.6;
-  transition:
-    opacity 0.3s var(--ease-out-expo),
-    top 0.4s var(--ease-out-expo),
-    bottom 0.4s var(--ease-out-expo);
+  pointer-events: none;
 }
-.card-spotlight:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(74, 159, 229, 0.08);
-}
-.card-spotlight:hover::before {
-  opacity: 1;
-  top: 16px;
-  bottom: 16px;
+
+/* tilt wrapper — JS 弹簧唯一写入层（CardTilt client 岛）；
+   height:100% 让 grid 等高布局穿透 wrapper 传给卡片本体
+   （普通流中 height:100% 对 auto 高父级退化无害） */
+.card-tilt {
+  display: block;
+  height: 100%;
 }
 
 /* .sheet-panel（v4 的 L1 图纸面板）已随 v4.2 无底纹排版整体退役：
@@ -1079,25 +1127,40 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   ContactForm — focus 下划线动画
+   ContactForm v7 — 单据填写格
+   设计定案：card-system-v7-glass spec §6.2。
+   旧「透明底 + 10% alpha 下划线」在砖墙上与背景混融不可读，退役
+   （focus-line 中心展开下划线随之退役：外置 label + 实底格后语义重复）。
+   实底凹格 = bg-base 豁免 rgba 化，比玻璃卡面再深一档——
+   墙 → 玻璃卡 → 填写格三层拉开，填写内容以 txt-primary 高对比呈现
    ═══════════════════════════════════════════════ */
 
-.input-group {
-  position: relative;
+.form-field {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(8, 11, 16, 0.8);
+  padding: 0.625rem 0.875rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  /* 凹进单据的格子 — 顶缘轻内影（中性明度轴，与按钮按入同语言收敛版） */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition:
+    border-color 0.2s var(--ease-out-expo),
+    background-color 0.2s var(--ease-out-expo);
 }
-.focus-line {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  right: 50%;
-  height: 1px;
-  background: var(--accent);
-  transition: all 0.3s var(--ease-out-expo);
-  pointer-events: none;
+.form-field::placeholder {
+  /* 有外置 mono label 后 placeholder 只是示例提示，quaternary 档合规 */
+  color: var(--text-quaternary);
 }
-.input-group:focus-within .focus-line {
-  left: 0;
-  right: 0;
+.form-field:hover {
+  border-color: var(--border-default);
+}
+/* focus = accent 边框增亮 + 底色再压实——正在填写的格子是页面焦点 */
+.form-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(8, 11, 16, 0.92);
 }
 
 /* ═══════════════════════════════════════════════

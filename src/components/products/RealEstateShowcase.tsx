@@ -4,8 +4,11 @@
 
 import Image from 'next/image';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import Card from '@/components/shared/Card';
+import CardActionRow from '@/components/shared/CardActionRow';
+import ExternalArrowIcon from '@/components/shared/ExternalArrowIcon';
 import Eyebrow from '@/components/shared/Eyebrow';
-import GlassCard from '@/components/shared/GlassCard';
+import HighlightTag from '@/components/shared/HighlightTag';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { realEstateSites } from '@/data/real-estate';
 
@@ -33,12 +36,13 @@ export default function RealEstateShowcase() {
                 href={site.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block h-full"
+                className="block h-full group"
                 aria-label={`Visit ${site.name} live site`}
               >
-                <GlassCard
-                  variant="spotlight"
-                  className="h-full group cursor-pointer flex flex-col"
+                <Card
+                  variant="interactive"
+                  accent
+                  className="h-full flex flex-col"
                 >
                   <div className="h-10 mb-5 flex items-center">
                     <Image
@@ -65,37 +69,19 @@ export default function RealEstateShowcase() {
                   {/* 能力标签 */}
                   <div className="mt-4 flex flex-wrap gap-1.5">
                     {site.highlights.map((highlight) => (
-                      <span
-                        key={highlight}
-                        className="text-xs text-txt-secondary bg-accent/[0.06] border border-accent/[0.12] rounded-lg px-2 py-0.5"
-                      >
-                        {highlight}
-                      </span>
+                      <HighlightTag key={highlight}>{highlight}</HighlightTag>
                     ))}
                   </div>
 
                   {/* 外链指示 — 推到卡片底部对齐 */}
                   <div className="mt-auto pt-5 flex items-center justify-end">
-                    <span className="inline-flex items-center gap-1 text-accent text-sm font-medium group-hover:gap-1.5 transition-all duration-300">
+                    <CardActionRow
+                      icon={<ExternalArrowIcon className="w-3.5 h-3.5" />}
+                    >
                       Visit live site
-                      <svg
-                        className="w-3.5 h-3.5"
-                        aria-hidden="true"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        {/* 右上箭头 — 外链语义，区别于站内的 ArrowRightIcon */}
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M7 17L17 7m0 0H8m9 0v9"
-                        />
-                      </svg>
-                    </span>
+                    </CardActionRow>
                   </div>
-                </GlassCard>
+                </Card>
               </a>
             </AnimateOnScroll>
           ))}

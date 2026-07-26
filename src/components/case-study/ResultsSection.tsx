@@ -1,61 +1,29 @@
-'use client';
-
 // ─── 项目成果 · Blueprint ───
 // IBM Plex Mono stat 数字 / 蓝色数字 / 计数动画
+// v7：count-up 卡片统一走 shared/StatCard（本文件不再自持 hooks——
+// 原 ResultCard 的解析 + 动画双份实现随卡片系统收敛退役），
+// 组件回归 Server Component，client 岛只剩 StatCard/AnimateOnScroll 叶子
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import SectionTitle from '@/components/shared/SectionTitle';
-import { useCountUp } from '@/hooks/useCountUp';
-import { useIntersectionVisible } from '@/hooks/useIntersectionVisible';
+import StatCard from '@/components/shared/StatCard';
 
 interface ResultsSectionProps {
   results: string[];
 }
 
 // 从文本中提取数字指标 (如 "50% faster" → { value: "50%", label: "faster" })
-function extractStat(text: string): { value: string; rest: string } | null {
+function extractStat(text: string): { value: string; label: string } | null {
   const match = text.match(/^(\d+[\d,.]*[%x×+]?)\s+(.+)/i);
-  if (match) return { value: match[1], rest: match[2] };
+  if (match) return { value: match[1], label: match[2] };
   return null;
-}
-
-// 单个成果卡片
-function ResultCard({ text }: { text: string }) {
-  const { ref, isVisible } = useIntersectionVisible<HTMLDivElement>();
-  const stat = extractStat(text);
-
-  // 提取纯数字部分用于动画
-  const numericValue = stat
-    ? parseInt(stat.value.replace(/[^0-9]/g, ''), 10)
-    : 0;
-  const suffix = stat ? stat.value.replace(/[0-9,.]*/g, '') : '';
-  const animatedNumber = useCountUp(numericValue, isVisible);
-
-  if (stat) {
-    // 有数字指标的 — 大号 stat 卡片, IBM Plex Mono 数字
-    return (
-      <div ref={ref} className="card-elevated p-6 text-center">
-        <div className="font-mono text-3xl md:text-4xl font-bold text-accent tracking-tight mb-2">
-          {isVisible ? animatedNumber : 0}
-          {suffix}
-        </div>
-        <p className="text-txt-tertiary text-sm">{stat.rest}</p>
-      </div>
-    );
-  }
-
-  // 无数字的 — 复选框列表项
-  return (
-    <div ref={ref} className="flex items-start gap-3">
-      <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-2" />
-      <p className="text-txt-secondary leading-relaxed text-base">{text}</p>
-    </div>
-  );
 }
 
 export default function ResultsSection({ results }: ResultsSectionProps) {
   // 分离有数字和无数字的结果
-  const statsResults = results.filter((r) => extractStat(r));
+  const statsResults = results
+    .map((r) => extractStat(r))
+    .filter((s): s is NonNullable<typeof s> => s !== null);
   const textResults = results.filter((r) => !extractStat(r));
 
   return (
@@ -72,14 +40,17 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
           />
         </AnimateOnScroll>
 
-        {/* Stat 卡片网格 */}
+        {/* Stat 卡片网格 — count-up 大数字 */}
         {statsResults.length > 0 && (
           <div
             className={`grid gap-4 mb-8 ${statsResults.length >= 3 ? 'grid-cols-2 md:grid-cols-3' : statsResults.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}
           >
-            {statsResults.map((result, index) => (
-              <AnimateOnScroll key={index} delay={index * 100}>
-                <ResultCard text={result} />
+            {statsResults.map((stat, index) => (
+              <AnimateOnScroll
+                key={stat.value + stat.label}
+                delay={index * 100}
+              >
+                <StatCard value={stat.value} label={stat.label} size="lg" />
               </AnimateOnScroll>
             ))}
           </div>
@@ -89,8 +60,13 @@ export default function ResultsSection({ results }: ResultsSectionProps) {
         {textResults.length > 0 && (
           <div className="space-y-4">
             {textResults.map((result, index) => (
-              <AnimateOnScroll key={index} delay={index * 80 + 200}>
-                <ResultCard text={result} />
+              <AnimateOnScroll key={result} delay={index * 80 + 200}>
+                <div className="flex items-start gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 mt-2" />
+                  <p className="text-txt-secondary leading-relaxed text-base">
+                    {result}
+                  </p>
+                </div>
               </AnimateOnScroll>
             ))}
           </div>
