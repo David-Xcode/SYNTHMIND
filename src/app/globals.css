@@ -159,58 +159,75 @@
   --wall-bed-dark-t: rgba(0, 0, 0, 0.4); /* 横槽上壁：上一块砖的接触投影 */
   --wall-bed-dark-k: rgba(0, 0, 0, 0.28); /* 竖槽左壁：左一块砖的接触投影 */
 
-  /* 砖 tile（96 viewBox，砖体画在 translate(6,6) 的 90×90 区，缝区透明）——
-     **全站唯一一张砖图**：静态路径直接平铺（露出其下砖床），真砖 div 用
-     background-size = pitch + position = −seam 把同一张图对位到砖盒，
+  /* 砖 tile（288×192 viewBox = 36S×24S，S=8；砖体画在**右下格**
+     translate(8,104) 的 280×88 区、其余全透明）—— **全站唯一一张砖图**，
+     两种铺法共用同一张：
+     - 静态路径叠**两遍**（层 A 铺奇行、层 B 偏移 (P/2, Q) 铺偶行）= running bond
+     - 真砖 div 用 background-size 36/35 x 24/11 + position 100% 100% 把同一张图
+       对位到砖盒（恒等式推导见 .bp-brick 注释）
      两条路径像素同源，不存在双份字面值需要同步。
+     🚨 砖必须画在**右下格**：只有这个位置能让两轴的 background-position 同时
+     归 100%。画在上半格时 y 轴需要 S/(Q+S) = 7.6923% 这种魔数——能跑，但那是
+     一个没人看得懂、改 pitch 比例就静默错位的常数。
      图层自下而上：实底 → 蓝味 → 下/右背光带 → 上/左倒角亮带 → 四边硬棱。
-     倒角亮带宽度 = 厚度的主要来源（10% ≈ 5px @56 档）。
-     注：1 tile 单位 = 56/96 = 0.583 CSS px，四边「1px 硬棱」在 56 档 DPR1 下
-     实为 ~58% 覆盖的抗锯齿线，装饰性质；凸凹读感由 3.5px 的槽渐变承担，
+     🚨 四边棱线是**等物理宽**（以砖面高 H 为基准：倒角 0.10·H = 8.8 单位、
+     背光 0.22·H = 19.36 单位），**不是**「各占该轴的 10%/18%/22%」——砖是方的
+     时两者等价，3.18:1 的长砖用后者会把左倒角带撑到 17.5px（≈2–3 个字符宽）
+     压在正文上，且物理上错（真砖的棱角倒角不随砖长变化）。右背光带的
+     offset 0.931 = 1 − 19.36/280、左倒角带的 0.0314 = 8.8/280 都由此而来。
+     注：1 tile 单位 = Q/96 = 0.625 CSS px @基准档，四边「1 单位硬棱」在 DPR1 下
+     实为 ~63% 覆盖的抗锯齿线，装饰性质；凸凹读感由 5px 的槽渐变承担，
      不依赖硬棱，DPR2 才是真 1px */
-  --wall-tile-brick: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.028'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0.78' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.42'/></linearGradient><linearGradient id='r' x1='0' y1='0' x2='1' y2='0'><stop offset='0.82' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.3'/></linearGradient><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.055'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient><linearGradient id='k' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.03'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient></defs><g transform='translate(6,6)'><rect width='90' height='90' fill='%23111620'/><rect width='90' height='90' fill='url(%23a)'/><rect width='90' height='90' fill='url(%23b)'/><rect width='90' height='90' fill='url(%23r)'/><rect width='90' height='90' fill='url(%23t)'/><rect width='90' height='90' fill='url(%23k)'/><rect width='90' height='1' fill='%23ffffff' fill-opacity='0.055'/><rect width='1' height='90' fill='%23ffffff' fill-opacity='0.03'/><rect x='89' width='1' height='90' fill='%23000000' fill-opacity='0.2'/><rect y='89' width='90' height='1' fill='%23000000' fill-opacity='0.3'/></g></svg>");
+  --wall-tile-brick: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='288' height='192' viewBox='0 0 288 192'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.028'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0.78' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.42'/></linearGradient><linearGradient id='r' x1='0' y1='0' x2='1' y2='0'><stop offset='0.931' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.3'/></linearGradient><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.055'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient><linearGradient id='k' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.03'/><stop offset='0.0314' stop-color='%23ffffff' stop-opacity='0'/></linearGradient></defs><g transform='translate(8,104)'><rect width='280' height='88' fill='%23111620'/><rect width='280' height='88' fill='url(%23a)'/><rect width='280' height='88' fill='url(%23b)'/><rect width='280' height='88' fill='url(%23r)'/><rect width='280' height='88' fill='url(%23t)'/><rect width='280' height='88' fill='url(%23k)'/><rect width='280' height='1' fill='%23ffffff' fill-opacity='0.055'/><rect width='1' height='88' fill='%23ffffff' fill-opacity='0.03'/><rect x='279' width='1' height='88' fill='%23000000' fill-opacity='0.2'/><rect y='87' width='280' height='1' fill='%23000000' fill-opacity='0.3'/></g></svg>");
 
-  /* 砖床 tile（96 viewBox）— 两条路径共用同一张，几何对齐由构造保证。
+  /* 砖床 tile（288×192 viewBox）— 两条路径共用同一张，几何对齐由构造保证。
      凸凹线索对调：砖上/左亮、下/右暗；槽上/左暗（上一块砖的接触投影 = 渐变
      y/x，对应 --wall-bed-dark-t / -k）、下/右亮（反弹光 hairline = --wall-bed-lit）。
      砖窝底内阴影（渐变 s = --wall-bed-dark）= 光照不到井深处，砖 fade 时露出。
+     错缝（running bond）下的分工：**横缝通长**（真实砌体的 bed joint 连续，
+     两条满宽 y∈[0,8] 与 y∈[96,104]），**竖缝逐行错位**（奇行 x∈[0,8] @y∈[96,192]、
+     偶行 x∈[144,152] @y∈[0,96]）。绘制序 = 底 → 砖窝内阴影 → 竖缝 → 横缝，
+     横缝后画 ⇒ 交叉处横缝胜出，与真实砌体「灰缝通长、竖缝顶进去」一致。
+     偶行砖跨 tile 边界回绕，但 s 是**纯垂直**渐变 ⇒ 直接横向切成两个 rect
+     （x∈[152,288] 与 x∈[0,144]）与整块等价，不需要 use 或负坐标。
      ⚠️ s 从 offset 0 的**全透明**起、0.06 才到峰值：真砖 div 的抗锯齿上边缘
      会漏出其下砖床，峰值若压在 y=0 会在每块砖顶缘织出一条暗线 */
-  --wall-tile-bed: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='y' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0.4'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='x' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23000000' stop-opacity='0.28'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='0.06' stop-color='%23000000' stop-opacity='0.35'/><stop offset='0.45' stop-color='%23000000' stop-opacity='0'/></linearGradient></defs><rect width='96' height='96' fill='%23080b10'/><rect width='96' height='96' fill='%23000000' fill-opacity='0.45'/><g transform='translate(6,6)'><rect width='90' height='90' fill='url(%23s)'/></g><rect width='96' height='6' fill='url(%23y)'/><rect width='6' height='96' fill='url(%23x)'/><rect y='5' width='96' height='1' fill='%23ffffff' fill-opacity='0.018'/><rect x='5' width='1' height='96' fill='%23ffffff' fill-opacity='0.018'/></svg>");
+  --wall-tile-bed: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='288' height='192' viewBox='0 0 288 192'><defs><linearGradient id='y' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0.4'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='x' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23000000' stop-opacity='0.28'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='0.06' stop-color='%23000000' stop-opacity='0.35'/><stop offset='0.45' stop-color='%23000000' stop-opacity='0'/></linearGradient></defs><rect width='288' height='192' fill='%23080b10'/><rect width='288' height='192' fill='%23000000' fill-opacity='0.45'/><rect x='8' y='104' width='280' height='88' fill='url(%23s)'/><rect x='152' y='8' width='136' height='88' fill='url(%23s)'/><rect y='8' width='144' height='88' fill='url(%23s)'/><rect x='144' width='8' height='96' fill='url(%23x)'/><rect x='151' width='1' height='96' fill='%23ffffff' fill-opacity='0.018'/><rect y='96' width='8' height='96' fill='url(%23x)'/><rect x='7' y='96' width='1' height='96' fill='%23ffffff' fill-opacity='0.018'/><rect width='288' height='8' fill='url(%23y)'/><rect y='7' width='288' height='1' fill='%23ffffff' fill-opacity='0.018'/><rect y='96' width='288' height='8' fill='url(%23y)'/><rect y='103' width='288' height='1' fill='%23ffffff' fill-opacity='0.018'/></svg>");
 
-  /* ── 砖墙 pitch — 静态材质层与 WallBricks 同读（JS 只读不定，
-     永不产生第二事实源）；v8 密度沿用 56px（井半径 150px ≈ 5 砖直径，
-     单砖缩放/推移清晰可读），阶梯见下方媒体查询 ──
-     🚨 **seam 必须恒 = pitch/16**（本行与下方两档媒体查询同守）：
-     这条不变量另外硬编在两处，任一处走样都不报错只错位——
-       ① .bp-brick 的 `background-size: calc(100% * 16/15)` +
-          `background-position: 100%` 恒等式（见该规则注释的推导）
-       ② 砖 tile / 砖床 tile 的 96 viewBox + translate(6,6)（96/6 = 16）
-     加新档（如 ≥5000px 120px）时写 7.5px 而不是 8px，否则砖图整体
-     错位 0.5px 且只在超宽屏出现 ── */
-  --wall-brick-w: 56px;
-  /* ⚠️ 唯一读者是 WallBricks 的 getComputedStyle（解析失败即放弃真砖增强），
-     CSS 侧的形式消费在 .bp-wall-grid —— 那行是防死码清理工具的护栏，别删 */
-  --wall-seam: 3.5px;
+  /* ── 砖墙几何 · 全墙唯一事实源（Graphite Wall v9，2026-07-27）──
+     行高 Q = --wall-brick-h，其余全部派生：
+       P（横向 pitch）= 3Q      S（缝宽，横竖同宽）= Q/12
+       砖面 W = 35Q/12          砖面 H = 11Q/12      ⇒ 面长宽比 35:11 = 3.18:1
+     🚨 **Q 必须是 12 的倍数**：S 落到分数位会让真砖 DOM 与静态 tile 的
+     栅格化方式不同，砖缘织出一圈半像素抗锯齿差（v8 基准档 seam 3.5px 的旧病，
+     v9 靠整数 S 从构造上消除）。加新档（如 ≥5000px）写 120px，不要写 112px。
+     🚨 **不要把 P / S 做成 calc() 派生的自定义属性**：未注册自定义属性的计算值
+     是「var() 已代入但 calc() 未求值」的 token 流，WallBricks 的
+     getComputedStyle().getPropertyValue() 会拿到字符串 "calc(60px * 3)"，
+     parseFloat → NaN → buildFailed → **桌面重力井静默消失**（不报错不掉 lint）。
+     需要 P / 2Q 的地方一律在**真实属性**里写 calc()（真实属性的 calc 正常求值）。
+     阶梯见下方媒体查询；WallBricks **只读不定**（唯一例外 = MAX_BRICKS 封顶时
+     把放大后的 Q 内联写回 .bp-wall，静态 tile 因此始终同档、几何不错位）。
+     正本 = docs/superpowers/specs/2026-07-27-graphite-wall-v9-running-bond-design.md */
+  --wall-brick-h: 60px;
 
   /* ── 动画缓动 ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 方砖 pitch 阶梯 — 超宽屏放大；--wall-seam 同步 = pitch/16。
-   全视口真砖阵：DOM 砖数随视口线性（56 基准一屏 ≈700，超宽
-   3440×1440 @64 档 ≈1242 为现实上限；v4.2 的 512 池已退役）；
+/* 砖墙 pitch 阶梯 — 超宽屏放大。**只有 Q 一个变量**（P = 3Q、S = Q/12 派生），
+   三档 60/72/96 全是 12 的倍数 ⇒ S = 5/6/8 全为整数。
+   全视口真砖阵：DOM 砖数随视口线性（60 档一屏 1920×1080 ≈207，超宽
+   3440×1440 @72 档 ≈330；v8 的方砖同视口分别是 700 / 1242）；
    触屏/RM/无 JS 路径零 DOM 砖 = 砖床 + 砖 tile 同密度铺满，无独立窄屏档 */
 @media (min-width: 2200px) {
   :root {
-    --wall-brick-w: 64px;
-    --wall-seam: 4px;
+    --wall-brick-h: 72px;
   }
 }
 @media (min-width: 3600px) {
   :root {
-    --wall-brick-w: 96px;
-    --wall-seam: 6px;
+    --wall-brick-h: 96px;
   }
 }
 
@@ -312,8 +329,11 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   BlueprintWall 石墨墙 · Graphite Wall v8
-   设计定案：docs/superpowers/specs/2026-07-27-graphite-wall-v8-design.md
+   BlueprintWall 石墨墙 · Graphite Wall v9（错缝砌体）
+   几何/砌法/tile/井物理正本：
+     docs/superpowers/specs/2026-07-27-graphite-wall-v9-running-bond-design.md
+   材质/受光/token 正本（v8 的存续条款）：
+     docs/superpowers/specs/2026-07-27-graphite-wall-v8-design.md
    概念：墙 = 一面被左上 45° 掠射光斜照的实心石墨砌体；指针 = 压在
    上面的重力井。**墙后没有任何发光体**（v6 的角落余晖 + 指针灯已退役）。
    - 厚度靠材料自己读出：受光棱线 / 倒角亮带 / 背光压暗带 / 凹槽的
@@ -325,9 +345,13 @@ body {
      不冒充光、不随帧变化。v5「tile + DOM 砖 + 逐格底衬 + 假涌光」
      四层互相遮掩的架构仍然被禁
    - 墙属场景（.bp-wall fixed）：内容从墙前滚过，墙不动——零滚动耦合
+   - 砌法（v9）：**running bond 半砖错缝**，砖 P×Q = 3Q×Q（面 3.18:1，
+     真实模数砖比例）；偶行右移半砖。两条路径同相，见 .bp-wall-face
    - 指针交互（WallBricks）：全局 3 标量弹簧（井心 x/y + 强度），
-     近针的砖向墙内塌陷成碗（坑心最深 36px、坑壁沿坡度朝坑心倾、
-     材料向坑心微聚、井深处砖面渐暗）——一切响应都是井心位置的纯函数
+     近针的砖向墙内塌陷成碗（坑心最深 0.75Q = 45px @基准档、坑壁沿坡度
+     朝坑心倾、材料向坑心微聚、井深处砖面渐暗）——一切响应都是井心位置的
+     纯函数。**鼠标按下时井加深到 1.3 倍**（v9 新增，走同一根弹簧）。
+     v9 起井的全部长度参数都是 Q 的倍数 ⇒ 各 pitch 档观感一致
    ═══════════════════════════════════════════════ */
 
 .bp-wall {
@@ -341,19 +365,33 @@ body {
    露出其下砖床）；桌面真砖接管后本元素**不隐藏**，改行当只留砖床。
    两条路径共用同一张床 tile ⇒ 几何对齐由构造保证，不可能错位。
    tile 内字面色值与 :root 的 --wall-* 簇交叉锁定（data URI 无法消费
-   var()——同 BlueprintObject STROKE 表机制，改值两处同步） */
+   var()——同 BlueprintObject STROKE 表机制，改值两处同步）。
+   **错缝（v9）**：砖 tile 是 P×2Q 画布、砖只画在右下格 ⇒ 叠两遍即成
+   running bond —— 层 A（position 0 0）铺**奇行**（不移），层 B（偏移
+   (P/2, Q) = calc(Q*1.5) Q）铺**偶行**（右移半砖）。两层砖在 y 上互不
+   重叠（A 落 [Q+S,2Q]、B 偏移后落 [S,Q]）⇒ 仍是「一层砖 + 一层砖床」，
+   层纪律不破。🚨 DOM 相位（WallBricks 的偶行右移）与本处的层 A/B 分工
+   必须同相 —— 改任一处都要同步另一处，否则接管瞬间整墙错半砖 */
 .bp-wall-face {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background-image: var(--wall-tile-brick), var(--wall-tile-bed);
-  background-size: var(--wall-brick-w) var(--wall-brick-w);
+  background-image:
+    var(--wall-tile-brick), var(--wall-tile-brick), var(--wall-tile-bed);
+  background-position:
+    0 0,
+    calc(var(--wall-brick-h) * 1.5) var(--wall-brick-h),
+    0 0;
+  background-size: calc(var(--wall-brick-h) * 3) calc(var(--wall-brick-h) * 2);
 }
 
 /* 真砖接管开关 — 建砖后 WallBricks 在 .bp-wall 上落 data-live：
-   砖层交给真砖阵，本元素只留砖床（砖床恒在砖后，永不消失） */
+   砖层（两层）交给真砖阵，本元素只留砖床（砖床恒在砖后，永不消失）。
+   position 一并复位：image 列表缩到 1 项时 position 列表会循环复用，
+   写死单值免得将来读代码的人要去推算哪一项生效 */
 .bp-wall[data-live] .bp-wall-face {
   background-image: var(--wall-tile-bed);
+  background-position: 0 0;
 }
 
 /* 真砖阵容器（WallBricks 懒启动）— 视口级：砖 left/top 建时写死
@@ -363,35 +401,35 @@ body {
   position: absolute;
   inset: 0;
   z-index: 2;
-  /* --wall-seam 的形式消费 — 该变量的真实读者是 WallBricks 的
-     getComputedStyle，CSS 侧零 var() 会让静态分析工具（Lightning CSS
-     unusedSymbols / PostCSS 清理插件 / 将来的 Tailwind v4 @theme）
-     判定它是死 token 并剔除 → JS 解析失败 → 桌面重力井**静默消失**。
-     本行无渲染副作用，只为让它对任何工具都是「已使用」。勿删 */
-  --seam-guard: var(--wall-seam);
   /* 圈内砖逐帧被 3D transform 提升合成层、出圈降级——contain 把
-     布局/重绘失效域锁在墙盒内，不外溢重排 700+ 兄弟砖之外的页面
-     （井形变 ≤36px 恒在墙盒内，paint 裁切无可见副作用） */
+     布局/重绘失效域锁在墙盒内，不外溢重排兄弟砖之外的页面。
+     paint 裁切另有第二个用途（v9）：错缝的偶行左端补了一块砖
+     （left = −P/2 + S），靠 paint containment 裁掉溢出视口的那半块 */
   contain: layout paint style;
 }
 
-/* 真砖 — 与静态路径**共用同一张砖图**（零双份字面值）：tile 是 96 单位、
-   砖体画在 6..96，要把它对位到 faceSize(= pitch − seam) 的元素盒。
-   🚨 对位量必须**元素相对**，不得读 --wall-brick-w/--wall-seam：那两个
-   变量在 2200/3600px 断点瞬间翻档，而元素盒尺寸由 WallBricks 的 JS 写、
-   要等 200ms resize 防抖才重建——跨断点期间图与盒对不上（放大时右下暗边
-   裁到盒外、缩小时右下开缝露床）；滚动条出现导致的翻档更不触发 resize，
-   永不自愈。改用恒等式即可完全解耦：
-     seam = pitch/16 ⇒ faceSize = pitch·15/16 ⇒ pitch = 100%·16/15
-     background-position 的 100% ≡ (区域 − 图)×100% = faceSize − pitch = −seam
-   代价 = 把 seam = pitch/16 这条不变量硬编进 CSS，但它本来就已由 96/6
-   的 tile viewBox 承载（spec §12 交叉锁定清单），不是新增耦合。
-   面**不透明**：v8 砖是实心石板，opacity 只在井压下陷时由 JS 写
-   （≤0.35 降幅），露出的是砖床槽底 = 变暗 */
+/* 真砖 — 与静态路径**共用同一张砖图**（零双份字面值）：tile 是 288×192
+   单位（= 36S×24S）、砖体画在右下格 (8,104) 的 280×88 区，要把它对位到
+   W×H(= P−S × Q−S) 的元素盒。
+   🚨 对位量必须**元素相对**，不得读 --wall-brick-h：该变量在 2200/3600px
+   断点瞬间翻档，而元素盒尺寸由 WallBricks 的 JS 写、要等 200ms resize
+   防抖才重建——跨断点期间图与盒对不上（放大时右下暗边裁到盒外、缩小时
+   右下开缝露床）；滚动条出现导致的翻档更不触发 resize，永不自愈。
+   改用恒等式即可完全解耦（以 S 为单位：P=36S, Q=12S, W=35S, H=11S）：
+     x：图宽 = W·(P/W) = P，容器W − 图W = W − P = −S ⇒ position-x 100% 即 −S
+     y：图高 = H·(2Q/H) = 2Q，容器H − 图H = H − 2Q = −(Q+S)
+        ⇒ position-y 100% 即 −(Q+S)，恰好把图 y=Q+S（右下格砖顶）落到盒 y=0
+   ⇒ background-size = 100%·P/W × 100%·2Q/H = 36/35 × 24/11
+   🚨 砖画在**右下格**正是为了让 y 轴也落在 100%：画在上半格时需要
+   y = S/(Q+S) = 7.6923%，一个改比例就静默错位的魔数。
+   代价 = 把 P=3Q, S=Q/12 这条不变量硬编进 CSS，但它本来就已由 288/8 的
+   tile viewBox 承载（v9 spec §8 交叉锁定清单），不是新增耦合。
+   面**不透明**：砖是实心石板，opacity 只在井压下陷时由 JS 写
+   （≤0.40 降幅），露出的是砖床槽底 = 变暗 */
 .bp-brick {
   position: absolute;
   background-image: var(--wall-tile-brick);
-  background-size: calc(100% * 16 / 15) calc(100% * 16 / 15);
+  background-size: calc(100% * 36 / 35) calc(100% * 24 / 11);
   background-position: 100% 100%;
   background-repeat: no-repeat;
 }

@@ -4,7 +4,9 @@
 >
 > **本文件是本仓的唯一约定正本**（`AGENTS.md` 只是指向这里的指针 + PR 规范；
 > 项目速览见 `README.md`）。**现行 spec 正本**（`docs/superpowers/specs/`）：
-> 墙 = `2026-07-27-graphite-wall-v8-design.md` · 卡 = `2026-07-26-card-system-v7-glass-design.md` ·
+> 墙 = `2026-07-27-graphite-wall-v9-running-bond-design.md`（几何/砌法/tile/井物理）
+> ＋ `2026-07-27-graphite-wall-v8-design.md`（材质/受光/token，两文并读）·
+> 卡 = `2026-07-26-card-system-v7-glass-design.md` ·
 > 物件 = `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md`
 > （几何/材质基座 = `2026-07-27-blueprint-object-v3-solid-design.md`，两文并读）·
 > 信息架构 = `2026-07-27-ia-hierarchy-redesign-design.md` ·
@@ -80,7 +82,7 @@ ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.m
 - 排版精度 > 空间/材质 > 动效 > 色彩数量
 - 编号只用于**真实序列**（图纸页码、流程步骤）；能力/价值等非序列内容禁止装饰性编号
 - 标注预算：**自由文本** mono 测量标注（如坐标、尺寸）每屏 ≤2 处；图签（SheetLabel）与卡片图纸编号（S.NN）属结构性编号，不计入预算
-- **石墨重力井墙（v8 Graphite Wall）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——概念 = **墙是一面被左上 45° 掠射光斜照的实心石墨砌体，指针是压在上面的重力井**。🚨 **墙后没有任何发光体**（v6 的角落余晖 `.bp-wall-ambient` + 指针灯 `.bp-wall-lamp` 已于 v8 整体退役，**禁止以任何形式复活**）：厚度靠材料自己读出（受光棱线 / 倒角亮带 / 背光压暗带 / 凹槽凸凹线索对调 / 逐砖明度不均），深度靠**变暗**（砖陷得越深 opacity 越低，露出更暗的砖床槽底——不是透出墙后的光）。墙属场景（`.bp-wall` fixed 视口级，**内容从墙前滚过、墙不动**，零滚动耦合）；**层纪律（v6 单层砖的 v8 修订）= 一层砖 + 一层砖床，砖床恒在砖后**：桌面指针路径 = WallBricks 首次 pointermove 铺满视口的真砖 div 阵，触屏/RM/无 JS = 静态 SVG tile（砖床 + 砖两层叠加），经 `.bp-wall[data-live]` 切换**砖层**（砖床两路径共用同一张 tile，永不消失）——砖床不是砖也不是光，是砖的凹槽，判别标准 = 不参与遮掩、不冒充光、不随帧变化；指针交互 = **重力井塌陷**（近针砖向墙内陷成碗 ≤36px、坑壁沿坡度朝坑心倾上限 20°、材料向坑心微聚、井深处砖面渐暗 ≤35%；实际峰值与 pitch 档差见 v8 spec §5）；**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（v8 起墙侧**零发光豁免**——蓝味只剩受光棱线里的 α0.028）；内容层次二级：**L0 墙 / L2 玻璃检视窗卡片**——**任何 section 不得持有底色**（L1 已于 v4.2 退役；v8 定案见 2026-07-27-graphite-wall-v8-design spec）。**卡片 = 压在石墨墙前的玻璃检视窗（v7 材质 / v8 受光）**：毛玻璃把墙面材质揉成柔光、砖缝磨成雾（`@supports` 无 backdrop-filter 自动回退光滑玻璃档），内反射 `135deg` 高光朝**左上**与掠射光同向（v8 起唯一合法方向——朝右上的 225deg 是对着已删除的余晖，禁止回改）（材质正本 = 2026-07-26-card-system-v7-glass-design spec）
+- **石墨重力井墙（v9 Graphite Wall · 错缝砌体）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——概念 = **墙是一面被左上 45° 掠射光斜照的实心石墨砌体，指针是压在上面的重力井**。🚨 **墙后没有任何发光体**（v6 的角落余晖 `.bp-wall-ambient` + 指针灯 `.bp-wall-lamp` 已于 v8 整体退役，**禁止以任何形式复活**）：厚度靠材料自己读出（受光棱线 / 倒角亮带 / 背光压暗带 / 凹槽凸凹线索对调 / 逐砖明度不均），深度靠**变暗**（砖陷得越深 opacity 越低，露出更暗的砖床槽底——不是透出墙后的光）。墙属场景（`.bp-wall` fixed 视口级，**内容从墙前滚过、墙不动**，零滚动耦合）；**层纪律（v6 单层砖的 v8 修订）= 一层砖 + 一层砖床，砖床恒在砖后**：桌面指针路径 = WallBricks 首次 pointermove 铺满视口的真砖 div 阵，触屏/RM/无 JS = 静态 SVG tile（砖床 + 砖两层叠加），经 `.bp-wall[data-live]` 切换**砖层**（砖床两路径共用同一张 tile，永不消失）——砖床不是砖也不是光，是砖的凹槽，判别标准 = 不参与遮掩、不冒充光、不随帧变化；**砌法 = running bond 半砖错缝**（v9 起；砖 pitch = 3Q×Q、砖面 3.18:1 = 真实模数砖比例，几何唯一事实源 = `--wall-brick-h`，P=3Q / S=Q/12 全部派生。静态 tile 靠「同一张砖图叠两遍、第二遍偏移 (P/2, Q)」表达错缝——**全站仍只有一张砖图**；🚨 DOM 相位「偶行右移」与 CSS 层 A/B 分工必须同相）；指针交互 = **重力井塌陷**（近针砖向墙内陷成碗 ≤0.75Q、坑壁沿坡度朝坑心倾上限 20°（实际峰值恒 10.90°，v9 起**不随 pitch 档漂移**）、材料向坑心微聚 ≤0.06Q、井深处砖面渐暗 ≤40%；**鼠标按下时井加深到 1.3 倍**，走同一根弹簧；井的全部长度参数都是行高 Q 的倍数 ⇒ 各档观感一致，详见 v9 spec §6）；**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（v8 起墙侧**零发光豁免**——蓝味只剩受光棱线里的 α0.028）；内容层次二级：**L0 墙 / L2 玻璃检视窗卡片**——**任何 section 不得持有底色**（L1 已于 v4.2 退役；v8 定案见 2026-07-27-graphite-wall-v8-design spec）。**卡片 = 压在石墨墙前的玻璃检视窗（v7 材质 / v8 受光）**：毛玻璃把墙面材质揉成柔光、砖缝磨成雾（`@supports` 无 backdrop-filter 自动回退光滑玻璃档），内反射 `135deg` 高光朝**左上**与掠射光同向（v8 起唯一合法方向——朝右上的 225deg 是对着已删除的余晖，禁止回改）（材质正本 = 2026-07-26-card-system-v7-glass-design spec）
 
 ## 3. Typography — Archivo + Manrope + IBM Plex Mono
 
@@ -175,13 +177,22 @@ import SheetLabel from '@/components/shared/SheetLabel';
 > v4.2 无底纹排版：正文直压砖墙，可读性全靠文字对比度——正文一律 ≥4.5:1；
 > tertiary/quaternary 与 globals.css `:root` 的 `--text-*` 双处声明交叉锁定，
 > 改值两处同步。
-> v8 基准（对砖面**平底** `--wall-face-base` #111620；砖缝 rgb(4,6,9) 上
+> 基准（对砖面**平底** `--wall-face-base` #111620；砖缝 rgb(4,6,9) 上
 > 各高约 0.7–0.8 档）：primary 15.26 / secondary 8.09 / tertiary 6.39 /
-> quaternary 4.60。
-> ⚠️ 平底不是全站最坏：每块砖顶部有受光倒角带（峰值 ≈rgb(32,40,50)）与
-> 硬棱（≈rgb(44,50,61)），那里 tertiary 降到 5.25/**4.54**、quaternary 降到
-> 3.78/**3.27**。正文用 ≥tertiary 在棱上仍 ≥4.5 ✅；**quaternary 在棱上不合格
-> ——这正是它「装饰/aria-hidden 专用、正文禁用」的硬理由**。
+> quaternary 4.60。**v9 换几何后这一行逐位不变**——受光配方的 alpha 一个
+> 没动，变的只是受光带的物理宽度（v9 spec §5.2 已用这六个值反推校验过模型）。
+> ⚠️ 平底不是全站最坏，由亮到暗的**完整**梯队（v9 实算，基准档）：
+> 左上角 t+k 交叠 + 两硬棱 rgb(56,63,72) → tertiary 3.79（0.625²px 的**点**，
+> 不构成排版承载面）· **上硬棱** rgb(44,50,61) → tertiary **4.54** / quaternary
+> **3.27**（0.625px×满宽的线，**正文的真实最坏点**）· 上倒角带 rgb(32,38,49)
+> → 5.36 / 3.86（5.5px 高）· 左硬棱 rgb(31,36,45) → 5.49 / 3.96 · 左倒角带
+> rgb(24,29,39) → 5.96 / 4.29（5.5px 宽）· 蓝味峰 rgb(19,26,38) → 6.16 /
+> **4.43**。正文用 ≥tertiary 在任何承载面上仍 ≥4.54 ✅；**quaternary 从蓝味峰
+> 起就已不合格（4.43 < 4.5，不是只有棱上）——这正是它「装饰/aria-hidden 专用、
+> 正文禁用」的硬理由**。
+> 🚨 四边棱线是**等物理宽**（倒角 0.10·砖面高、背光 0.22·砖面高），不是
+> 「各占该轴 10%/18%/22%」——3.18:1 的长砖用后者会把左倒角带撑到 17.5px
+> （≈2–3 个字符宽）压在正文上。改 tile 时别把它「简化」回百分比。
 > 🚨 quaternary 在平底距 4.5 红线只剩 0.10 档——任何提亮 `--wall-face-base`
 > 的改动都会把它压到线下，改砖面明度前必须重算这一行（globals.css 的
 > `--text-*` 与 `--wall-face-base` 注释同为交叉锁定点）。
@@ -198,7 +209,8 @@ import SheetLabel from '@/components/shared/SheetLabel';
 
 ### Radial Glow / Wall
 - 页头/CTA 的径向光晕用 globals.css 的 `.hero-glow` class（`--glow-y` 控制垂直位置），不要内联 radial-gradient。
-- 石墨重力井墙 = `<BlueprintWall />`（(public)/layout 已挂载一次，**页面/组件不得重复实例化**）：`.bp-wall` fixed 属场景（内容从墙前滚过，零滚动耦合、滚动零 JS）；层序 = `.bp-wall-face`（砖床 + 砖 tile 叠加，z1；`[data-live]` 时丢掉砖层只留砖床）→ `.bp-wall-grid` 真砖阵（z2，恒压在砖床之上）。砖 pitch 走 `--wall-brick-w`/`--wall-seam` 媒体查询阶梯（56 基准 / ≥2200px 64 / ≥3600px 96；缝恒 = pitch/16），**JS 只读不定**，解析失败即放弃增强（tile 原样）。
+- 石墨重力井墙 = `<BlueprintWall />`（(public)/layout 已挂载一次，**页面/组件不得重复实例化**）：`.bp-wall` fixed 属场景（内容从墙前滚过，零滚动耦合、滚动零 JS）；层序 = `.bp-wall-face`（砖床 + 砖 tile 叠加，z1；`[data-live]` 时丢掉砖层只留砖床）→ `.bp-wall-grid` 真砖阵（z2，恒压在砖床之上）。砖几何走 **`--wall-brick-h` 单一事实源**（行高 Q，媒体查询阶梯 60 基准 / ≥2200px 72 / ≥3600px 96；**Q 恒为 12 的倍数**，P = 3Q、S = Q/12 由 WallBricks 与 CSS 的 `calc()` 各自派生），**JS 只读不定**（唯一例外 = MAX_BRICKS 封顶时把放大后的 Q 内联写回 `.bp-wall`），解析失败即放弃增强（tile 原样）。
+  🚨 **不要把 P / S 做成 `calc()` 派生的自定义属性**：未注册自定义属性的计算值不求值 `calc()`，`getPropertyValue` 会拿到字符串 `"calc(60px * 3)"` → `parseFloat` → NaN → 桌面重力井**静默消失**。需要派生值的地方一律在**真实属性**里写 `calc()`。
 - ⚠️ **层纪律（v8）**：一层砖 + 一层砖床，砖床恒在砖后——禁止两层砖同时可见，禁止再造假光层，**禁止任何形式的墙后光源**（v6 余晖/指针灯已删；v5 的「tile + DOM 砖 + 底衬 + 假涌光」四层互相遮掩机器早已退役）。砖床合法性判别：不参与遮掩、不冒充光、不随帧变化。
 
 ---
@@ -323,7 +335,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤11px 沿签名轴（物件 v3 等比重标）+ 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）
-- ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤36px / 坡斜上限 20° / 向心聚拢 ≤3px / 微缩 ≤5% / 渐暗 ≤35% 全部是井心位置的纯函数，零砖级状态；影响半径 ~150px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；**v8 起零发光豁免**——井深处的 opacity 降露出的是更暗的砖床槽底，不是光；per-element perspective 不建 preserve-3d 链，砖恒不越过墙面；逐砖明度变异必须走**非线性**空间哈希（线性式 (a·c+b·r)%3 等值集恒为直线 → 对角条纹，与系数是否素数无关）；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 撤静态砖层、砖床原地留用；**感知等价而非像素等价**），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层。⚠️ 改物理参数前必读 v8 spec §5–§6：实际峰值倾角/力臂推导/接管闪变逐像素实测均在那里，**上限之外的数值不得凭直觉改**）
+- ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤0.75Q / 坡斜上限 20°（实际峰值恒 10.90°）/ 向心聚拢 ≤0.06Q / 微缩 ≤5% / 渐暗 ≤40% 全部是井心位置的纯函数，零砖级状态；影响半径 3.5Q、坑底经中心阻尼放平（damp 分母是砖面**短边**——长砖用长边会让井里处处被压制）；**井的全部长度参数都是行高 Q 的倍数**，故各 pitch 档与封顶档观感一致（v8 的绝对 px 常量会让倾角峰值随档漂移 8.47°/7.41°/4.94°，v9 已消除）；**pointerdown 深压**：按下时 li 目标 1→1.3、抬起回 1、离场回 0，走同一根弹簧、零新状态、零新逐帧成本（几何上更安全：沉降项 ∝ li 线性、抬升项 ∝ sin 次线性）；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；**v8 起零发光豁免**——井深处的 opacity 降露出的是更暗的砖床槽底，不是光；per-element perspective 不建 preserve-3d 链，砖恒不越过墙面；逐砖明度变异必须走**非线性**空间哈希（线性式 (a·c+b·r)%3 等值集恒为直线 → 对角条纹，与系数是否素数无关）；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 撤静态砖层、砖床原地留用；**感知等价而非像素等价**），触屏/RM/无 JS = 静态 tile 原样（**同样是错缝**）；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层。⚠️ 改物理参数前必读 v9 spec §5–§6：力臂 = 半对角 1.52866Q（不是半宽）、尺度无关保证式 `DEPTH/Q > (halfDiag/Q)·TILT·π/180`、足迹链、邻砖不互叠的实算都在那里，**上限之外的数值不得凭直觉改**）
 - ✅ `btn-tilt` — 按钮悬停期微摆（ButtonTilt → `src/lib/pointer-tilt-engine.ts` 共享单例引擎，每按钮独立参数 k30 ζ0.6；倾角 ≤4°、仅指针在按钮盒内跟随（盒外即零——嵌墙砖在槽里不晃，v4.1 的 130px 邻域跟随已退役）；仅 hover+fine 且非 RM 挂引擎，触屏/RM/无 JS = 纯透传 span；与本体顶出 transition 分层两元素——JS 逐帧 / transition 永不同层；mouse-tracking 豁免第 3 例，仅限 ModuleButton）
 - ✅ `card-tilt` — interactive 卡指针倾斜（CardTilt → pointer-tilt-engine 同一共享引擎、per-entry 参数：≤2.5° k22 ζ0.65 慢弹簧「厚玻璃板惯性」，perspective 900px；盒内跟随盒外即零；仅 hover+fine 且非 RM 挂载，触屏/RM/无 JS = 纯静态透传；**全站禁止第二份引擎代码**；mouse-tracking 豁免第 4 例，仅限 Card interactive 变体）
 - ✅ 卡片 hover 顶起/active 微收 — interactive 卡本体 `perspective(900px) translateZ(8px)` transition + 投影落墙 + 边框增亮；active `translateZ(2px)` 0.09s 快过渡 + 投影回落半档（与 tilt 分层两元素，照 ModuleButton 先例；hover/active 均包 `@media (hover:hover)`；static/container 卡零 hover 位移）
@@ -341,7 +353,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ❌ `noise` texture overlays
 - ❌ 满屏 parallax（v6 起墙属场景固定、内容从墙前滚过；**内容层之间**禁止异速滚动层——v3 的 depth-drift 已退役）
 - ❌ `particle` effects
-- ❌ mouse-tracking tilt / mouseGlow（豁免仅四例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintWall 砖层 WallBricks 重力井塌陷（v8 起**纯形变 + 渐暗，零发光跟随**——墙后指针灯 `.bp-wall-lamp` 已随「墙后全灭」删除，正本 = v8 spec）；③ ModuleButton 的 ButtonTilt 悬停微摆；④ Card interactive 变体的 CardTilt 指针倾斜——③④ 共享 `src/lib/pointer-tilt-engine.ts` 单例引擎（全站一套监听、per-entry 参数），禁止第二份引擎。static/container 卡与其余一切元素一律不做）
+- ❌ mouse-tracking tilt / mouseGlow（豁免仅四例窄列举，均为 rAF 阻尼弹簧非 1:1 硬跟：① Hero 物件 HeroObjectPhysics 指针跟随；② BlueprintWall 砖层 WallBricks 重力井塌陷（v8 起**纯形变 + 渐暗，零发光跟随**——墙后指针灯 `.bp-wall-lamp` 已随「墙后全灭」删除；v9 加 pointerdown 深压，仍是同一根弹簧、仍零发光，正本 = v9 spec）；③ ModuleButton 的 ButtonTilt 悬停微摆；④ Card interactive 变体的 CardTilt 指针倾斜——③④ 共享 `src/lib/pointer-tilt-engine.ts` 单例引擎（全站一套监听、per-entry 参数），禁止第二份引擎。static/container 卡与其余一切元素一律不做）
 - ❌ 动画属性超出 transform / opacity / filter / stroke-dashoffset
 
 ### 性能纪律

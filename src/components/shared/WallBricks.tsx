@@ -1,10 +1,15 @@
 'use client';
 
-// ─── 真砖重力井 · Graphite Wall v8 ───
+// ─── 真砖重力井 · Graphite Wall v9（错缝砌体）───
 // BlueprintWall 的动态层：指针 = 压在石墨砌体上的重力井。
 // **墙后没有任何发光体**（v6 的指针灯已退役）——本组件只推砖，不点灯。
 //
-// 砖 + 砖床两层（v6「单层砖」的 v8 修订）：
+// 砌法（v9）：**running bond 半砖错缝**。偶行右移半砖并在左端补一块
+// （被 .bp-wall-grid 的 contain:paint 裁掉溢出部分）；奇行不移。
+// 🚨 相位必须与 globals.css 的 .bp-wall-face 同相（那里层 A 铺奇行、
+// 层 B 偏移 (P/2, Q) 铺偶行）——错一处则接管瞬间整墙平移半砖。
+//
+// 砖 + 砖床两层（v6「单层砖」的 v8 修订，v9 沿用）：
 // - 首次 pointermove 一次性铺满视口的真砖 div（零子元素），同帧让静态
 //   tile 丢掉砖层只留砖床（.bp-wall[data-live]）——砖床恒在砖后
 // - 缝隙是真凹槽：砖床 tile 画出槽的压暗与接触投影，砖陷下去时缝张开、
@@ -16,40 +21,50 @@
 // - 坡斜：坑壁砖沿碗坡朝坑心倾 ≤TILT°（坑底经中心阻尼放平）
 // - 聚拢：材料向坑心微聚 ≤PULL px（坑心缝受压闭合、坑缘缝拉开）
 // - 渐暗：井深处砖面 opacity 渐降 ≤FADE——露出更暗的砖床槽底
-//   （v6 的「透出墙后灯光」语义已反转：坑里本来就该暗）
+// - **深压（v9 新增）**：鼠标按下时 li 目标由 1 抬到 PRESS，走同一根弹簧
 //
 // 门控继承：hover+fine 且非 RM 才接管；触屏/RM/无 JS = 静态 tile
-// （砖床 + 砖两层叠加）就是那面墙。只写 transform / opacity；
+// （砖床 + 砖两层叠加，同样是错缝）就是那面墙。只写 transform / opacity；
 // 弹簧收敛即停帧。
 //
-// 砖数封顶（MAX_BRICKS，2026-07-27 审查修复）：CSS 的 pitch 阶梯只按
-// min-width 分档，竖屏/超高视口不受任何约束。超限时本组件就地放大 pitch
-// 并把 --wall-brick-w/--wall-seam 内联写回 .bp-wall——静态砖床 tile 是
-// background-size: var(--wall-brick-w)，两条路径因此始终同档、几何不错位。
+// 几何事实源：CSS 的 --wall-brick-h（行高 Q）**唯一**，P = 3Q、S = Q/12
+// 由本组件派生（v9 spec §1）。JS 只读不定，唯一例外是 MAX_BRICKS 封顶时
+// 把放大后的 Q 内联写回 .bp-wall——静态砖床 tile 的 background-size 是
+// calc(var(--wall-brick-h) * …)，两条路径因此始终同档、几何不错位。
 
 import { useEffect, useRef } from 'react';
 import { listenMql } from '@/lib/listen-mql';
 
 // 砖数硬上限 —— globals.css 的 pitch 阶梯只按 min-width 分档，**不看高度**：
-// 竖置 4K（2160×3840）宽度落在 2200 断点之下，拿 56 档铺出 2691 块，是
-// 阶梯注释假定的现实上限（3440×1440 @64 档 ≈1242）的 2.2 倍。这些砖自己
-// 不 layout，但会让**别人**触发的每次全文档 layout 贵上 3–4 倍。
-// 1400 与 1242 同量级，主流横屏视口一块也不会被封顶碰到。
-const MAX_BRICKS = 1400;
+// 竖屏/超高视口不受任何约束。护栏的成本模型是**按 DOM 节点数**（砖自己不
+// layout，但会让别人触发的每次全文档 layout 变贵），所以砖变大时阈值不跟着
+// 放大，只重新确认它仍够得着：v9 几何下 1920×1080 = 207 块、3440×1440 = 330、
+// 竖置 4K(2160×3840) = 800、竖置 5K(2880×5120) = 1044。
+// 900 让竖置 5K 及更极端的高瘦视口真实触发（护栏保持可验证），
+// 而 v8 立项时那个病态场景（竖置 4K，当年 2691 块）在新几何下天然合规。
+const MAX_BRICKS = 900;
 
-const RADIUS = 150; // 重力井影响半径（px）— v8 收窄：≈5 砖直径，坡更陡
-const DEPTH = 36; // 坑心最大下陷（px，-z；perspective 600 下约 5.7% 透视缩）
-const PULL = 3; // 向坑心最大聚拢（px）——对向砖合拢 ≤ 缝宽，坑心缝闭合不互叠
-const SHRINK = 0.05; // 微缩上限（比例）——与透视缩合计 ≈10%，缝张开露槽底
+// ── 井的长度参数：全部写成行高 Q 的倍数 ⇒ 尺度无关 ──
+// 各 pitch 档（60/72/96）与封顶档的观感完全一致，不再像 v8 那样
+// 倾角实际峰值随档漂移（8.47°/7.41°/4.94°）。
+const RADIUS_Q = 3.5; // 影响半径 = 3.5Q（基准档 210px）
+const DEPTH_Q = 0.75; // 坑心最大下陷 = 0.75Q（基准档 45px）
+const PULL_Q = 0.06; // 向坑心最大聚拢 = 0.06Q（基准档 3.6px）
+const PERSP_Q = 10; // per-element perspective = 10Q ⇒ 透视缩比例各档恒定
+
 const TILT = 20; // deg — 碗壁坡度倾斜**上限**（绕砖心，无铰链/背面问题）。
-// 实际峰值远低于上限且**随 pitch 档变**（damp = min(1, d/faceSize)）：
-// 8.47° @56 档 / 7.41° @64 / 4.94° @96，均在 d≈50px 取极值（v8 spec §7.1）。
-// 砖角抬升的力臂是半对角 26.25·√2 = 37.12px（不是半宽）——最坏角
-// z = −36u² + 37.12·sin(20u°·u) ≈ −23u² < 0 对所有 d 成立：
-// **没有任何砖会凸到墙面之前**
-const FADE = 0.35; // 井心砖面透明度降幅——陷得越深，露出的砖床槽底越多 = 越暗
-const STIFFNESS = 105; // 井心弹簧 — 石墨重物：沉稳
-const DAMPING = 20; // ζ≈0.976 近临界，几乎无过冲
+// 实际峰值 = TILT·(1 − H/R)² = TILT·(1 − (11/12)/3.5)² = **10.90°**，
+// 因全部参数同比于 Q，这个峰值**不随 pitch 档变**（v8 的痼疾）。
+// 砖角抬升的力臂是半对角 √(W²+H²)/2 = 1.52866·Q（基准档 91.72px，不是半宽）。
+// 保证式化为尺度无关的一条不等式（v9 spec §5.1）：
+//   DEPTH/Q > (halfDiag/Q)·TILT·π/180 → 0.75 > 1.52866×20×π/180 = 0.534 ✓
+// ⇒ z_角 ≈ −13.18·u² px 对所有 u>0 严格 <0：**没有任何砖会凸到墙面之前**。
+// 深压（li>1）只让不等式更宽松：沉降项 ∝ li 线性、抬升项 ∝ sin(·) 次线性。
+const SHRINK = 0.05; // 微缩上限（比例）——与透视缩合计，缝张开露槽底
+const FADE = 0.4; // 井心砖面透明度降幅——陷得越深，露出的砖床槽底越多 = 越暗
+const PRESS = 1.3; // 鼠标按下时的 li 目标（v9）；抬起回 1，离场回 0
+const STIFFNESS = 130; // 井心弹簧 — ω 11.40
+const DAMPING = 19; // ζ≈0.833，过冲 0.9%：跟手但不弹跳（90% 上升 0.333→0.253s）
 const REST_EPS = 0.05; // px — 位置停帧阈（亚像素）
 const REST_V_EPS = 0.5; // px/s — 速度停帧阈：沿用 0.05 档要多空转 ~0.8s 才停帧，0.5 无可见差
 const MAX_DT = 0.033; // 秒 — tab 切回防积分爆炸
@@ -62,6 +77,7 @@ const VARIANTS = [' bp-brick--a', '', ' bp-brick--c'];
 // (c·7 + r·13) % 3 恒等于 (c + r) % 3，正是本函数取代的那个错误写法）。
 // 大素数乘 + XOR + 位混合打散；`>>> 0` 不可省：`^` 产出有符号 int32，
 // 负数取模会得到负下标 → VARIANTS[负] = undefined → class 变成 "brickundefined"
+// （错缝下偶行的 c 从 −1 起，负数分支是**常态**不是边角情况）
 const variantOf = (c: number, r: number) => {
   let h = (c * 73856093) ^ (r * 19349663);
   h ^= h >>> 13;
@@ -84,12 +100,20 @@ export default function WallBricks() {
     if (!capable.matches || reducedMotion.matches) return;
 
     let bricks: HTMLDivElement[] = [];
-    let lastW: number[] = []; // 上帧井权重 — 双零跳过（圈外砖零成本）
+    // 砖心坐标建时预存（错缝下每行砖数不同，i%cols 的行列反推**失效**；
+    // 顺带省掉逐砖逐帧一次取模 + 一次除法）
+    let cxs = new Float32Array(0);
+    let cys = new Float32Array(0);
+    let lastW = new Float32Array(0); // 上帧井权重 — 双零跳过（圈外砖零成本）
     let cols = 0;
     let rows = 0;
-    let pitch = 0;
-    let seam = 0;
-    let faceSize = 0;
+    let pitchX = 0;
+    let pitchY = 0;
+    let faceH = 0; // 砖面**短边** = damp 的尺度（见下方 render 注释）
+    let radius = 0;
+    let depth = 0;
+    let pullMax = 0;
+    let perspPrefix = '';
     let ready = false;
     let buildFailed = false; // var 解析失败闩锁 — 防逐 pointermove 反复强制 reflow 探测
 
@@ -104,6 +128,7 @@ export default function WallBricks() {
     let ty = 0;
     let ti = 0;
     let hasPointer = false;
+    let pressed = false; // 鼠标按住中 → 井目标强度 PRESS
     let rafId = 0;
     let lastTime = 0;
     let disposed = false;
@@ -117,14 +142,13 @@ export default function WallBricks() {
         buildFailed = true;
         return;
       }
-      // 先撤上次的封顶覆写再读 —— 否则读到的是已放大的 pitch，
+      // 先撤上次的封顶覆写再读 —— 否则读到的是已放大的 Q，
       // 每次 resize 都在上一次的封顶值上再封一次，逐轮复合放大
-      wall.style.removeProperty('--wall-brick-w');
-      wall.style.removeProperty('--wall-seam');
-      const styles = getComputedStyle(grid);
-      const w = Number.parseFloat(styles.getPropertyValue('--wall-brick-w'));
-      const s = Number.parseFloat(styles.getPropertyValue('--wall-seam'));
-      if (!w || !s) {
+      wall.style.removeProperty('--wall-brick-h');
+      const q0 = Number.parseFloat(
+        getComputedStyle(grid).getPropertyValue('--wall-brick-h'),
+      );
+      if (!q0) {
         buildFailed = true; // 放弃增强，静态 tile 原样；不再重试
         return;
       }
@@ -132,59 +156,73 @@ export default function WallBricks() {
       // innerWidth 含经典滚动条，会白铺一列压在滚动条槽下
       const cw = document.documentElement.clientWidth;
       const ch = document.documentElement.clientHeight;
-      let nextPitch = w;
-      let nextSeam = s;
-      const brickCount = (p: number) => Math.ceil(cw / p) * Math.ceil(ch / p);
+      // 砖数 = rows·cols + 偶行左端各补的那一块（错缝）
+      const countAt = (q: number) => {
+        const c = Math.ceil(cw / (3 * q));
+        const r = Math.ceil(ch / q);
+        return r * c + Math.ceil(r / 2);
+      };
 
       // 高度维度的封顶（阶梯只有 min-width 两档，管不到竖屏/超高视口）：
-      // 按面积比一次放大到位，再逐 px 兜住 cols/rows 双 ceil 的取整溢出
-      // （砖数对 pitch 单调不增，循环必然收敛；实测竖置 4K 只需几次迭代）
-      if (brickCount(nextPitch) > MAX_BRICKS) {
-        nextPitch = Math.ceil(
-          nextPitch * Math.sqrt(brickCount(nextPitch) / MAX_BRICKS),
-        );
-        while (brickCount(nextPitch) > MAX_BRICKS) nextPitch += 1;
-        // seam = pitch/16 是硬不变量：.bp-brick 的 background-size
-        // calc(100% * 16/15) 把它编进了 CSS（globals.css 对位恒等式）
-        nextSeam = nextPitch / 16;
+      // 按面积比一次放大到位，再逐档兜住 cols/rows 双 ceil 的取整溢出
+      // （砖数对 Q 单调不增，循环必然收敛）。
+      // 🚨 Q 必须留在 12 的倍数上：S = Q/12 落到分数位会让真砖 DOM 与
+      // 静态 tile 的栅格化方式分叉，砖缘织出半像素抗锯齿差（v8 旧病）
+      let q = q0;
+      if (countAt(q) > MAX_BRICKS) {
+        q = Math.ceil((q * Math.sqrt(countAt(q) / MAX_BRICKS)) / 12) * 12;
+        while (countAt(q) > MAX_BRICKS) q += 12;
         // 写在 .bp-wall 上而非 grid：静态砖床 .bp-wall-face 是 grid 的
         // **兄弟**节点，只有挂到共同祖先才继承得到，否则床 tile 与真砖错位
-        wall.style.setProperty('--wall-brick-w', `${nextPitch}px`);
-        wall.style.setProperty('--wall-seam', `${nextSeam}px`);
+        wall.style.setProperty('--wall-brick-h', `${q}px`);
       }
 
-      const nextCols = Math.ceil(cw / nextPitch);
-      const nextRows = Math.ceil(ch / nextPitch);
+      const nextPitchX = q * 3;
+      const nextCols = Math.ceil(cw / nextPitchX);
+      const nextRows = Math.ceil(ch / q);
       // 短路：档位与行列数一个没变（滚动条出现/消失、1px 抖动）→ 现有砖阵
-      // 原样留用，不为零变化重造 700–1400 个 div
-      if (
-        ready &&
-        nextPitch === pitch &&
-        nextCols === cols &&
-        nextRows === rows
-      )
+      // 原样留用，不为零变化重造几百个 div
+      if (ready && q === pitchY && nextCols === cols && nextRows === rows)
         return;
 
-      pitch = nextPitch;
-      seam = nextSeam;
-      faceSize = nextPitch - nextSeam;
+      pitchY = q;
+      pitchX = nextPitchX;
+      const seam = q / 12;
+      const faceW = pitchX - seam;
+      faceH = pitchY - seam;
+      radius = RADIUS_Q * q;
+      depth = DEPTH_Q * q;
+      pullMax = PULL_Q * q;
+      perspPrefix = `perspective(${PERSP_Q * q}px) `;
       cols = nextCols;
       rows = nextRows;
+
+      const total = rows * cols + Math.ceil(rows / 2);
       grid.textContent = '';
-      bricks = [];
-      lastW = [];
+      bricks = new Array<HTMLDivElement>(total);
+      cxs = new Float32Array(total);
+      cys = new Float32Array(total);
+      lastW = new Float32Array(total);
       const frag = document.createDocumentFragment();
+      let i = 0;
       for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
+        // 错缝：偶行右移半砖并从 c = −1 起（左端补一块，溢出由 contain:paint 裁）
+        const even = (r & 1) === 0;
+        const shift = even ? pitchX / 2 : 0;
+        const top = r * pitchY + seam;
+        for (let c = even ? -1 : 0; c < cols; c++) {
+          const left = c * pitchX + seam + shift;
           const b = document.createElement('div');
           b.className = `bp-brick${variantOf(c, r)}`;
-          b.style.left = `${c * pitch + seam}px`;
-          b.style.top = `${r * pitch + seam}px`;
-          b.style.width = `${faceSize}px`;
-          b.style.height = `${faceSize}px`;
+          b.style.left = `${left}px`;
+          b.style.top = `${top}px`;
+          b.style.width = `${faceW}px`;
+          b.style.height = `${faceH}px`;
           frag.appendChild(b);
-          bricks.push(b);
-          lastW.push(0);
+          bricks[i] = b;
+          cxs[i] = left + faceW / 2;
+          cys[i] = top + faceH / 2;
+          i++;
         }
       }
       grid.appendChild(frag);
@@ -194,17 +232,16 @@ export default function WallBricks() {
 
     // 依当前井心落样式：全砖扫描（平方距离先筛，圈外双零跳过）
     const render = () => {
-      const r2 = RADIUS * RADIUS;
-      const half = faceSize / 2;
+      const r2 = radius * radius;
       for (let i = 0; i < bricks.length; i++) {
-        const dx = (i % cols) * pitch + seam + half - lx;
-        const dy = ((i / cols) | 0) * pitch + seam + half - ly;
+        const dx = cxs[i] - lx;
+        const dy = cys[i] - ly;
         const d2 = dx * dx + dy * dy;
         let w = 0;
         let d = 1; // ||1 = 井心恰落砖心时方向向量的除零守卫
         if (d2 < r2) {
           d = Math.sqrt(d2) || 1;
-          w = (1 - d / RADIUS) ** 2 * li;
+          w = (1 - d / radius) ** 2 * li;
         }
         if (w < 0.001) {
           if (lastW[i] !== 0) {
@@ -218,11 +255,13 @@ export default function WallBricks() {
         // 径向单位向量一份数据喂三个动作：聚拢 = -u、碗坡倾斜轴 =
         // (uy, -ux)（近井缘随坡度下沉）、下陷沿 -z；中心阻尼（坑底
         // 方向不定 → 聚拢/倾斜归零 = 碗底放平，只留最深下陷）；
-        // per-element perspective 不建 preserve-3d 链
-        const damp = Math.min(1, d / faceSize);
+        // per-element perspective 不建 preserve-3d 链。
+        // 🚨 damp 的分母是砖面**短边** faceH：长砖用长边会让 damp 在
+        // d < W(=2.92Q) 全程 <1，而 R 只有 3.5Q ⇒ 井里处处被压制、坡度读不出来
+        const damp = Math.min(1, d / faceH);
         const ux = dx / d;
         const uy = dy / d;
-        const pull = PULL * w * damp;
+        const pull = pullMax * w * damp;
         const tilt = TILT * w * damp;
         // 倾角趋零时略去 rotate3d——顺带规避零向量轴让老 WebKit
         // 整条 transform 失效的历史坑
@@ -231,7 +270,8 @@ export default function WallBricks() {
             ? ''
             : `rotate3d(${uy.toFixed(4)}, ${(-ux).toFixed(4)}, 0, ${tilt.toFixed(2)}deg) `;
         bricks[i].style.transform =
-          `perspective(600px) translate3d(${(-ux * pull).toFixed(2)}px, ${(-uy * pull).toFixed(2)}px, ${(-DEPTH * w).toFixed(2)}px) ` +
+          perspPrefix +
+          `translate3d(${(-ux * pull).toFixed(2)}px, ${(-uy * pull).toFixed(2)}px, ${(-depth * w).toFixed(2)}px) ` +
           rot +
           `scale(${(1 - SHRINK * w).toFixed(4)})`;
         bricks[i].style.opacity = (1 - FADE * w).toFixed(3);
@@ -249,7 +289,8 @@ export default function WallBricks() {
       vi += (-STIFFNESS * (li - ti) - DAMPING * vi) * dt;
       lx += vx * dt;
       ly += vy * dt;
-      li = Math.min(1, Math.max(0, li + vi * dt));
+      // 上限是 PRESS 而非 1：深压期 li 要能升到 1.3（几何安全性见 TILT 注释）
+      li = Math.min(PRESS, Math.max(0, li + vi * dt));
       const settled =
         Math.abs(lx - tx) < REST_EPS &&
         Math.abs(ly - ty) < REST_EPS &&
@@ -284,7 +325,8 @@ export default function WallBricks() {
       }
       tx = e.clientX;
       ty = e.clientY;
-      ti = 1;
+      // 🚨 不能无条件写 1：按住鼠标拖动时每次 pointermove 都会取消深压
+      ti = pressed ? PRESS : 1;
       if (!hasPointer || li < 0.02) {
         // 冷井原地浮现（首现或熄灭后的再入）：井心瞬移到指针，不从旧
         // 位置横穿视口飞掠；仍可见的井（快速离-回）保持弹簧连续滑动
@@ -296,8 +338,28 @@ export default function WallBricks() {
       kick();
     };
 
+    // 深压（v9）：按下加深、抬起回落，都只改同一根弹簧的目标值。
+    // ti > 0 守卫 = 井已在场才响应；未建砖时按下不空转一轮 rAF
+    const onDown = (e: PointerEvent) => {
+      if (disposed || e.pointerType === 'touch') return;
+      pressed = true;
+      if (ti > 0) {
+        ti = PRESS;
+        kick();
+      }
+    };
+    const onUp = () => {
+      if (disposed || !pressed) return;
+      pressed = false;
+      if (ti > 0) {
+        ti = 1;
+        kick();
+      }
+    };
+
     // 离开窗口 = 井撤压：强度归零，一根弹簧带全部砖归位
     const onLeave = () => {
+      pressed = false; // 拖出窗口时 pointerup 可能永不到达，此处一并清
       ti = 0;
       kick();
     };
@@ -324,6 +386,9 @@ export default function WallBricks() {
       if (disposed) return;
       disposed = true;
       window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
       document.documentElement.removeEventListener('pointerleave', onLeave);
       window.removeEventListener('blur', onBlur);
       document.removeEventListener('visibilitychange', onVisibility);
@@ -336,8 +401,7 @@ export default function WallBricks() {
       if (wall) {
         delete wall.dataset.live; // 静态砖层复位（砖床原样）
         // 封顶覆写一并撤销：静态 tile 回到 CSS 阶梯档
-        wall.style.removeProperty('--wall-brick-w');
-        wall.style.removeProperty('--wall-seam');
+        wall.style.removeProperty('--wall-brick-h');
       }
     };
 
@@ -348,6 +412,9 @@ export default function WallBricks() {
     });
 
     window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerdown', onDown, { passive: true });
+    window.addEventListener('pointerup', onUp, { passive: true });
+    window.addEventListener('pointercancel', onUp, { passive: true });
     document.documentElement.addEventListener('pointerleave', onLeave, {
       passive: true,
     });
