@@ -9,13 +9,32 @@
    ═══════════════════════════════════════════════ */
 
 :root {
+  /* 深色 UA 控件（滚动条 / autofill 下拉 / caret / 表单默认外观）——
+     ::-webkit-scrollbar 只救 Chromium+Safari，Firefox 与非 webkit 表单
+     控件靠本声明才知道页面是深底。与 layout.tsx 的
+     `export const viewport = { colorScheme: 'dark' }`（meta 标签）互补：
+     meta 管首帧协商，本声明管 CSS 级联，两者不冲突 */
+  color-scheme: dark;
+
   /* ── 背景层级 (冷色海军黑) — 仅保留 CSS 内实际引用的层级，Tailwind 类走 tailwind.config.js ── */
   --bg-base: #080b10;
   --bg-elevated: #111620;
 
-  /* ── 主色 (Synth Blue = 蓝图蓝) ── */
-  --accent: #4a9fe5;
+  /* ── 主色 (Synth Blue = 蓝图蓝) ──
+     --accent-rgb 是**全站蓝的唯一 CSS 事实源**（空格分隔三元组，供
+     `rgb(var(--accent-rgb) / α)` 现代语法消费）：本文件所有 accent
+     半透明色阶都走它，换主色只改这一行。
+     ⚠️ 交叉锁定（无法消费 var() 的地方，改值必须同步）：
+       tailwind.config.js 的 accent #4A9FE5 / src/lib/constants.ts 的
+       BRAND_ACCENT（邮件 HTML）/ BlueprintObject.tsx 的 STROKE 表 /
+       本文件砖 tile data-URI 里的 %234a9fe5 */
+  --accent-rgb: 74 159 229;
+  --accent: rgb(var(--accent-rgb));
   --accent-hover: #5daae9;
+  /* 按钮 primary 渐变暗端 — CLAUDE.md §7 逐字授权的第四档明度（§4 的
+     「三档」说的是**可复用色阶**，本档是按钮渐变私有终点，不进 Tailwind）。
+     与 src/lib/constants.ts 的 BRAND_ACCENT_DARK 交叉锁定，改值两处同步 */
+  --accent-dark: #3488cc;
 
   /* ── 文字层级 (冷白色调) — v4.2 无底纹排版提档：可读性全押字体对比度。
      v8 基准（对砖面平底 --wall-face-base #111620）：tertiary 6.39:1 /
@@ -27,26 +46,30 @@
   --text-quaternary: #78818f;
 
   /* ── 边框层级 (蓝色调) ── */
-  --border-subtle: rgba(74, 159, 229, 0.06);
-  --border-default: rgba(74, 159, 229, 0.1);
-  --border-strong: rgba(74, 159, 229, 0.18);
-  --border-heavy: rgba(74, 159, 229, 0.25);
+  --border-subtle: rgb(var(--accent-rgb) / 0.06);
+  --border-default: rgb(var(--accent-rgb) / 0.1);
+  --border-strong: rgb(var(--accent-rgb) / 0.18);
+  --border-heavy: rgb(var(--accent-rgb) / 0.25);
 
-  /* ── v4 Blueprint Material token ──
+  /* ── v4 Blueprint Material token（物件簇）──
      正本 = BlueprintObject 的面/线/光系（spec A.2 对照表）。
      TSX 侧 STROKE 表保持字面量（SVG presentation attribute 的 var()
      替换在个别 WebView 失效，物件内已有同类坑注释）。
-     ⚠️ v8 起除 face-tint 外**全簇无 CSS var() 消费方**（墙与按钮已迁至
-     --wall-* 石墨簇）——它们是 BlueprintObject TSX STROKE 表的交叉锁定
-     锚点，改值同步两侧，勿因「未使用」删除 */
+     ⚠️ 本簇按**实际身份**分四类，别再当成同质一簇（2026-07-27 审查修正）：
+       ① 真 STROKE 锚点（逐字对 TSX，改值两处同步，勿删）：
+          edge-strong / edge-faint / trace-pulse
+       ② 真 CSS 消费方：face-tint（btn-secondary）、seam-glow / seam-soft /
+          seam-rest（.bp-seam-glow 系，2026-07-27 起上岗）
+       ③ 假锚点：face-shade —— 0.32 落在物件 right 面 0.30–0.55 渐变带内，
+          任何带内漂移它都检测不到，只当文档读，别当护栏
+       ④ 死 token：face-base —— 既无 CSS 消费方也无 TSX 字面对应，
+          仅存历史身份；清理需先改 CLAUDE.md §4 的保护条款 */
   --mat-face-base: rgba(17, 22, 32, 0.9); /* bg-elevated 的高实度形态
      （v8：墙与 btn-secondary 已改消费不透明的 --wall-face-base；物件面
      v3 起消费不透明 var(--bg-elevated) 实体化——本 token 已无消费方，
-     仅存历史锚点身份） */
-  --mat-face-tint: rgba(
-    74,
-    159,
-    229,
+     仅存历史锚点身份，见上表 ④） */
+  --mat-face-tint: rgb(
+    var(--accent-rgb) /
     0.05
   ); /* 面受光提亮（btn-secondary 在用；v2 物件 front 0.07 档的折算——
      v3 物件已提档 0.10–0.02，本 token 档独立不随动） */
@@ -55,20 +78,30 @@
     0,
     0,
     0.32
-  ); /* 压暗轴（物件 right 面 v3 0.30–0.55 带内取值） */
-  --mat-edge-strong: rgba(
-    74,
-    159,
-    229,
+  ); /* 压暗轴代表值（物件 right 面 v3 0.30–0.55 带内取值——见上表 ③：
+     带内代表值，不具备漂移检测能力） */
+  --mat-edge-strong: rgb(
+    var(--accent-rgb) /
     0.62
   ); /* = STROKE.edgeFront（v3 提档） */
-  --mat-edge-faint: rgba(74, 159, 229, 0.3); /* = STROKE.inner（v3 提档） */
-  --mat-seam-glow: rgba(74, 159, 229, 0.7); /* = 物件横缝光心 */
-  --mat-seam-soft: rgba(74, 159, 229, 0.55); /* = 物件竖缝光心/淡入终值 */
-  --mat-trace-pulse: rgba(
-    74,
-    159,
-    229,
+  --mat-edge-faint: rgb(
+    var(--accent-rgb) /
+    0.3
+  ); /* = STROKE.inner（v3 提档） */
+  --mat-seam-glow: rgb(
+    var(--accent-rgb) /
+    0.7
+  ); /* = 物件横缝光心（.bp-seam-glow--h 消费） */
+  --mat-seam-soft: rgb(
+    var(--accent-rgb) /
+    0.55
+  ); /* = 物件竖缝光心（.bp-seam-glow--v 消费） */
+  /* 缝光静息不透明度 — 三处交接的**同一个数**：seamIn 淡入终值 =
+     seamPulse 周期起点 = RM 静态完成态。三者靠本 token 锁死，
+     漏改任一处会让缝光在 2.4s 交接瞬间闪一下（只有真机连续观察才看得见） */
+  --mat-seam-rest: 0.55;
+  --mat-trace-pulse: rgb(
+    var(--accent-rgb) /
     0.85
   ); /* = STROKE.pulse（v3.1 走线脉冲头，α 上限 0.85 哑光纪律） */
 
@@ -87,14 +120,17 @@
   ); /* 光滑玻璃档面底 — 无 blur 保对比 */
   --glass-edge-top: rgba(255, 255, 255, 0.07); /* 顶棱受光白线 */
   --glass-edge-bottom: rgba(0, 0, 0, 0.35); /* 底缘压暗 */
-  --glass-reflect-a: rgba(
-    74,
-    159,
-    229,
+  /* 厚度 inset 对（顶棱 + 底缘）打包 — box-shadow 是整表替换属性，
+     hover/active 每档都得把基态两条重抄一遍；收成一个 token 后
+     改厚度只改这一行（三处消费：基态 / interactive hover / active） */
+  --glass-inset:
+    inset 0 1px 0 var(--glass-edge-top), inset 0 -1px 0 var(--glass-edge-bottom);
+  --glass-reflect-a: rgb(
+    var(--accent-rgb) /
     0.05
   ); /* 内反射渐变起（v8 起在**左上**，朝石墨墙的 45° 掠射光；
      消费方 = .card-glass 的 135deg 渐变，改一处必须改另一处） */
-  --glass-reflect-b: rgba(74, 159, 229, 0); /* 内反射渐变止 */
+  --glass-reflect-b: rgb(var(--accent-rgb) / 0); /* 内反射渐变止 */
 
   /* ── v8 石墨墙材质 token（Graphite Wall v8）──
      正本 = 2026-07-27-graphite-wall-v8-design spec §3。墙自立门户：
@@ -108,10 +144,8 @@
      ——改前必须重算本文件 --text-* 注释与 CLAUDE.md §4 的对比度行 */
   --wall-face-lit: rgba(255, 255, 255, 0.055); /* 上棱受光 */
   --wall-face-lit-k: rgba(255, 255, 255, 0.03); /* 左棱受光（侧弱于顶） */
-  --wall-face-tint: rgba(
-    74,
-    159,
-    229,
+  --wall-face-tint: rgb(
+    var(--accent-rgb) /
     0.028
   ); /* 受光面里一丝蓝 = 全墙唯一蓝味 */
   --wall-face-shade: rgba(0, 0, 0, 0.42); /* 下缘背光带 */
@@ -145,10 +179,18 @@
   --wall-tile-bed: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='y' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0.4'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='x' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23000000' stop-opacity='0.28'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='0.06' stop-color='%23000000' stop-opacity='0.35'/><stop offset='0.45' stop-color='%23000000' stop-opacity='0'/></linearGradient></defs><rect width='96' height='96' fill='%23080b10'/><rect width='96' height='96' fill='%23000000' fill-opacity='0.45'/><g transform='translate(6,6)'><rect width='90' height='90' fill='url(%23s)'/></g><rect width='96' height='6' fill='url(%23y)'/><rect width='6' height='96' fill='url(%23x)'/><rect y='5' width='96' height='1' fill='%23ffffff' fill-opacity='0.018'/><rect x='5' width='1' height='96' fill='%23ffffff' fill-opacity='0.018'/></svg>");
 
   /* ── 砖墙 pitch — 静态材质层与 WallBricks 同读（JS 只读不定，
-     永不产生第二事实源）；缝宽恒 = pitch/16（tile viewBox 等比缩放保
-     DOM 砖与静态 tile 几何等价）；v8 密度沿用 56px（井半径 150px ≈
-     5 砖直径，单砖缩放/推移清晰可读），阶梯见下方媒体查询 ── */
+     永不产生第二事实源）；v8 密度沿用 56px（井半径 150px ≈ 5 砖直径，
+     单砖缩放/推移清晰可读），阶梯见下方媒体查询 ──
+     🚨 **seam 必须恒 = pitch/16**（本行与下方两档媒体查询同守）：
+     这条不变量另外硬编在两处，任一处走样都不报错只错位——
+       ① .bp-brick 的 `background-size: calc(100% * 16/15)` +
+          `background-position: 100%` 恒等式（见该规则注释的推导）
+       ② 砖 tile / 砖床 tile 的 96 viewBox + translate(6,6)（96/6 = 16）
+     加新档（如 ≥5000px 120px）时写 7.5px 而不是 8px，否则砖图整体
+     错位 0.5px 且只在超宽屏出现 ── */
   --wall-brick-w: 56px;
+  /* ⚠️ 唯一读者是 WallBricks 的 getComputedStyle（解析失败即放弃真砖增强），
+     CSS 侧的形式消费在 .bp-wall-grid —— 那行是防死码清理工具的护栏，别删 */
   --wall-seam: 3.5px;
 
   /* ── 动画缓动 ── */
@@ -176,6 +218,11 @@
 
 html {
   scroll-behavior: smooth;
+  /* Firefox / 标准属性侧的深色滚动条（下方 ::-webkit-scrollbar 只覆盖
+     Chromium + Safari）；两套并存互不干扰——支持标准属性的内核会忽略
+     webkit 伪元素，反之亦然 */
+  scrollbar-color: var(--text-quaternary) var(--bg-base);
+  scrollbar-width: thin;
 }
 
 body {
@@ -188,10 +235,17 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* 100svh 渐进增强 — 同 .min-h-svh-safe 的模式（移动端地址栏/工具栏不吃
+   首屏布局）：内容不足一屏的页面在 iOS 上不再多出工具栏高度的可拖动区 */
+@supports (min-height: 100svh) {
+  body {
+    min-height: 100svh;
+  }
+}
 
 /* ── 选中文字样式 (蓝色高亮) ── */
 ::selection {
-  background: rgba(74, 159, 229, 0.3);
+  background: rgb(var(--accent-rgb) / 0.3);
   color: #fff;
 }
 
@@ -309,6 +363,12 @@ body {
   position: absolute;
   inset: 0;
   z-index: 2;
+  /* --wall-seam 的形式消费 — 该变量的真实读者是 WallBricks 的
+     getComputedStyle，CSS 侧零 var() 会让静态分析工具（Lightning CSS
+     unusedSymbols / PostCSS 清理插件 / 将来的 Tailwind v4 @theme）
+     判定它是死 token 并剔除 → JS 解析失败 → 桌面重力井**静默消失**。
+     本行无渲染副作用，只为让它对任何工具都是「已使用」。勿删 */
+  --seam-guard: var(--wall-seam);
   /* 圈内砖逐帧被 3D transform 提升合成层、出圈降级——contain 把
      布局/重绘失效域锁在墙盒内，不外溢重排 700+ 兄弟砖之外的页面
      （井形变 ≤36px 恒在墙盒内，paint 裁切无可见副作用） */
@@ -377,23 +437,26 @@ body {
    厚度三件套 = 顶棱受光白线 + 底缘压暗（中性明度轴，与按钮/砖同语言）
    + accent 低 alpha 内反射（v8 起 135deg：高光朝**左上**，与石墨墙的
    45° 掠射光同向。v7 的 225deg 朝右上是为了对着 v6 的右上角余晖——
-   那个光源已随 v8「墙后全灭」删除，不改就是朝着不存在的光源反光） */
+   那个光源已随 v8「墙后全灭」删除，不改就是朝着不存在的光源反光）。
+   ⚠️ background 简写拆成 image + color 两条是有意的：毛玻璃档只换面底
+   纯色，拆开后内反射渐变**全站只写一处**（v7 的「两处同步」漂移点就此
+   消除，别再合回简写） */
 .card-glass {
   position: relative;
   border-radius: 8px;
   border: 1px solid var(--border-default);
-  background:
-    linear-gradient(135deg, var(--glass-reflect-a), var(--glass-reflect-b) 55%),
-    var(--glass-face-solid);
-  box-shadow:
-    inset 0 1px 0 var(--glass-edge-top),
-    inset 0 -1px 0 var(--glass-edge-bottom);
+  background-image: linear-gradient(
+    135deg,
+    var(--glass-reflect-a),
+    var(--glass-reflect-b) 55%
+  );
+  background-color: var(--glass-face-solid);
+  box-shadow: var(--glass-inset);
   transition: border-color 0.3s var(--ease-out-expo);
 }
 /* 毛玻璃档 — 支持 backdrop-filter 才升级（老内核/微信 WebView 自动停留
    光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——石墨墙的
-   砖缝与棱线透过玻璃被磨成雾。内反射 135deg 必须与基态 `.card-glass`
-   同步（**全站两处**，改一处必改另一处）。
+   砖缝与棱线透过玻璃被磨成雾。
    性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3）。
    -webkit- 前缀必须写：Safari ≤17 / iOS ≤17 只认前缀形态 */
 @supports (
@@ -401,23 +464,9 @@ body {
     (-webkit-backdrop-filter: blur(1px))
   ) {
   .card-glass {
-    background:
-      linear-gradient(
-        135deg,
-        var(--glass-reflect-a),
-        var(--glass-reflect-b) 55%
-      ),
-      var(--glass-face);
+    background-color: var(--glass-face);
     -webkit-backdrop-filter: blur(var(--glass-blur));
     backdrop-filter: blur(var(--glass-blur));
-  }
-}
-/* 全变体共用的边框微响应 — 玻璃板边缘受光；非可点击暗示（无位移/投影），
-   static/container 卡唯一允许的 hover 反馈。hover 媒体门控防触屏 tap
-   粘滞（与 Hero 模块 .bp-mod-hover 同一先例） */
-@media (hover: hover) {
-  .card-glass:hover {
-    border-color: var(--border-strong);
   }
 }
 
@@ -430,30 +479,31 @@ body {
     transform 0.3s var(--ease-out-expo),
     box-shadow 0.3s var(--ease-out-expo);
 }
-/* hover 门控同上：触屏 tap 卡片链接（站内路由卡/外链卡）后 sticky hover
-   会让卡永久顶着——真 hover 设备专属 */
+
+/* 卡片全部 hover/active 反馈 — 单一 hover 媒体块（三条曾各占一块，
+   相邻块 PostCSS 不会自动合并，收成一块纯剪贴零行为变化）。
+   门控理由：触屏 tap 卡片链接后 sticky hover 会让卡永久顶着；
+   static/container 卡只吃第一条边框微响应（无位移/投影 = 非可点击暗示）。
+   active 同门控——触屏上 0→+2px 是「微凸出」而非按压，语义反转：
+   触屏卡是链接，tap 即跳转，无需按压反馈 */
 @media (hover: hover) {
+  .card-glass:hover {
+    border-color: var(--border-strong);
+  }
   .card-glass-interactive:hover {
     border-color: var(--border-strong);
     transform: perspective(900px) translateZ(8px);
     box-shadow:
-      inset 0 1px 0 var(--glass-edge-top),
-      inset 0 -1px 0 var(--glass-edge-bottom),
+      var(--glass-inset),
       0 14px 32px rgba(8, 11, 16, 0.55),
-      0 6px 14px rgba(74, 159, 229, 0.12);
+      0 6px 14px rgb(var(--accent-rgb) / 0.12);
   }
-}
-/* active 微收 — 快过渡传达按压（同按钮 0.09s 口径），投影随按压回落半档，
-   松手回 hover 长过渡。与 hover 同门控：触屏上 0→+2px 是「微凸出」而非
-   按压，语义反转——触屏卡是链接，tap 即跳转，无需按压反馈 */
-@media (hover: hover) {
   .card-glass-interactive:active {
     transform: perspective(900px) translateZ(2px);
     box-shadow:
-      inset 0 1px 0 var(--glass-edge-top),
-      inset 0 -1px 0 var(--glass-edge-bottom),
+      var(--glass-inset),
       0 6px 16px rgba(8, 11, 16, 0.45),
-      0 3px 8px rgba(74, 159, 229, 0.08);
+      0 3px 8px rgb(var(--accent-rgb) / 0.08);
     transition-duration: 0.09s;
   }
 }
@@ -468,7 +518,11 @@ body {
   bottom: 25%;
   left: 0;
   width: 2px;
-  background: linear-gradient(180deg, var(--accent), rgba(74, 159, 229, 0.2));
+  background: linear-gradient(
+    180deg,
+    var(--accent),
+    rgb(var(--accent-rgb) / 0.2)
+  );
   opacity: 0.6;
   pointer-events: none;
 }
@@ -500,9 +554,18 @@ body {
    （仅 ::after 涌光 opacity 过渡）。
    ═══════════════════════════════════════════════ */
 
-/* 尺寸由类锁定（padding / font-size）：本块在 @tailwind utilities 之后，
-   同特异性按源序压过工地 utility——不要在使用处写 px-* / py-* / text-* 覆写。
-   材质面直接画在元素背景上（插槽已外移 frame，负 z 伪元素层序问题消失） */
+/* 🚨 本块在 @tailwind utilities **之后**，同特异性 (0,1,0) 按源序压过工地
+   utility——这是显式设计（尺寸/材质由组件锁死），但它吞掉的**远不止尺寸类**。
+   完整清单（在 <ModuleButton className> 里写这些一律静默无效，不报错不掉 lint）：
+     display / align-items / justify-content / gap / padding / border-radius /
+     cursor / transition / color / font-weight / font-size / border /
+     background(-image|-color) / box-shadow
+   还能生效的：margin / width / height / flex 项属性 / position 偏移 /
+   text-align 等本块未声明的属性。要改上表任一项 = 改本引擎或加组件 prop，
+   不要在使用处试图覆写（同款契约见 .card-glass 与 .form-field）。
+   材质面直接画在元素背景上（插槽已外移 frame，负 z 伪元素层序问题消失）。
+   ⚠️ 规则顺序有约束：hover 媒体块必须在两个变体基态之后、全部 :active 之前
+   （hover 与 active 同为 (0,3,0)，平局靠源序裁决——挪动即改行为） */
 .btn-primary,
 .btn-secondary {
   position: relative;
@@ -520,19 +583,6 @@ body {
     background-color 0.28s var(--ease-out-expo),
     color 0.28s var(--ease-out-expo);
 }
-/* hover 顶出 — perspective() 内嵌 per-element（不建 preserve-3d 链，
-   tilt wrapper 的扁平化不影响本层投影）；近大投影横向会多盖 ~3px 槽缝，
-   视觉叙事由涌光层接管（原型验证成立，非缺陷） */
-.btn-primary:hover:not(:disabled),
-.btn-secondary:hover:not(:disabled) {
-  transform: perspective(700px) translateZ(16px);
-}
-/* active 按入槽内 — 快过渡传达机械按压；松手回 hover 态恢复长过渡 */
-.btn-primary:active:not(:disabled),
-.btn-secondary:active:not(:disabled) {
-  transform: perspective(700px) translateZ(-5px);
-  transition-duration: 0.09s;
-}
 .btn-primary:focus-visible,
 .btn-secondary:focus-visible {
   outline: 2px solid var(--accent);
@@ -540,6 +590,10 @@ body {
 }
 
 .btn-primary {
+  /* 厚度 inset 对（顶棱受光 + 底缘压暗，中性明度轴）——本体私有变量，
+     hover 档 box-shadow 整表替换时复用同一份，改厚度只改这一行 */
+  --btn-inset:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -2px 0 rgba(0, 0, 0, 0.18);
   color: #ffffff;
   font-weight: 600;
   font-size: 0.875rem;
@@ -548,30 +602,13 @@ body {
      （中性白明度轴）；rest 齐平无外投影（嵌在墙里的东西没有影子） */
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
-    linear-gradient(135deg, #4a9fe5, #3488cc);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.18);
-}
-.btn-primary:hover:not(:disabled) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
-    linear-gradient(135deg, #5daae9, #4a9fe5);
-  /* 顶出才有投影落墙 — 悬浮高度的另一半证词 */
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
-    0 12px 26px rgba(8, 11, 16, 0.7),
-    0 5px 12px rgba(74, 159, 229, 0.2);
-}
-.btn-primary:active:not(:disabled) {
-  /* 按入槽内 — 槽口沿的内阴影压上面板 */
-  box-shadow:
-    inset 0 2px 8px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow: var(--btn-inset);
 }
 
 .btn-secondary {
+  --btn-inset:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 -2px 0 rgba(0, 0, 0, 0.28);
   color: var(--accent);
   font-weight: 500;
   font-size: 0.875rem;
@@ -586,22 +623,67 @@ body {
   background:
     linear-gradient(180deg, var(--mat-face-tint), transparent 55%),
     var(--wall-face-base);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.28);
+  box-shadow: var(--btn-inset);
 }
-.btn-secondary:hover:not(:disabled) {
-  color: var(--accent-hover);
-  border-color: var(--accent);
-  /* accent 提亮叠在同一砖面基底上 — 不引入新字面色 */
-  background:
-    linear-gradient(0deg, rgba(74, 159, 229, 0.08), rgba(74, 159, 229, 0.08)),
-    var(--wall-face-base);
+
+/* 🚨 hover 反馈全部门控在真 hover 设备 — 触屏 tap 一个**不导航**的按钮
+   （submit / Try Again / 任何 onClick 形态）后 :hover 会粘滞到下次点击别处：
+   按钮永久停在 translateZ(16px) 顶出位、投影挂着、槽光常亮。这正是 v7 卡片
+   系统修掉的病灶的按钮版（CLAUDE.md §7「触屏无 hover：静态齐平嵌墙」在本块
+   门控之前并不成立）。:active / :focus-visible / :disabled **不门控**——
+   它们在触屏上是有效反馈。
+   涌光层的 :has(:hover) 一并进本块，否则槽光仍会粘。
+   全站 hover 口径统一：手写引擎（本块 / .card-glass* / .bp-mod-hover）自己写
+   @media (hover:hover)，Tailwind 侧由 tailwind.config 的 hoverOnlyWhenSupported
+   编进同一门控 */
+@media (hover: hover) {
+  /* hover 顶出 — perspective() 内嵌 per-element（不建 preserve-3d 链，
+     tilt wrapper 的扁平化不影响本层投影）；近大投影横向会多盖 ~3px 槽缝，
+     视觉叙事由涌光层接管（原型验证成立，非缺陷） */
+  .btn-primary:hover:not(:disabled),
+  .btn-secondary:hover:not(:disabled) {
+    transform: perspective(700px) translateZ(16px);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
+      linear-gradient(135deg, var(--accent-hover), var(--accent));
+    /* 顶出才有投影落墙 — 悬浮高度的另一半证词 */
+    box-shadow:
+      var(--btn-inset),
+      0 12px 26px rgba(8, 11, 16, 0.7),
+      0 5px 12px rgb(var(--accent-rgb) / 0.2);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    color: var(--accent-hover);
+    border-color: var(--accent);
+    /* accent 提亮叠在同一砖面基底上 — 不引入新字面色 */
+    background:
+      linear-gradient(
+        0deg,
+        rgb(var(--accent-rgb) / 0.08),
+        rgb(var(--accent-rgb) / 0.08)
+      ),
+      var(--wall-face-base);
+    box-shadow:
+      var(--btn-inset),
+      0 12px 26px rgba(8, 11, 16, 0.7),
+      0 5px 12px rgb(var(--accent-rgb) / 0.14);
+  }
+}
+
+/* active 按入槽内 — 快过渡传达机械按压；松手回 hover 态恢复长过渡。
+   必须排在 hover 媒体块之后（同特异性平局靠源序） */
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled) {
+  transform: perspective(700px) translateZ(-5px);
+  transition-duration: 0.09s;
+}
+.btn-primary:active:not(:disabled) {
+  /* 按入槽内 — 槽口沿的内阴影压上面板 */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.28),
-    0 12px 26px rgba(8, 11, 16, 0.7),
-    0 5px 12px rgba(74, 159, 229, 0.14);
+    inset 0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .btn-secondary:active:not(:disabled) {
   box-shadow:
@@ -640,7 +722,7 @@ body {
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   box-shadow:
-    inset 0 0 6px rgba(74, 159, 229, 0.14),
+    inset 0 0 6px rgb(var(--accent-rgb) / 0.14),
     inset 0 1px 2px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
@@ -649,7 +731,11 @@ body {
    ⚠️ v8 起墙是**惰性材料、墙后零光源**，本层与槽内常态微光不再由「光在
    墙后」背书——现行口径 = 按钮是**通电的模块**（primary 本就是 accent 渐变
    通电砖），槽光属**内容层**的光，与墙的零光源纪律正交而非冲突。
-   墙侧任何形式的发光仍然被禁 */
+   墙侧任何形式的发光仍然被禁。
+   ⚠️ 下面两条 `:has(:hover)` / `:has(:active)` 是**动态失效选择器**：每次
+   指针进出按钮盒都要向上回溯让 frame 子树的样式失效。当前规模（每页
+   ≤7 个按钮）成本不可测；将来若出现按钮密集页（长列表每行一个按钮），
+   要重新评估——届时可改成由本体 :hover 驱动自有伪元素（无需向上回溯） */
 .btn-module-frame::after {
   content: "";
   position: absolute;
@@ -657,14 +743,17 @@ body {
   z-index: -1;
   border-radius: 10px;
   box-shadow:
-    inset 0 0 10px rgba(74, 159, 229, 0.38),
-    0 0 22px rgba(74, 159, 229, 0.2);
+    inset 0 0 10px rgb(var(--accent-rgb) / 0.38),
+    0 0 22px rgb(var(--accent-rgb) / 0.2);
   opacity: 0;
   transition: opacity 0.25s var(--ease-out-expo);
   pointer-events: none;
 }
-.btn-module-frame:has(:hover):not(:has(:disabled))::after {
-  opacity: 1;
+/* 涌光涌出 — 与本体顶出同门控（触屏 sticky hover 会让槽光常亮） */
+@media (hover: hover) {
+  .btn-module-frame:has(:hover):not(:has(:disabled))::after {
+    opacity: 1;
+  }
 }
 /* 按入时涌光回落半档 — 光被按回槽里 */
 .btn-module-frame:has(:active):not(:has(:disabled))::after {
@@ -703,7 +792,7 @@ body {
 .hero-glow {
   background: radial-gradient(
     ellipse 60% 40% at 50% var(--glow-y, 30%),
-    rgba(74, 159, 229, 0.04),
+    rgb(var(--accent-rgb) / 0.04),
     transparent
   );
 }
@@ -848,10 +937,29 @@ body {
   perspective: 2000px;
 }
 
-/* 弹簧层 — transform 由 HeroObjectPhysics 的 rAF 欠阻尼弹簧写入 */
+/* ── 视口门控（HeroObjectViewportGate 客户端岛，2026-07-27 性能修复）──
+   物件的无限动画全部**无法合成**：modDrift 的关键帧值引用 var(--dx/--dy/--dz)
+   （自定义属性关键帧 Chrome 拒绝下放合成器）；seamPulse/corePulse 虽只动
+   opacity，但元素位于 preserve-3d 的 3D 渲染上下文内（需深度排序的子树同样
+   不做合成动画）。结果是它们**与看不看得见无关**地永久占主线程——实测手机
+   模拟滚出视口后静置仍 6.6% 主线程；桌面端更与砖阵 DOM 相乘触发每帧全文档
+   layout（LayoutCount 158 / 2.1s，1920×1080 静止不动）。
+   门控 = 物件离开视口即整棵子树 animation-play-state: paused（IO 带
+   400px rootMargin 提前唤醒，滚回时已在跑，无「突然启动」观感）。
+   ⚠️ 选择器锚在 .bp-object-scene 子树内，**不含** .hero-tilt（它是 scene
+   的祖先且是 scroll-driven：暂停 scrub 动画会让倾角停在旧滚动位置）。
+   SSR 基态无 data-idle = 动画照跑，JS 失效时行为与门控前完全一致 */
+.bp-object-gate[data-idle] .bp-object-scene * {
+  animation-play-state: paused;
+}
+
+/* 弹簧层 — transform 由 HeroObjectPhysics 的 rAF 欠阻尼弹簧写入。
+   ⚠️ 不加 will-change：preserve-3d 本身已触发层提升，而 will-change 是
+   静态声明——弹簧「收敛即停帧」之后合成层仍永久驻留，与全站「禁常驻
+   will-change」的口径（AnimateOnScroll 严格遵守）不一致。真要提示，
+   应由 HeroObjectPhysics 在起帧/停帧时动态开关 */
 .bp-object-spring {
   transform-style: preserve-3d;
-  will-change: transform;
 }
 
 /* 物件根容器 — 也是透视链一环：此处缺 preserve-3d 时 WebKit 会把
@@ -933,7 +1041,11 @@ body {
 /* 实底必须与页面背景明确分离 — 否则物件读作空壳线框 */
 .bp-face-fill--front {
   background:
-    linear-gradient(160deg, rgba(74, 159, 229, 0.1), rgba(74, 159, 229, 0.02)),
+    linear-gradient(
+      160deg,
+      rgb(var(--accent-rgb) / 0.1),
+      rgb(var(--accent-rgb) / 0.02)
+    ),
     var(--bg-elevated);
   /* 顶棱受光 + 底缘压暗 — 与按钮/玻璃卡同源的厚度暗示（静态，不参与动画） */
   box-shadow:
@@ -946,7 +1058,11 @@ body {
 .bp-face-fill--top {
   background:
     linear-gradient(0deg, rgba(255, 255, 255, 0.05), transparent 60%),
-    linear-gradient(0deg, rgba(74, 159, 229, 0.2), rgba(74, 159, 229, 0.06)),
+    linear-gradient(
+      0deg,
+      rgb(var(--accent-rgb) / 0.2),
+      rgb(var(--accent-rgb) / 0.06)
+    ),
     var(--bg-elevated);
 }
 /* 右侧面 = 背光面最暗 */
@@ -961,10 +1077,14 @@ body {
   background:
     radial-gradient(
       circle var(--core-r, 90px) at var(--core-x, 123px) var(--core-y, 59px),
-      rgba(74, 159, 229, 0.16),
+      rgb(var(--accent-rgb) / 0.16),
       transparent 70%
     ),
-    linear-gradient(160deg, rgba(74, 159, 229, 0.1), rgba(74, 159, 229, 0.02)),
+    linear-gradient(
+      160deg,
+      rgb(var(--accent-rgb) / 0.1),
+      rgb(var(--accent-rgb) / 0.02)
+    ),
     var(--bg-elevated);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -1002,7 +1122,15 @@ body {
 
 /* 无限漂移 — 停驻(0-32%) → 滑出(44-56% 停驻) → 归位(68%)；
    0% 即装配位：delay 期间零影响（无 backwards fill），接管零跳变；
-   周期/相位 per-module 错峰（互质周期 + 交错 delay），任意时刻总有模块在动 */
+   周期/相位 per-module 错峰 = **周期各异 + delay 交错，并非两两互质**
+   （桌面 14/16/11/15/13/10、移动 12/10/13/15：gcd(14,16)=2、gcd(15,10)=5、
+   gcd(12,10)=2——14/16 每 112s、15/10 每 30s 就回到同一相对相位）。
+   与 trace-pulse 同口径：错峰靠 delay 实算，不靠互质。⚠️ 改任一
+   driftDur/driftDelay 必须重算最坏同步窗（别按「互质所以安全」推），
+   TSX 侧 MODULES 表注释同为此口径，改一处改两处。
+   ⚠️ 关键帧值引用 var() = Chrome 拒绝合成，本动画恒走主线程——这是
+   视口门控与移动端门控存在的直接原因，加新模块前先读上方 .bp-object-scene
+   的门控注释 */
 @keyframes modDrift {
   0%,
   32%,
@@ -1015,9 +1143,18 @@ body {
     transform: translate3d(var(--dx, 0px), var(--dy, 0px), var(--dz, 0px));
   }
 }
-.bp-mod-drift {
-  animation: modDrift var(--drift-dur, 14s) ease-in-out infinite;
-  animation-delay: var(--drift-delay, 3s);
+/* 🚨 移动端基态 = 静止装配位（无 animation 声明）。
+   活纹路四件套（modDrift / seamPulse / corePulse / objShadow）实测是手机端
+   最贵的一项：滚出视口后仍 6.6% 主线程 + 73 个额外合成层，全部来自它们。
+   桌面（≥lg 且真 hover 设备）才挂无限循环；移动变体只保留**非 infinite 的
+   入场动画**，落到与 RM 块完全相同的静态完成态（缝光 0.55 / 核心 0.35 /
+   投影 0.55 / 模块在装配位）——静态值单源在 --mat-seam-rest 等 token，
+   不另写一套 */
+@media (min-width: 1024px) and (hover: hover) {
+  .bp-mod-drift {
+    animation: modDrift var(--drift-dur, 14s) ease-in-out infinite;
+    animation-delay: var(--drift-delay, 3s);
+  }
 }
 
 /* 单模块 hover — 沿签名轴偏移 + 本模块描边增亮；
@@ -1043,16 +1180,15 @@ body {
   pointer-events: none;
   opacity: 0;
   filter: blur(2px);
-  animation:
-    seamIn 0.8s ease-out 2.4s both,
-    seamPulse 7s ease-in-out var(--seam-delay, 3.3s) infinite;
+  /* 基态只有入场淡入（非 infinite）— 呼吸循环见下方桌面门控块 */
+  animation: seamIn 0.8s ease-out 2.4s both;
 }
 .bp-seam-glow--h {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(74, 159, 229, 0.7) 20%,
-    rgba(74, 159, 229, 0.7) 80%,
+    var(--mat-seam-glow) 20%,
+    var(--mat-seam-glow) 80%,
     transparent
   );
 }
@@ -1061,21 +1197,22 @@ body {
   background: linear-gradient(
     180deg,
     transparent,
-    rgba(74, 159, 229, 0.55) 20%,
-    rgba(74, 159, 229, 0.55) 80%,
+    var(--mat-seam-soft) 20%,
+    var(--mat-seam-soft) 80%,
     transparent
   );
 }
-/* 淡入终值 0.55 = seamPulse 起始值，交接零跳变（同 objShadowIn 模式） */
+/* 淡入终值 = seamPulse 起始值 = RM/移动静态完成态，三处共用
+   var(--mat-seam-rest)，交接零跳变（同 objShadowIn 模式） */
 @keyframes seamIn {
   to {
-    opacity: 0.55;
+    opacity: var(--mat-seam-rest);
   }
 }
 @keyframes seamPulse {
   0%,
   100% {
-    opacity: 0.55;
+    opacity: var(--mat-seam-rest);
   }
   50% {
     opacity: 1;
@@ -1086,9 +1223,7 @@ body {
 .bp-core-pulse {
   opacity: 0;
   filter: blur(3px);
-  animation:
-    coreIn 0.8s ease-out 2.5s both,
-    corePulse 5s ease-in-out 3.4s infinite;
+  animation: coreIn 0.8s ease-out 2.5s both;
 }
 @keyframes coreIn {
   to {
@@ -1102,6 +1237,21 @@ body {
   }
   50% {
     opacity: 0.7;
+  }
+}
+/* 缝光/核心的无限呼吸 — 桌面专属（门控理由见上方 .bp-mod-drift 注释）。
+   ⚠️ 两条动画都只动 opacity，但元素在 preserve-3d 子树内 → 不合成，
+   逐帧走主线程；移动端停在入场终值即可，观感是「机器上电后稳定」 */
+@media (min-width: 1024px) and (hover: hover) {
+  .bp-seam-glow {
+    animation:
+      seamIn 0.8s ease-out 2.4s both,
+      seamPulse 7s ease-in-out var(--seam-delay, 3.3s) infinite;
+  }
+  .bp-core-pulse {
+    animation:
+      coreIn 0.8s ease-out 2.5s both,
+      corePulse 5s ease-in-out 3.4s infinite;
   }
 }
 
@@ -1292,7 +1442,7 @@ body {
   transform: translateX(-50%);
   background: radial-gradient(
     ellipse 55% 45% at 50% 46%,
-    rgba(74, 159, 229, 0.07),
+    rgb(var(--accent-rgb) / 0.07),
     transparent 72%
   );
   opacity: 0;
@@ -1333,18 +1483,25 @@ body {
   height: var(--shadow-h, 44px);
   background: radial-gradient(
     ellipse 50% 50% at 50% 50%,
-    rgba(74, 159, 229, 0.1),
+    rgb(var(--accent-rgb) / 0.1),
     transparent 70%
   );
   opacity: 0;
-  /* 淡入终值 0.55 = objShadow 起始值，2.4s 交接零跳变 */
-  animation:
-    objShadowIn 0.8s ease-out 1.2s both,
-    objShadow 7s ease-in-out 2.4s infinite;
+  /* 基态只有入场淡入；呼吸循环见下方桌面门控块 */
+  animation: objShadowIn 0.8s ease-out 1.2s both;
 }
 @keyframes objShadowIn {
   to {
     opacity: 0.55;
+  }
+}
+/* 投影呼吸 — 桌面专属（门控理由见 .bp-mod-drift 注释）；
+   淡入终值 0.55 = objShadow 起始值，2.4s 交接零跳变 */
+@media (min-width: 1024px) and (hover: hover) {
+  .bp-object-shadow {
+    animation:
+      objShadowIn 0.8s ease-out 1.2s both,
+      objShadow 7s ease-in-out 2.4s infinite;
   }
 }
 
@@ -1364,7 +1521,15 @@ body {
 .animate-marquee {
   animation: marquee 60s linear infinite;
 }
-.animate-marquee:hover {
+/* 键盘暂停（WCAG 2.2.2）— 第一条轨道里是 40 个可 Tab 的真实链接，Tab 进去
+   若轨道还在跑，焦点环会跟着元素横向漂移，无法确认当前落在哪个产品上。
+   :focus-within 是零 JS 的键盘可达暂停机制，且不受 hover 门控影响。
+   ⚠️ hover 暂停**不在这里**：它由 SocialProofBar.tsx 的
+   `hover:[animation-play-state:paused]` utility 承担，经 tailwind.config 的
+   hoverOnlyWhenSupported 自动编进 (hover:hover)+(pointer:fine) 媒体查询。
+   这里曾另有一条裸 `.animate-marquee:hover`（未门控，触屏 tap logo 后跑马灯
+   永久停住），已删——**别再加回来** */
+.animate-marquee:focus-within {
   animation-play-state: paused;
 }
 
@@ -1439,12 +1604,19 @@ body {
    在深底玻璃卡上太弱，ring 保住键盘用户的焦点可见性（accent 既有 alpha，
    不引入新色；inset 凹陷影保留） */
 .form-field:focus {
-  outline: none;
+  /* 🚨 不写 outline: none —— transparent outline 是 forced-colors 的标准兜底：
+     强制高对比模式（Windows HCM）下浏览器**丢弃 box-shadow** 并统一改写
+     border-color，若把 outline 关掉，这 4 个输入框在键盘 Tab 时就没有任何
+     焦点指示（WCAG 2.4.7 硬缺陷，且表单是全站唯一转化入口）。
+     transparent 会被系统改成实色高亮，正常模式下不可见——视觉零变化。
+     对照：按钮走的是 `outline: 2px solid var(--accent)`，那边本来就对 */
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   border-color: var(--accent);
   background: rgba(8, 11, 16, 0.92);
   box-shadow:
     inset 0 1px 2px rgba(0, 0, 0, 0.35),
-    0 0 0 2px rgba(74, 159, 229, 0.3);
+    0 0 0 2px rgb(var(--accent-rgb) / 0.3);
 }
 /* Chrome autofill 会刷浅底黑字，砸穿「墙→玻璃卡→深色凹格」三层——
    1000px inset 实底盖回（webkit autofill 唯一可靠通道；消费 --bg-base
@@ -1464,29 +1636,31 @@ body {
 .form-field:-webkit-autofill:hover:focus {
   -webkit-box-shadow:
     inset 0 0 0 1000px var(--bg-base),
-    0 0 0 2px rgba(74, 159, 229, 0.3);
+    0 0 0 2px rgb(var(--accent-rgb) / 0.3);
 }
 
 /* ═══════════════════════════════════════════════
-   ScaleIn 动画 — 表单成功态缩放弹入
+   ScaleIn 动画 — 已于 2026-07-27 迁至 tailwind.config.js
+   此前是全站唯一由内联 style 字符串消费的裸 @keyframes（ContactForm 的
+   `style={{ animation: 'scaleIn ...' }}`），重命名/删除不报错也不掉 lint，
+   只会让成功态静默失去弹入。现与 scaleInDot 同走 config 的 animation 表，
+   消费方改用 `animate-scale-in` utility。**不要在此重新定义。**
    ═══════════════════════════════════════════════ */
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 
 /* ═══════════════════════════════════════════════
    无障碍：减少动画
    ═══════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
+  /* 第四件套 — 平滑滚动（前三件是 animation-duration / animation-delay /
+     transition-* 通配重置 + infinite/scroll-driven 白名单显式关闭）。
+     html 的 scroll-behavior: smooth 是全局声明、layout.tsx 的
+     data-scroll-behavior="smooth" 坐实路由跳转也走平滑——整屏滚动动画
+     正是 WCAG 2.3.3 / 前庭敏感用户要规避的运动类型，而它绕过整个 RM 块。
+     暴露路径：Next 路由跳转的回顶 + skip link */
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {
@@ -1533,7 +1707,7 @@ body {
     opacity: 0.55;
   }
   .bp-seam-glow {
-    opacity: 0.55;
+    opacity: var(--mat-seam-rest);
   }
   .bp-core-pulse {
     opacity: 0.35;

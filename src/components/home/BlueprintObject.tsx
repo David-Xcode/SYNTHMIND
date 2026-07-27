@@ -89,8 +89,12 @@ interface SeamDef {
 }
 
 // ═══ 桌面变体 · 竖塔（v3 360×440×150，缝 8px） ═══
-// 模块表 — 自下而上 M.01→M.07；漂移周期/相位错峰（周期互质 + delay 交错），
-// 保证任意 5s 观察窗总有模块在动；drift delay ≥2.8s（入场 ~2.8s 收尾后接管）
+// 模块表 — 自下而上 M.01→M.07；漂移周期/相位错峰 = **周期各异 + delay 交错，
+// 并非两两互质**（14/16/11/15/13/10：gcd(14,16)=2、gcd(15,10)=5——14/16 每
+// 112s、15/10 每 30s 回到同一相对相位）。与 trace-pulse 同口径：靠 delay 实算
+// 错峰，不靠互质。⚠️ 改任一 driftDur/driftDelay 必须重算最坏同步窗，别按
+// 「互质所以安全」推；globals.css 的 @keyframes modDrift 注释同为此口径。
+// drift delay ≥2.8s（入场 ~2.8s 收尾后接管）
 const MODULES: readonly ModuleDef[] = [
   {
     // 图签底座 — 静止基准锚：不漂移、hover 只增亮不位移
@@ -968,8 +972,13 @@ interface VariantConfig {
   auxDelay: string; // 右侧面面板缝刻线绘制
   labelDelay: string; // 右侧面模块码淡入
   hasDatum: boolean; // 浮动尺寸基准面（移动横构图省略——小屏预算）
-  rootClass: string; // 根容器占位（宽高含顶面投影与投影光区）
-  floatClass: string; // 呼吸层定位（top = 顶面投影预留）
+  // 根容器占位 = topPad + height + bottomPad（轴测顶面投影上溢 / 投影光区下溢）。
+  // 🚨 必须是数值派生，不能回到 Tailwind 字面类（旧 rootClass 'h-[540px]' /
+  // floatClass 'top-[56px] h-[440px]' 把同一组尺寸编码了两遍——改 height 时
+  // 类名不会跟着变，物件底部被容器裁掉或投影错位且不报错。Tailwind 任意值
+  // 本来就无法由变量生成，这里的正解是内联 style）
+  topPad: number;
+  bottomPad: number;
 }
 
 const VARIANTS: Record<'desktop' | 'mobile', VariantConfig> = {
@@ -988,8 +997,8 @@ const VARIANTS: Record<'desktop' | 'mobile', VariantConfig> = {
     auxDelay: T.aux,
     labelDelay: T.labels,
     hasDatum: true,
-    rootClass: 'h-[540px] w-[360px]',
-    floatClass: 'top-[56px] h-[440px]',
+    topPad: 56,
+    bottomPad: 44,
   },
   mobile: {
     width: 300,
@@ -1006,8 +1015,8 @@ const VARIANTS: Record<'desktop' | 'mobile', VariantConfig> = {
     auxDelay: MT.aux,
     labelDelay: MT.labels,
     hasDatum: false,
-    rootClass: 'h-[240px] w-[300px]',
-    floatClass: 'top-[40px] h-[168px]',
+    topPad: 40,
+    bottomPad: 32,
   },
 };
 
@@ -1219,14 +1228,20 @@ export default function BlueprintObject({
   variant?: 'desktop' | 'mobile';
 }) {
   const v = VARIANTS[variant];
+  // 占位几何全部由 width/height/topPad/bottomPad 派生（Tailwind 任意值类
+  // 无法动态生成，内联 style 是这里的正解）——改物件尺寸时容器自动跟上
   return (
     <div
-      className={`bp-object-root relative mx-auto select-none ${v.rootClass}`}
+      className="bp-object-root relative mx-auto select-none"
+      style={{ width: v.width, height: v.topPad + v.height + v.bottomPad }}
       aria-hidden="true"
     >
       {/* 背光/投影由场景层渲染在物件外（光源不随指针/摇曳旋转） */}
       {/* 透视链：root → float → sway → 本体 → 模块三层 全程 preserve-3d */}
-      <div className={`obj-float absolute inset-x-0 ${v.floatClass}`}>
+      <div
+        className="obj-float absolute inset-x-0"
+        style={{ top: v.topPad, height: v.height }}
+      >
         <div className="obj-sway h-full w-full">
           <div className="bp-object h-full w-full">
             {v.modules.map((def) => (

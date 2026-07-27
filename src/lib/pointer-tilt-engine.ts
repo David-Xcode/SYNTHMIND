@@ -13,6 +13,8 @@
 // - 门控 hover+fine 且非 RM；不满足 registerTilt 返回 undefined，元素纯静态；
 //   RM 中途开启 → 引擎整体 teardown 清零（单向，导航 remount 自愈）
 // - rect 缓存，scroll/resize 失效重取（滚动中松开归零，下次 pointermove 重瞄）
+// - 失焦/页面隐藏兜底：blur 平滑归零、visibility hidden 硬吸附并停帧
+//   （pointerleave 在 Cmd-Tab / 夺焦对话框下不触发，缺兜底会把倾角冻住）
 // - 盒内满权重、盒外即零（进出盒缘的目标跳变由弹簧平滑）
 // - per-element perspective 内嵌 transform 值，不建 preserve-3d 链
 // - 只写 transform；收敛吸附停帧，归零时清空内联 transform 回纯 CSS 姿态
@@ -106,23 +108,47 @@ function kick() {
   rafId = requestAnimationFrame(frame);
 }
 
-function wake(e: Entry) {
+// 返回是否真的唤醒了这条 entry —— 调用方据此决定要不要起 rAF
+function wake(e: Entry): boolean {
   if (
     e.settled &&
     (Math.abs(e.rx.t - e.rx.x) > REST_EPS ||
       Math.abs(e.ry.t - e.ry.x) > REST_EPS)
   ) {
     e.settled = false;
+    return true;
   }
+  return !e.settled;
 }
 
-function zeroTargets() {
+// 全部目标归零；返回是否还有未静止的 entry（全静止 → 调用方不必 kick）
+function zeroTargets(): boolean {
+  let active = false;
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
     e.rx.t = 0;
     e.ry.t = 0;
-    wake(e);
+    if (wake(e)) active = true;
   }
+  return active;
+}
+
+// 页面隐藏 = 谁也看不见：硬吸附归零并停帧。
+// 走 zeroTargets + kick 的话，隐藏期 rAF 本就不发帧，切回来还要先补跑一段
+// 回摆动画；直接清干净，切回即静止姿态。
+// （blur 不走这条——窗口失焦时页面往往仍可见，硬吸附会是一次可见跳变，
+//   那条沿用弹簧平滑归零，与 WallBricks 的 onBlur 同口径）
+function snapToRest() {
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    e.rx.x = e.rx.v = e.rx.t = 0;
+    e.ry.x = e.ry.v = e.ry.t = 0;
+    e.settled = true;
+    e.rect = null; // 隐藏期的布局变化没有 scroll/resize 兜底，回来必重取
+    e.el.style.transform = '';
+  }
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = 0;
 }
 
 function startEngine() {
@@ -134,12 +160,15 @@ function startEngine() {
     // （与 WallBricks 同一口径）：手指 pointermove 后无 pointerleave，
     // 倾角会永久粘在触点姿态
     if (ev.pointerType === 'touch') return;
+    // 与 onScroll 同一口径：只在真有 entry 需要动时才起帧。指针在所有盒外
+    // 划过（页面大部分区域）时，全员目标已是 0 且已静止 → 一帧都不起
+    let active = false;
     for (let i = 0; i < entries.length; i++) {
       const e = entries[i];
       if (e.disabled) {
         e.rx.t = 0;
         e.ry.t = 0;
-        wake(e);
+        if (wake(e)) active = true;
         continue;
       }
       if (!e.rect) e.rect = e.el.getBoundingClientRect();
@@ -158,25 +187,39 @@ function startEngine() {
         e.rx.t = 0;
         e.ry.t = 0;
       }
-      wake(e);
+      if (wake(e)) active = true;
     }
-    kick();
+    if (active) kick();
   };
 
   const onLeave = () => {
-    zeroTargets();
-    kick();
+    if (zeroTargets()) kick();
   };
 
-  // 滚动中元素随页移动而指针不动 — rect 失效即松开归零，下次 pointermove 重瞄
+  // 滚动中元素随页移动而指针不动 — rect 失效即松开归零，下次 pointermove 重瞄。
+  // rect 清除与归零合进同一趟遍历（原实现走两趟），且**只在真有 entry 被
+  // 唤醒时**才起 rAF——全部已归零静止时，每个 scroll 事件白起一帧的空转没了
   const onScroll = () => {
-    for (let i = 0; i < entries.length; i++) entries[i].rect = null;
-    zeroTargets();
-    kick();
+    let active = false;
+    for (let i = 0; i < entries.length; i++) {
+      const e = entries[i];
+      e.rect = null;
+      e.rx.t = 0;
+      e.ry.t = 0;
+      if (wake(e)) active = true;
+    }
+    if (active) kick();
   };
 
   const onResize = () => {
     for (let i = 0; i < entries.length; i++) entries[i].rect = null;
+  };
+
+  // Cmd-Tab / 切 tab / 原生对话框夺焦一般不触发 pointerleave——与 WallBricks
+  // 同款兜底：失焦按「指针离场」平滑归零，页面隐藏则硬吸附并停帧
+  const onBlur = () => onLeave();
+  const onVisibility = () => {
+    if (document.visibilityState === 'hidden') snapToRest();
   };
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -191,12 +234,18 @@ function startEngine() {
   });
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onResize);
+  window.addEventListener('blur', onBlur, { passive: true });
+  document.addEventListener('visibilitychange', onVisibility, {
+    passive: true,
+  });
 
   stopEngine = () => {
     window.removeEventListener('pointermove', onMove);
     document.documentElement.removeEventListener('pointerleave', onLeave);
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
+    window.removeEventListener('blur', onBlur);
+    document.removeEventListener('visibilitychange', onVisibility);
     unlistenReduced();
     if (rafId) cancelAnimationFrame(rafId);
     rafId = 0;

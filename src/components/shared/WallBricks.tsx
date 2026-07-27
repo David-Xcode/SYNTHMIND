@@ -21,9 +21,21 @@
 // 门控继承：hover+fine 且非 RM 才接管；触屏/RM/无 JS = 静态 tile
 // （砖床 + 砖两层叠加）就是那面墙。只写 transform / opacity；
 // 弹簧收敛即停帧。
+//
+// 砖数封顶（MAX_BRICKS，2026-07-27 审查修复）：CSS 的 pitch 阶梯只按
+// min-width 分档，竖屏/超高视口不受任何约束。超限时本组件就地放大 pitch
+// 并把 --wall-brick-w/--wall-seam 内联写回 .bp-wall——静态砖床 tile 是
+// background-size: var(--wall-brick-w)，两条路径因此始终同档、几何不错位。
 
 import { useEffect, useRef } from 'react';
 import { listenMql } from '@/lib/listen-mql';
+
+// 砖数硬上限 —— globals.css 的 pitch 阶梯只按 min-width 分档，**不看高度**：
+// 竖置 4K（2160×3840）宽度落在 2200 断点之下，拿 56 档铺出 2691 块，是
+// 阶梯注释假定的现实上限（3440×1440 @64 档 ≈1242）的 2.2 倍。这些砖自己
+// 不 layout，但会让**别人**触发的每次全文档 layout 贵上 3–4 倍。
+// 1400 与 1242 同量级，主流横屏视口一块也不会被封顶碰到。
+const MAX_BRICKS = 1400;
 
 const RADIUS = 150; // 重力井影响半径（px）— v8 收窄：≈5 砖直径，坡更陡
 const DEPTH = 36; // 坑心最大下陷（px，-z；perspective 600 下约 5.7% 透视缩）
@@ -105,6 +117,10 @@ export default function WallBricks() {
         buildFailed = true;
         return;
       }
+      // 先撤上次的封顶覆写再读 —— 否则读到的是已放大的 pitch，
+      // 每次 resize 都在上一次的封顶值上再封一次，逐轮复合放大
+      wall.style.removeProperty('--wall-brick-w');
+      wall.style.removeProperty('--wall-seam');
       const styles = getComputedStyle(grid);
       const w = Number.parseFloat(styles.getPropertyValue('--wall-brick-w'));
       const s = Number.parseFloat(styles.getPropertyValue('--wall-seam'));
@@ -112,13 +128,48 @@ export default function WallBricks() {
         buildFailed = true; // 放弃增强，静态 tile 原样；不再重试
         return;
       }
-      pitch = w;
-      seam = s;
-      faceSize = w - s;
       // clientWidth/Height = .bp-wall（fixed inset:0）的真实盒；
       // innerWidth 含经典滚动条，会白铺一列压在滚动条槽下
-      cols = Math.ceil(document.documentElement.clientWidth / pitch);
-      rows = Math.ceil(document.documentElement.clientHeight / pitch);
+      const cw = document.documentElement.clientWidth;
+      const ch = document.documentElement.clientHeight;
+      let nextPitch = w;
+      let nextSeam = s;
+      const brickCount = (p: number) => Math.ceil(cw / p) * Math.ceil(ch / p);
+
+      // 高度维度的封顶（阶梯只有 min-width 两档，管不到竖屏/超高视口）：
+      // 按面积比一次放大到位，再逐 px 兜住 cols/rows 双 ceil 的取整溢出
+      // （砖数对 pitch 单调不增，循环必然收敛；实测竖置 4K 只需几次迭代）
+      if (brickCount(nextPitch) > MAX_BRICKS) {
+        nextPitch = Math.ceil(
+          nextPitch * Math.sqrt(brickCount(nextPitch) / MAX_BRICKS),
+        );
+        while (brickCount(nextPitch) > MAX_BRICKS) nextPitch += 1;
+        // seam = pitch/16 是硬不变量：.bp-brick 的 background-size
+        // calc(100% * 16/15) 把它编进了 CSS（globals.css 对位恒等式）
+        nextSeam = nextPitch / 16;
+        // 写在 .bp-wall 上而非 grid：静态砖床 .bp-wall-face 是 grid 的
+        // **兄弟**节点，只有挂到共同祖先才继承得到，否则床 tile 与真砖错位
+        wall.style.setProperty('--wall-brick-w', `${nextPitch}px`);
+        wall.style.setProperty('--wall-seam', `${nextSeam}px`);
+      }
+
+      const nextCols = Math.ceil(cw / nextPitch);
+      const nextRows = Math.ceil(ch / nextPitch);
+      // 短路：档位与行列数一个没变（滚动条出现/消失、1px 抖动）→ 现有砖阵
+      // 原样留用，不为零变化重造 700–1400 个 div
+      if (
+        ready &&
+        nextPitch === pitch &&
+        nextCols === cols &&
+        nextRows === rows
+      )
+        return;
+
+      pitch = nextPitch;
+      seam = nextSeam;
+      faceSize = nextPitch - nextSeam;
+      cols = nextCols;
+      rows = nextRows;
       grid.textContent = '';
       bricks = [];
       lastW = [];
@@ -282,7 +333,12 @@ export default function WallBricks() {
       rafId = 0;
       bricks = [];
       grid.textContent = '';
-      if (wall) delete wall.dataset.live; // 静态砖层复位（砖床原样）
+      if (wall) {
+        delete wall.dataset.live; // 静态砖层复位（砖床原样）
+        // 封顶覆写一并撤销：静态 tile 回到 CSS 阶梯档
+        wall.style.removeProperty('--wall-brick-w');
+        wall.style.removeProperty('--wall-seam');
+      }
     };
 
     // 会话中途开启 reduced-motion → 拆除真砖，回到静态 tile
