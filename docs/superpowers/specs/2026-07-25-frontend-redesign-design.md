@@ -1,7 +1,20 @@
 # Synthmind 前端重构设计文档 — Blueprint 制图系统
 
+> 📕 **v1 奠基文档：概念仍然成立，实现层已被后续版本全面重写**（标注于 2026-07-27）
+> **仍然有效**：Blueprint / 蓝图制图的设计隐喻与业务依据（§1–§2）、单色相纪律、
+> 三字体分工、零动效依赖路线（§8）、反俗套自查口径（§7）。
+> 🛑 **已被推翻，勿照做**：§3 的「卡片三级材质」（v7 已改玻璃检视窗，`.card-surface|
+> elevated|spotlight` 全删）、`BlueprintGrid` 网格背景与网格 token（v4.1 起砖面禁绝
+> 网格纹路，`--grid-line-*` 已删）、`depth-drift`（v4 退役）、§7「玻璃卡全移除」
+> （v7 反转 = 卡片就是玻璃检视窗）、§8「不做 mouse-tracking 交互」（现有四例窄豁免，
+> 见 CLAUDE.md §6）、§6 分阶段路线图（已全部执行完毕并被后续版本重排）。
+> **现行正本**：项目根 `CLAUDE.md`（每 session 自动加载）；墙体 =
+> `2026-07-27-graphite-wall-v8-design.md`；卡片 = `2026-07-26-card-system-v7-glass-design.md`；
+> 物件 = `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md`；
+> 信息架构 = `2026-07-27-ia-hierarchy-redesign-design.md`。
+
 日期：2026-07-25
-状态：已定案（用户委托直接定向并开始实施）
+状态：已实施完毕（Phase 0–4 全部落地；本文的路线图部分为历史记录）
 范围：表现层全重做 + 首页内容扩充；信息架构 / 文案 / SEO 结构不动
 
 ---

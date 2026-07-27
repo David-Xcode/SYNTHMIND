@@ -1,5 +1,10 @@
 # Hero「Blueprint Object v2 — Modular Assembly」设计定案
 
+> 📕 **v2 阶段正本，已被后续版本迭代**（标注于 2026-07-27）
+> 物件现行正本 = `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md`
+> （v2 → v3 哑光实体机身 → v3.1 铭牌与活纹路）。七模块砌合的**结构**被 v3 继承，
+> 但面材质、几何尺寸、动画参数已在 v3 / v3.1 全面重标——查现行数值读 v3 / v3.1。
+
 > v1（单体轴测核心体）→ v2（独立模块砌合组合体）。参考基准：Resend 魔方的
 > 模块化形态与永动质感——但不抄其镜面材质，Blueprint 哑光制图语言不变。
 > v1 正本：`2026-07-25-blueprint-object-design.md`（弹簧物理/透视链/降级链结论全部继承）。

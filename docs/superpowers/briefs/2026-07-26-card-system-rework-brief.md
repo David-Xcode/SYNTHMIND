@@ -1,8 +1,13 @@
 # 卡片系统统一重构 + Contact 页重设计 — 执行 Brief（v7 候选）
 
-> 2026-07-26 由主对话完成全站调研后生成，供新 session 执行。
-> **调研已完成，本文件即调研正本——新 session 不要重做盘点，直接从 §5 阶段 0 开始。**
-> 设计系统现行正本 = 项目 CLAUDE.md + `2026-07-26-lantern-wall-v6-design.md`。
+> ✅ **任务已完成 — 仅存档，勿再执行 §5 施工阶段。**
+> 定案与实装结果见 `docs/superpowers/specs/2026-07-26-card-system-v7-glass-design.md`。
+> 本文件的持续价值只有 **§1 迁移覆盖表** 与 **§2 文案审计**（v7 spec 明文引用其为
+> 调研正本，不重复）。
+> 2026-07-26 由主对话完成全站调研后生成。
+> ⚠️ 本文原写「设计系统现行正本 = CLAUDE.md + Lantern Wall v6」——**墙体正本已于
+> 2026-07-27 移交 `docs/superpowers/specs/2026-07-27-graphite-wall-v8-design.md`**
+> （v6 的墙后灯光整体退役，禁止复活）。现行 = 项目 `CLAUDE.md` + v8 墙体 spec。
 
 ---
 

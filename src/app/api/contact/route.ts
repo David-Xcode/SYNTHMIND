@@ -1,338 +1,274 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { CONTACT_EMAIL } from '@/lib/constants';
 import {
-  BRAND_ACCENT,
-  BRAND_ACCENT_DARK,
-  CONTACT_EMAIL,
-} from '@/lib/constants';
+  CONTACT_SOURCE,
+  EMAIL_REGEX,
+  FIELD_LIMITS,
+  HONEYPOT_FIELD,
+  MIN_SUBMIT_ELAPSED_MS,
+} from '@/lib/contact-form';
 import { checkCsrf } from '@/lib/csrf';
+import { renderAdminNotification } from '@/lib/email-templates';
 
-// 懒加载 Resend 客户端 — 避免构建时因缺少环境变量而报错
-function getResendClient() {
-  return new Resend(process.env.RESEND_API_KEY);
+// route segment config — 与 vercel.json 的 functions.maxDuration 同值。
+// 写在代码里的这份不会因目录结构变化而失配（vercel.json 按源码路径匹配）。
+export const maxDuration = 10;
+
+// ── Resend 客户端：惰性单例 ──
+// 惰性是为了构建期不因缺 RESEND_API_KEY 而求值；单例是因为同一实例可复用。
+let resendClient: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resendClient) resendClient = new Resend(process.env.RESEND_API_KEY);
+  return resendClient;
 }
 
-// ── 简易内存速率限制 — 同一 IP 60 秒内最多 3 次 ──
+// ── 内存速率限制 ──
+// 🚨 best-effort，**不是安全边界**：Vercel Serverless 上每个实例各持一份 Map，
+// 并发扩容 / 冷启动即绕过。它只能挡住「同一热实例上的连点」这一种最廉价的滥用。
+// 真正跨实例生效的限流是 Vercel Firewall 的 Rate Limit 规则（项目设置里配，零代码），
+// 或 KV/Redis 计数器——两者都未引入，所以不要把这段代码当成防护依据。
 const RATE_WINDOW_MS = 60_000;
 const RATE_MAX_HITS = 3;
+// x-real-ip 缺失时全部请求会挤进同一个 'unknown' 桶（Vercel 恒设该头，此路径
+// 只在自托管/换代理时出现）——给它显著更宽松的阈值，避免把所有人一起限死。
+const RATE_MAX_HITS_UNKNOWN = 30;
+// Map 上限兜底：过期时间戳已在 isRateLimited 里逐 key 惰性清理，这里只防
+// 「访问一次后再不访问」的 key 无限累积（原模块作用域 setInterval 在 serverless
+// 上几乎跑不到、在 dev HMR 下反而逐次累积，已删除）。
+const RATE_MAP_MAX_KEYS = 5_000;
 const rateLimitMap = new Map<string, number[]>();
 
-function isRateLimited(ip: string): boolean {
+function isRateLimited(ip: string, maxHits: number): boolean {
   const now = Date.now();
+  if (rateLimitMap.size > RATE_MAP_MAX_KEYS) rateLimitMap.clear();
   const timestamps = rateLimitMap.get(ip) ?? [];
   // 清除过期记录
   const recent = timestamps.filter((t) => now - t < RATE_WINDOW_MS);
-  if (recent.length >= RATE_MAX_HITS) return true;
+  if (recent.length >= maxHits) return true;
   recent.push(now);
   rateLimitMap.set(ip, recent);
   return false;
 }
 
-// 每 5 分钟清理过期 IP 记录，防止内存泄漏
-// 注意：serverless 环境每次冷启动 map 会重置，此定时器仅对长运行进程有效
-setInterval(() => {
-  const now = Date.now();
-  rateLimitMap.forEach((timestamps, ip) => {
-    const recent = timestamps.filter((t) => now - t < RATE_WINDOW_MS);
-    if (recent.length === 0) rateLimitMap.delete(ip);
-    else rateLimitMap.set(ip, recent);
-  });
-}, 5 * 60_000).unref();
+// 请求体上限 — 在 request.json() 之前按 Content-Length 拒绝。
+// 64KB 而非 32KB：合法上限约 5600 字符，全为中文且被 \uXXXX 转义时可达 ~34KB，
+// 32KB 会误伤真实提交。
+const MAX_BODY_BYTES = 64 * 1024;
 
-// 字段长度上限
-const FIELD_LIMITS = { name: 100, subject: 200, message: 5000 } as const;
-
-// 防止 HTML 注入 — 用户输入插入邮件模板前必须转义
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+/** 只接受字符串，其余（数字/数组/对象/null）一律判为缺失 */
+function readString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
-// 允许的来源枚举 — 防止客户端注入任意值
-const ALLOWED_SOURCES = ['contact', 'contact-page', 'cta'] as const;
-type AllowedSource = (typeof ALLOWED_SOURCES)[number];
-
-interface ContactFormData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  source?: string;
+/** 日志用错误摘要 — 不整体 stringify，避免把提交者邮箱写进 Vercel 日志 */
+function errorSummary(err: unknown): { name?: string; statusCode?: number } {
+  if (err && typeof err === 'object') {
+    const e = err as { name?: string; statusCode?: number };
+    return { name: e.name, statusCode: e.statusCode };
+  }
+  return { name: 'UnknownError' };
 }
 
-// 发送自动回复给客户
-const sendCustomerReply = async (
-  name: string,
-  email: string,
-  subject: string,
-  message: string,
-) => {
-  const safeName = escapeHtml(name);
-  const safeSubject = escapeHtml(subject);
-  const safeMessage = escapeHtml(message);
+/** 仅 development 回传给前端的细节，生产恒为 undefined */
+function devDetails(err: unknown): string | undefined {
+  if (process.env.NODE_ENV !== 'development') return undefined;
+  if (err instanceof Error) return err.message;
+  // Resend 的 error 是普通对象不是 Error 实例，String() 会得到 "[object Object]"
+  if (err && typeof err === 'object') {
+    const e = err as { message?: unknown };
+    if (typeof e.message === 'string') return e.message;
+  }
+  return String(err);
+}
 
-  return await getResendClient().emails.send({
-    from: 'Synthmind <noreply@synthmind.ca>',
-    to: [email],
-    subject:
-      'Thank you for contacting Synthmind - We have received your message',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+function badRequest(error: string, status = 400) {
+  return NextResponse.json({ success: false, error }, { status });
+}
 
-        <div style="background: linear-gradient(135deg, ${BRAND_ACCENT}, ${BRAND_ACCENT_DARK}); padding: 30px; text-align: center; color: white;">
-          <h1 style="margin: 0; font-size: 28px; font-weight: 300;">Synthmind</h1>
-          <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">AI-Powered Software Development &amp; Automation</p>
-        </div>
-
-        <div style="background-color: white; padding: 30px;">
-          <p style="color: #333; font-size: 18px; margin: 0 0 20px 0;">Dear ${safeName},</p>
-
-          <p style="color: #333; line-height: 1.6; margin: 0 0 25px 0;">Thank you for reaching out to Synthmind! We have received your message and truly appreciate your interest in our AI solutions.</p>
-
-          <div style="background-color: #f8f9ff; border-left: 4px solid ${BRAND_ACCENT}; padding: 20px; margin: 25px 0;">
-            <p style="color: ${BRAND_ACCENT}; font-weight: bold; margin: 0 0 15px 0;">Your Message Summary</p>
-            <p style="margin: 0 0 10px 0; color: #555;"><strong>Subject:</strong> ${safeSubject}</p>
-            <p style="margin: 0; color: #333;"><strong>Message:</strong></p>
-            <p style="margin: 10px 0 0 0; color: #333; line-height: 1.5;">${safeMessage}</p>
-          </div>
-
-          <p style="color: #333; margin: 20px 0 0 0;">Best regards,</p>
-          <p style="color: ${BRAND_ACCENT}; font-weight: bold; margin: 5px 0 0 0;">The Synthmind Team</p>
-        </div>
-
-      </div>
-    `,
+// 机器人路径统一返回 200 假成功 — 不告诉脚本它被识破了
+function silentSuccess() {
+  return NextResponse.json({
+    success: true,
+    message: 'Contact form submitted successfully',
   });
-};
-
-// 发送通知邮件给管理员
-const sendNotificationEmail = async (
-  name: string,
-  email: string,
-  subject: string,
-  message: string,
-  source?: string,
-) => {
-  const safeName = escapeHtml(name);
-  const safeSubject = escapeHtml(subject);
-  const safeMessage = escapeHtml(message);
-
-  return await getResendClient().emails.send({
-    from: 'Synthmind <noreply@synthmind.ca>',
-    to: [CONTACT_EMAIL],
-    subject: `[Website Contact] New message from ${name.slice(0, FIELD_LIMITS.name).replace(/[\r\n\t]/g, ' ')}`,
-    replyTo: email,
-    html: `
-      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 700px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, ${BRAND_ACCENT}, ${BRAND_ACCENT_DARK}); padding: 30px; text-align: center; color: white;">
-          <h1 style="margin: 0; font-size: 24px; font-weight: 600;">New Website Contact Form Submission</h1>
-          <p style="margin: 10px 0 0 0; opacity: 0.9;">from synthmind.ca</p>
-        </div>
-
-        <div style="background-color: white; padding: 30px; border: 1px solid #e8eaed;">
-          <div style="background-color: #f8f9ff; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid ${BRAND_ACCENT};">
-            <h2 style="color: ${BRAND_ACCENT}; margin: 0 0 20px 0; font-size: 20px;">Contact Information</h2>
-            <p><strong>Name:</strong> ${safeName}</p>
-            <p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>
-            <p><strong>Subject:</strong> ${safeSubject}</p>
-            ${source ? `<p><strong>Source:</strong> ${escapeHtml(source)}</p>` : ''}
-            <p><strong>Time:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' })}</p>
-          </div>
-
-          <div style="background-color: #f8f9fa; padding: 25px; border-radius: 8px; border: 1px solid #e8eaed;">
-            <h3 style="color: #202124; margin: 0 0 15px 0; font-size: 18px;">Message Content</h3>
-            <div style="background-color: white; padding: 20px; border-radius: 6px; border: 1px solid #dadce0;">
-              <p style="margin: 0; color: #202124; line-height: 1.6; white-space: pre-wrap; font-size: 15px;">${safeMessage}</p>
-            </div>
-          </div>
-
-          <div style="margin-top: 30px; text-align: center;">
-            <a href="mailto:${escapeHtml(email)}?subject=Re: ${encodeURIComponent(subject || '')}"
-               style="display: inline-block; background: linear-gradient(135deg, ${BRAND_ACCENT}, ${BRAND_ACCENT_DARK}); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: 600;">
-              Reply to Customer
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
-  });
-};
+}
 
 export async function POST(request: NextRequest) {
   // CSRF 防护 — 校验 Origin/Referer
   const csrfError = checkCsrf(request);
   if (csrfError) return csrfError;
 
-  // 速率限制 — 在解析 body 之前执行
+  // 速率限制 — 在解析 body 之前执行。
   // 仅用 x-real-ip：该头由 Vercel 平台写入真实客户端 IP，客户端无法伪造。
   // 不回退到 x-forwarded-for——它可被客户端伪造，攻击者轮换该头即可获得新桶绕过限流。
-  // 局限：此限流为单实例内存级，serverless 多实例 / 冷启动会重置；
-  // 真正的分布式限流需 Vercel KV / WAF rate-limit 规则（属基础设施改动，未在此引入）。
-  const clientIp = request.headers.get('x-real-ip')?.trim() || 'unknown';
+  const rawIp = request.headers.get('x-real-ip')?.trim();
+  const clientIp = rawIp || 'unknown';
+  const maxHits = rawIp ? RATE_MAX_HITS : RATE_MAX_HITS_UNKNOWN;
 
-  if (isRateLimited(clientIp)) {
+  if (isRateLimited(clientIp, maxHits)) {
     return NextResponse.json(
       { success: false, error: 'Too many requests. Please try again later.' },
-      { status: 429 },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(RATE_WINDOW_MS / 1000) },
+      },
     );
   }
 
+  // ── 请求形态前置校验：畸形请求应得到 4xx，而不是误导性的 500 ──
+  const contentType = request.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) {
+    return badRequest('Unsupported content type.', 415);
+  }
+  const declaredLength = Number(request.headers.get('content-length') ?? 0);
+  if (declaredLength > MAX_BODY_BYTES) {
+    return badRequest('Message is too large.', 413);
+  }
+
+  let body: Record<string, unknown>;
   try {
-    const { name, email, subject, message, source }: ContactFormData =
-      await request.json();
-
-    // source 白名单校验 — 非法值降级为默认 'contact'
-    const safeSource: AllowedSource = ALLOWED_SOURCES.includes(
-      source as AllowedSource,
-    )
-      ? (source as AllowedSource)
-      : 'contact';
-
-    // 验证必需字段 — v7 校验契约对齐：前端四字段全 required，后端同步
-    // 强制（mini/inline 变体已于表单 v2 删除，「email 足够」的旧口径随之废弃）
-    if (!email) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Email is required',
-        },
-        { status: 400 },
-      );
+    const parsed: unknown = await request.json();
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return badRequest('Malformed request body.');
     }
-    if (!name?.trim() || !subject?.trim() || !message?.trim()) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Name, subject, and message are required',
-        },
-        { status: 400 },
-      );
-    }
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return badRequest('Malformed request body.');
+  }
 
-    // 验证邮箱格式 — TLD 至少 2 个字符，长度不超过 RFC 5321 上限
-    if (email.length > 254) {
-      return NextResponse.json(
-        { success: false, error: 'Email address too long' },
-        { status: 400 },
-      );
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid email format',
-        },
-        { status: 400 },
-      );
-    }
+  // ── 运行时类型收敛 ──
+  // TS 的类型注解在运行时是空气：非字符串字段此前会一路抛 TypeError 变成 500/502，
+  // 甚至把数组塞给 Resend。下游一律只用这里收敛出的局部变量。
+  const name = readString(body.name);
+  const email = readString(body.email);
+  const subject = readString(body.subject);
+  const message = readString(body.message);
 
-    // 字段长度校验 — 防止超大 payload 滥用（必填已在上方强制，
-    // 可选链仅防御非法 JSON 形态的 TypeError）
-    if (
-      (name?.length ?? 0) > FIELD_LIMITS.name ||
-      (subject?.length ?? 0) > FIELD_LIMITS.subject ||
-      (message?.length ?? 0) > FIELD_LIMITS.message
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Field length exceeded: name max ${FIELD_LIMITS.name}, subject max ${FIELD_LIMITS.subject}, message max ${FIELD_LIMITS.message}`,
-        },
-        { status: 400 },
-      );
-    }
+  // ── 机器人拦截（廉价第一道，均可伪造，只挡通用爬虫）──
+  // ① 蜜罐：真人看不见的字段被填 = 盲填所有 input 的脚本
+  if (readString(body[HONEYPOT_FIELD]) !== '') {
+    console.warn('[BOT_REJECTED]', { reason: 'honeypot' });
+    return silentSuccess();
+  }
+  // ② 提交耗时：渲染到提交不足 3 秒。字段缺失/非法时**不判定**（老缓存客户端可能不带），
+  // 宁可放过也不误杀真实询盘。
+  const elapsedMs = body.elapsedMs;
+  if (
+    typeof elapsedMs === 'number' &&
+    Number.isFinite(elapsedMs) &&
+    elapsedMs >= 0 &&
+    elapsedMs < MIN_SUBMIT_ELAPSED_MS
+  ) {
+    console.warn('[BOT_REJECTED]', { reason: 'too-fast', elapsedMs });
+    return silentSuccess();
+  }
 
-    // 检查 RESEND_API_KEY 是否配置 — 缺失时提前失败，不静默吞错误
-    if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured');
-      return NextResponse.json(
-        { success: false, error: 'Email service is not configured' },
-        { status: 503 },
-      );
-    }
+  // ── 字段校验：错误文案是给用户看的，必须说清楚哪里不对 ──
+  if (!name) return badRequest('Please enter your name.');
+  if (!email) return badRequest('Please enter your email address.');
+  if (!subject) return badRequest('Please enter a subject.');
+  if (!message) return badRequest('Please enter a message.');
 
-    // 发送管理员通知邮件（优先保证你能收到客户留言）
-    let notificationEmailSent = false;
-    let notificationError: string | null = null;
-    try {
-      const notificationEmail = await sendNotificationEmail(
-        name || '',
-        email,
-        subject || '',
-        message || '',
-        safeSource,
-      );
-      if (notificationEmail.error) {
-        notificationError = JSON.stringify(notificationEmail.error);
-        console.error('Notification email API error:', notificationEmail.error);
-      } else {
-        notificationEmailSent = !!notificationEmail.data;
-      }
-    } catch (notifErr) {
-      notificationError = (notifErr as Error).message;
-      console.error('Notification email threw:', notifErr);
-    }
+  if (name.length > FIELD_LIMITS.name) {
+    return badRequest(
+      `Name is too long (${FIELD_LIMITS.name} characters max).`,
+    );
+  }
+  if (email.length > FIELD_LIMITS.email) {
+    return badRequest('Email address is too long.');
+  }
+  if (!EMAIL_REGEX.test(email)) {
+    return badRequest('That email address does not look valid.');
+  }
+  if (subject.length > FIELD_LIMITS.subject) {
+    return badRequest(
+      `Subject is too long (${FIELD_LIMITS.subject} characters max).`,
+    );
+  }
+  if (message.length > FIELD_LIMITS.message) {
+    return badRequest(
+      `Message is too long (${FIELD_LIMITS.message} characters max).`,
+    );
+  }
 
-    // 尝试发送客户确认邮件（如果失败不影响主要功能）
-    let customerEmailSent = false;
-    try {
-      const customerEmail = await sendCustomerReply(
-        name || '',
-        email,
-        subject || '',
-        message || '',
-      );
-      if (customerEmail.error) {
-        console.error('Customer reply email API error:', customerEmail.error);
-      } else {
-        customerEmailSent = !!customerEmail.data;
-      }
-    } catch (custErr) {
-      console.warn('Customer reply email threw:', custErr);
-    }
+  // source 不再从 body 读取：全站只有一个表单，白名单里的 'contact' / 'cta'
+  // 对应的 mini/inline 变体早已删除，客户端传来的值不携带任何信息（且可伪造）。
+  // 直接用常量作为管理员邮件里的来源标注。
+  const source = CONTACT_SOURCE;
 
-    // 通知邮件是核心功能 — 如果发不出去，告诉前端失败
-    if (!notificationEmailSent) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            'Failed to send your message. Please try again in a moment.',
-          details:
-            process.env.NODE_ENV === 'development'
-              ? notificationError
-              : undefined,
-        },
-        { status: 502 },
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Contact form submitted successfully',
-      data: {
-        customerEmailSent,
-        notificationEmailSent,
-      },
-    });
-  } catch (error) {
-    console.error('Failed to send emails:', error);
-
+  // 检查 RESEND_API_KEY 是否配置 — 缺失时提前失败，不静默吞错误
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY is not configured');
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to send emails',
-        details:
-          process.env.NODE_ENV === 'development'
-            ? (error as Error).message
-            : 'Internal server error',
+        error:
+          'Our messaging service is temporarily unavailable. Please try again later.',
       },
-      { status: 500 },
+      { status: 503 },
     );
   }
+
+  // ── 发信：只发管理员通知 ──
+  // 面向陌生地址的自动回执已删除（发信中继滥用面的唯一放大器）。
+  const { subject: mailSubject, html } = renderAdminNotification({
+    name,
+    email,
+    subject,
+    message,
+    source,
+  });
+
+  let sent = false;
+  let failure: unknown = null;
+  try {
+    const result = await getResendClient().emails.send({
+      from: 'Synthmind <noreply@synthmind.ca>',
+      to: [CONTACT_EMAIL],
+      subject: mailSubject,
+      replyTo: email,
+      html,
+    });
+    if (result.error) {
+      failure = result.error;
+      console.error('Notification email API error', errorSummary(result.error));
+    } else {
+      sent = !!result.data;
+    }
+  } catch (err) {
+    failure = err;
+    console.error('Notification email threw', errorSummary(err));
+  }
+
+  if (!sent) {
+    // 兜底持久化：Resend 是唯一出口，发不出去这条留言就没有任何人收到。
+    // 写进 Vercel 运行日志至少能事后捞回——这是「留言不人间蒸发」压过
+    // 「日志不留 PII」的**有意取舍**，仅在通知失败路径触发。
+    console.error(
+      '[LOST_SUBMISSION]',
+      JSON.stringify({
+        at: new Date().toISOString(),
+        name,
+        email,
+        subject,
+        message,
+        source,
+      }),
+    );
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          'We could not deliver your message right now. Please try again in a few minutes.',
+        details: devDetails(failure),
+      },
+      { status: 502 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: 'Contact form submitted successfully',
+  });
 }

@@ -1,5 +1,11 @@
 # Living Blueprint v4.1 —「Square Brick Material」设计定案
 
+> 🛑 **已退役 — 勿作实施依据**（2026-07-27）
+> 墙体现行正本 = `2026-07-27-graphite-wall-v8-design.md`（本文的「随页滚动」已于 v6
+> 退役 = 墙属 fixed 场景；「灯光材质」已于 v8 整体退役 = 墙后零光源）；按钮现行正本 =
+> CLAUDE.md §7（本文的 backglow / `--btn-dy` 双层反向位移 / btnHoverIdle 呼吸均已删除）。
+> 本文仅存架构决策史。
+
 > v4 部分定案的返工令落地：方砖化砖墙（去网格、灯光材质、随页滚动）+ 按钮与砖
 > 完全同族（长条砖形态 + pointer tilt + backglow）。
 > 上位正本：`2026-07-26-living-blueprint-v4-design.md`（未推翻部分与权衡记录仍有效）。

@@ -11,6 +11,7 @@ import ModuleButton from '@/components/shared/ModuleButton';
 import SheetLabel from '@/components/shared/SheetLabel';
 import BlueprintObject from './BlueprintObject';
 import HeroObjectPhysics from './HeroObjectPhysics';
+import HeroObjectViewportGate from './HeroObjectViewportGate';
 
 // 首页讲「我们做什么」；「我们为何存在」归 About hero——两处副标题
 // 不再逐字重复（v7 文案审计定案），身份标签全站回避
@@ -109,8 +110,12 @@ export default function HomeHero() {
             min-w-0：<lg 轨道（grid-cols-1 = minmax(0,1fr)）本不受 300px 抬高；
             ≥lg 的 [7fr_5fr] 轨道最小值是 auto，min-w-0 才是那里的护栏——
             v3 物件 360px 后 1024px 断点下 5fr 份额 ≈386px 余量已趋零，
-            这道护栏正在承重，勿删；<340px 真兜底 = scale(0.85) */}
-        <div className="min-w-0">
+            这道护栏正在承重，勿删；<340px 真兜底 = scale(0.85)
+            HeroObjectViewportGate：物件离开视口即暂停整棵场景子树的动画
+            （物件的无限动画一条都无法合成，不门控时滚出视口仍烧主线程——
+            实测数据与选择器口径见该组件与 globals.css .bp-object-scene 注释）。
+            包住两个变体：桌面/移动各自的 scene 都在门控内 */}
+        <HeroObjectViewportGate className="min-w-0">
           <div className="hero-tilt hidden lg:block">
             <HeroObjectPhysics>
               <BlueprintObject />
@@ -127,7 +132,7 @@ export default function HomeHero() {
               <BlueprintObject variant="mobile" />
             </div>
           </div>
-        </div>
+        </HeroObjectViewportGate>
       </div>
 
       {/* 角落坐标标注 — 藏在细节里的多伦多坐标 */}

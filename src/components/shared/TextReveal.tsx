@@ -59,7 +59,10 @@ export default function TextReveal({
                     )
                     .join(', ')
                 : 'none',
-              willChange: isVisible ? 'auto' : 'opacity, transform, filter',
+              // 不写 will-change（与 AnimateOnScroll 同一判断）：未入场的词
+              // span 常驻合成层提示得不偿失，且本组件是公共导出——谁拿去包
+              // 一段长文案就是几十个常驻提示。500ms 的 opacity/transform/filter
+              // 过渡不需要提前提示，浏览器自会在过渡开始时提层
             }}
           >
             {word}

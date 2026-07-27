@@ -37,9 +37,12 @@ export const BASE_OPEN_GRAPH = {
   url: SITE_URL,
   images: [
     {
-      url: '/og-image.png',
-      width: 1024,
-      height: 541,
+      // JPEG 而非 PNG：同尺寸 490KB → 137KB。WhatsApp 的 OG 抓取上限约 300KB，
+      // 超限直接不出预览；1200×630 是 LinkedIn/Facebook large card 的建议尺寸，
+      // 旧的 1024×541 会被降级成小卡（2026-07-27 审查修复）
+      url: '/og-image.jpg',
+      width: 1200,
+      height: 630,
       alt: 'Synthmind — AI-Powered Software Development',
     },
   ],

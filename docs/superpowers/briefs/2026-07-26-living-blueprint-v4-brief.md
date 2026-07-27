@@ -1,5 +1,10 @@
 # Synthmind 全站 v4 —「Blueprint Material」三大工作流：材质统一 + 独立按钮组件 + 全站砖墙架构重构
 
+> ✅ **任务已于 2026-07-26 完成 — 仅存档，勿再执行。**
+> 本文是当时的施工任务书，其定案已被 v4.1 → v4.2 → v6 → v8 连续推翻。
+> 现行正本：墙体 = `docs/superpowers/specs/2026-07-27-graphite-wall-v8-design.md`；
+> 其余 = 项目根 `CLAUDE.md`。
+
 ## 你接手的是什么
 
 Synthmind（多伦多 AI 软件工作室，B2B lead-gen 站，Next.js 16 App Router + Tailwind 3.4 +

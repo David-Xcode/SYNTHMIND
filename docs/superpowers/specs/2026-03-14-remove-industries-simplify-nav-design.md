@@ -1,7 +1,8 @@
 # Remove Industries Concept & Simplify Navigation
 
 **Date:** 2026-03-14
-**Status:** Approved
+**Status:** ✅ 已实施完毕（2026-03-14），仅存档。导航 label 后于 2026-07-26 由
+"Products" 改为 "Our Work"，路由 `/products` 不变——现行口径见根目录 `CLAUDE.md`。
 
 ## Summary
 

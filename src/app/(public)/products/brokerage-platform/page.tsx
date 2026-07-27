@@ -14,8 +14,16 @@
 // ③ 已签约方 = **经纪行（brokerages）不是保险公司（carriers）**——carrier
 //    不使用 brokerage 管理系统，写成 carrier 是行业逻辑硬伤（2026-07-27 David
 //    确认）；不点名、不写数字
-// ④ 在建产品时态：能力描述一律名词式规格或 "designed to / being built to"，
-//    禁用「系统已经在做 X」的完成时态叙述
+// ④ 在建产品时态：能力描述默认用名词式规格或 "designed to / being built to"，
+//    禁用「系统已经在做 X」的完成时态叙述——**这条防的是把没做的说成做了**。
+//    ⚠️ 例外（2026-07-27 审查补入，此前规则与正文实际不自洽）：已完成官方
+//    测试、有实测证据的模块可以用完成时陈述事实，把已做到的说弱了是另一种
+//    不诚实。当前唯一例外 = eDocs 摄取管线阶段 1（官方样本批端到端跑通、
+//    零 unmatched），对应本页 "Our ingestion pipeline runs…" 与 "We built
+//    support for all five eDocs segments" 两段。
+//    行使例外的硬条件：**必须与认证状态段同屏出现**——读者不能只看到「已经
+//    做到」而看不到「认证仍在进行中」，否则单独摘出来就成了变相的 certified
+//    声明，正好踩中 ② 要防的那件事。新增例外前先确认这两点都成立。
 
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/layout/Breadcrumb';

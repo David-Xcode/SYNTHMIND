@@ -1,7 +1,12 @@
 # Card System v7 — 玻璃检视窗 + Contact 单据化重构（设计定案）
 
+> ✅ **卡片系统现行正本 · 已实装**（`5ba1762` 实装 + `0e882de`/`e8a4cfb`/`e7f58a4`/
+> `ea44d20` 四轮审查修复）。卡片/表单材质的任何改动以本文 + CLAUDE.md §5 为准。
+> ⚠️ 本文中引用「v6 灯箱墙」处，墙体现行正本已换为
+> `2026-07-27-graphite-wall-v8-design.md`（墙后零光源）。
+
 > 2026-07-26 经 superpowers:brainstorming 与用户逐项定案。
-> 调研正本 = `2026-07-26-card-system-rework-brief.md`（迁移覆盖表 §1 / 文案审计 §2 以其为准，本文不重复）。
+> 调研正本 = `docs/superpowers/briefs/2026-07-26-card-system-rework-brief.md`（迁移覆盖表 §1 / 文案审计 §2 以其为准，本文不重复）。
 > 本 spec 与 CLAUDE.md §2/§4/§5/§6 修订同 commit 落盘——CLAUDE.md 不得与实现脱节。
 
 ---
