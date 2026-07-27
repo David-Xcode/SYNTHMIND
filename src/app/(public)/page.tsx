@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: 'Synthmind | AI-Powered Software Development & Automation',
   description:
     'Toronto-based software team building AI tools that actually work. Workflow automation, legacy modernization, and custom AI solutions.',
+  // 根 layout 已不再声明 canonical（避免未覆写的页面静默指向首页），
+  // 首页自报，与其余 6 个内容页同口径（2026-07-27 审查修复）
+  alternates: { canonical: '/' },
   openGraph: {
     ...BASE_OPEN_GRAPH,
     title: 'Synthmind | AI Solutions That Actually Work',

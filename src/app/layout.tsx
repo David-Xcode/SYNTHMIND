@@ -1,7 +1,15 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Archivo, IBM_Plex_Mono, Manrope } from 'next/font/google';
-import { SITE_URL } from '@/lib/constants';
+import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
 import './globals.css';
+
+// themeColor 属 viewport 而非 metadata（Next 14 起拆分，写在 metadata 里会被
+// 忽略并告警）。取 --bg-base #080B10：移动端浏览器地址栏/状态栏跟着变深，
+// 页面与系统 UI 之间不再有一条亮边（2026-07-27 审查修复，此前完全缺失）
+export const viewport: Viewport = {
+  themeColor: '#080B10',
+  colorScheme: 'dark',
+};
 
 // Display 字体 — 标题、Hero 大文字（Blueprint 制图气质）
 // variable font 含 wdth 宽度轴，大标题配 .stretch-wide 用宽体
@@ -32,35 +40,32 @@ export const metadata: Metadata = {
   title: 'Synthmind | AI-Powered Software Development & Automation',
   description:
     'Toronto-based software team building AI tools that actually work. Specializing in workflow automation, legacy system modernization, and custom AI solutions for traditional industries.',
-  alternates: {
-    canonical: '/',
-  },
+  // ⚠️ 根 layout 刻意不声明 alternates.canonical：写死 '/' 会让任何未覆写
+  // alternates 的页面（含 404）静默 canonical 到首页——新增页面忘写就把全部
+  // 权重让给首页，Google 当副本合并，且编译期查不出。canonical 由各 page 自报，
+  // 无声明时 Next 不输出该标签（不输出好过输出错的）。2026-07-27 审查修复
   // Google Search Console 站点所有权验证 — 渲染 <meta name="google-site-verification">
   verification: {
     google: 'ygG1JvdzdlzTjU3ruttowjnXPMbV_VIJdUKXsvX1CLk',
   },
   openGraph: {
+    ...BASE_OPEN_GRAPH,
     title: 'Synthmind | AI Solutions That Actually Work',
     description:
       'Working software for traditional industries — workflow automation, legacy modernization, and custom AI.',
-    url: SITE_URL,
-    siteName: 'Synthmind',
-    locale: 'en_CA',
-    type: 'website',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1024,
-        height: 541,
-        alt: 'Synthmind — AI-Powered Software Development',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Synthmind | AI-Powered Software Development',
     description: 'AI tools that actually work for traditional industries.',
-    images: ['/og-image.png'],
+    // 对象形态而非裸 url 字符串：此前只有 og:image:alt，twitter:image:alt 缺失，
+    // 读屏用户在 X 上拿不到图片描述（2026-07-27 审查修复）
+    images: [
+      {
+        url: BASE_OPEN_GRAPH.images[0].url,
+        alt: BASE_OPEN_GRAPH.images[0].alt,
+      },
+    ],
   },
 };
 

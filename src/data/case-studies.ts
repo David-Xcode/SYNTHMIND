@@ -2,6 +2,21 @@
 // 5 个软件产品案例，供产品展示页与详情页使用
 // 地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens）见 real-estate.ts
 
+/** 成果条目 — 大数字上不上卡由文案作者**显式授权**，不再由正则从散文反解。
+ * 带 `value` → StatCard 大数字卡（value 在上、label 在下）；
+ * 只有 `label` → bullet 直排整句。
+ * 🚨 铁律：不虚构数字——没写 value 就是 bullet，宁可少一张卡也不猜。
+ * 2026-07-27 退役了原 ResultsSection 里 200+ 行的启发式解析器：它会把
+ * 改造前的旧基线、裸年份读成成果度量，改一个措辞就静默改掉对外页面上的
+ * 大数字，且仓库无测试基建兜底。数字写什么，就在这里写死。 */
+export interface CaseStudyResult {
+  /** 统计值原文，如 '15 minutes' / '90%' / '2 weeks'；省略即走 bullet。
+   * 形如「整数 + 非数字后缀」的值会被 StatCard 做 count-up，其余原样静态输出 */
+  value?: string;
+  /** 有 value 时 = 数字下方的说明标签；无 value 时 = bullet 整句 */
+  label: string;
+}
+
 export interface CaseStudy {
   slug: string;
   title: string;
@@ -16,7 +31,7 @@ export interface CaseStudy {
   featured?: boolean;
   challenge: string[];
   solution: string[];
-  results: string[];
+  results: CaseStudyResult[];
   techStack: string[];
 }
 
@@ -41,10 +56,16 @@ export const caseStudies: CaseStudy[] = [
       'Developed a flat-rate pricing model that makes unlimited signatures affordable for small businesses, removing the per-envelope cost barrier.',
     ],
     results: [
-      'Reduced document turnaround from days to under 15 minutes',
-      'Full audit trail for compliance — every signature timestamped and verifiable',
-      'Flat-rate pricing costs a fraction of per-envelope platforms',
-      'Serving small businesses across Canada',
+      {
+        value: 'under 15 minutes',
+        label: 'Reduced document turnaround from days',
+      },
+      {
+        label:
+          'Full audit trail for compliance — every signature timestamped and verifiable',
+      },
+      { label: 'Flat-rate pricing costs a fraction of per-envelope platforms' },
+      { label: 'Serving small businesses across Canada' },
     ],
     techStack: [
       'Next.js',
@@ -75,10 +96,13 @@ export const caseStudies: CaseStudy[] = [
       'Created a real-time tracking dashboard for submission status, with automated reminders for pending approvals and resubmissions.',
     ],
     results: [
-      'Cut document preparation from hours to minutes',
-      'Sharply reduced submission rejections from formatting errors',
-      'Real-time tracking eliminated manual follow-up emails',
-      'Scaled across multiple active construction projects simultaneously',
+      { label: 'Cut document preparation from hours to minutes' },
+      { label: 'Sharply reduced submission rejections from formatting errors' },
+      { label: 'Real-time tracking eliminated manual follow-up emails' },
+      {
+        label:
+          'Scaled across multiple active construction projects simultaneously',
+      },
     ],
     techStack: [
       'Next.js',
@@ -109,10 +133,19 @@ export const caseStudies: CaseStudy[] = [
       'Streamlined the end-to-end workflow from initial quote request to policy delivery notification, freeing brokers to focus on client advising rather than administrative tasks.',
     ],
     results: [
-      'Eliminated manual client intake — clients self-serve via online quote request form',
-      'Automated policy-ready notifications removed repetitive broker follow-up work',
-      'Faster turnaround from quote request to client notification',
-      'Brokers handle more clients with significantly less administrative overhead',
+      {
+        label:
+          'Eliminated manual client intake — clients self-serve via online quote request form',
+      },
+      {
+        label:
+          'Automated policy-ready notifications removed repetitive broker follow-up work',
+      },
+      { label: 'Faster turnaround from quote request to client notification' },
+      {
+        label:
+          'Brokers handle more clients with significantly less administrative overhead',
+      },
     ],
     techStack: [
       'Next.js',
@@ -143,10 +176,18 @@ export const caseStudies: CaseStudy[] = [
       'Implemented lead capture and qualification — the AI identifies high-intent prospects and routes them to the appropriate broker with context.',
     ],
     results: [
-      'Automated the bulk of repetitive client inquiries',
-      'Reduced new broker training time by providing instant knowledge access',
-      '24/7 lead capture with intelligent qualification',
-      'Seamless handoff from AI to human broker with full context preserved',
+      { label: 'Automated the bulk of repetitive client inquiries' },
+      {
+        label:
+          'Reduced new broker training time by providing instant knowledge access',
+      },
+      // 24/7 是排班口径不是度量——旧解析器靠前置空白规则才没把 "7 lead" 读成数字，
+      // 现在由「不写 value」显式表达：它就是一条 bullet
+      { label: '24/7 lead capture with intelligent qualification' },
+      {
+        label:
+          'Seamless handoff from AI to human broker with full context preserved',
+      },
     ],
     techStack: [
       'Next.js',
@@ -178,11 +219,16 @@ export const caseStudies: CaseStudy[] = [
       'Developed a bookkeeping app that lets clients snap photos of receipts, automatically extract transaction details via OCR, and sync records directly to the accounting firm — eliminating manual data entry and reducing back-and-forth.',
     ],
     results: [
-      'New professional web presence launched in 2 weeks',
-      'Lead generation forms capturing qualified prospects monthly',
-      'Local SEO positioning for key accounting search terms',
-      'Mobile-responsive design with professional credibility signals',
-      'Receipt-to-ledger time cut from days to minutes with photo-scan bookkeeping',
+      { value: '2 weeks', label: 'New professional web presence launched' },
+      { label: 'Lead generation forms capturing qualified prospects monthly' },
+      { label: 'Local SEO positioning for key accounting search terms' },
+      {
+        label: 'Mobile-responsive design with professional credibility signals',
+      },
+      {
+        label:
+          'Receipt-to-ledger time cut from days to minutes with photo-scan bookkeeping',
+      },
     ],
     techStack: [
       'Next.js',

@@ -26,6 +26,12 @@ export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
+// 清单外的 slug 直接 404，不做请求时渲染（2026-07-27 审查修复）。
+// 默认 dynamicParams=true 会让 /products/任意字符串 在生产环境触发一次
+// Server 渲染再走到 notFound()——白付一次函数调用，且让「全站纯静态」
+// 这个前提不成立。产品清单是编译期已知的有限集合，没有按需生成的场景。
+export const dynamicParams = false;
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {

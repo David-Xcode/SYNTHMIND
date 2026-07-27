@@ -58,6 +58,11 @@ module.exports = {
         'reveal':         'reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both',
         'scroll-pulse':   'scrollPulse 2s ease-in-out infinite',
         'scale-in-dot':   'scaleInDot 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        /* 表单成功态弹入 — 2026-07-27 从 globals.css 的裸 @keyframes 迁来：
+           此前唯一由 ContactForm 内联 style 字符串消费的动画，重命名/删除
+           keyframes 不报错、不掉 lint，只会静默失去弹入。收进 config 后
+           与 scale-in-dot 同一条注册路径，Tailwind 会随 utility 一起产出 */
+        'scale-in':       'scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
       keyframes: {
         reveal: {
@@ -67,6 +72,10 @@ module.exports = {
         scrollPulse: {
           '0%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
           '50%':      { opacity: '0.8', transform: 'translateY(3px)' },
+        },
+        scaleIn: {
+          from: { opacity: '0', transform: 'scale(0.92)' },
+          to:   { opacity: '1', transform: 'scale(1)' },
         },
         scaleInDot: {
           from: { transform: 'translateX(-50%) scale(0)' },
