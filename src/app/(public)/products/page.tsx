@@ -5,13 +5,14 @@
 // 产品卡 = 图纸卡：S.NN 图纸编号 + crop marks 角标
 
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import Breadcrumb from '@/components/layout/Breadcrumb';
+import CaseStudyCard from '@/components/products/CaseStudyCard';
 import InDevelopmentShowcase from '@/components/products/InDevelopmentShowcase';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import Card from '@/components/shared/Card';
 import CardActionRow from '@/components/shared/CardActionRow';
+import Eyebrow from '@/components/shared/Eyebrow';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { caseStudies } from '@/data/case-studies';
@@ -43,8 +44,9 @@ export default function ProductsPage() {
         subtitle="The platform we're building for Canada's insurance industry, and every project we've already shipped."
       />
 
-      {/* ── 旗舰在建产品 · CSIO 会员背书 ── */}
-      <InDevelopmentShowcase />
+      {/* ── 旗舰在建产品 · CSIO 会员背书 ──
+          afterHero：hero 后第一章不加线 + pt 收半档（IA v1 §2.4） */}
+      <InDevelopmentShowcase afterHero />
 
       {/* ── Shipped 作品网格 ── */}
       <section className="relative py-24 px-4">
@@ -57,48 +59,16 @@ export default function ProductsPage() {
               light="Work That"
               bold="Shipped"
               subtitle="Every project below is live and running someone's business today."
-              size="md"
             />
           </AnimateOnScroll>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {caseStudies.map((cs, index) => (
               <AnimateOnScroll key={cs.slug} delay={index * 80 + 100}>
-                <Link
-                  href={`/products/${cs.slug}`}
-                  className="block h-full group"
-                >
-                  {/* 图纸编号 sheetNo — 产品即图纸集里的一张 sheet */}
-                  {/* flex-col + mt-auto：六卡收尾行统一钉在卡底（等高网格对齐） */}
-                  <Card
-                    variant="interactive"
-                    sheetNo={`S.${String(index + 1).padStart(2, '0')}`}
-                    cropMarks
-                    className="h-full flex flex-col"
-                  >
-                    <div className="h-10 mb-5 flex items-center">
-                      <Image
-                        src={cs.logo}
-                        alt={`${cs.title} logo`}
-                        width={120}
-                        height={36}
-                        className="h-8 w-auto object-contain filter brightness-0 invert opacity-50 group-hover:opacity-90 transition-opacity duration-300"
-                        suppressHydrationWarning
-                      />
-                    </div>
-
-                    <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
-                      {cs.title}
-                    </h3>
-                    <p className="text-txt-tertiary text-sm leading-relaxed mb-4">
-                      {cs.tagline}
-                    </p>
-
-                    <div className="mt-auto flex items-center justify-end">
-                      <CardActionRow>View</CardActionRow>
-                    </div>
-                  </Card>
-                </Link>
+                <CaseStudyCard
+                  caseStudy={cs}
+                  sheetNo={`S.${String(index + 1).padStart(2, '0')}`}
+                />
               </AnimateOnScroll>
             ))}
 
@@ -114,17 +84,22 @@ export default function ProductsPage() {
                   cropMarks
                   className="h-full flex flex-col"
                 >
-                  <div className="h-10 mb-5 flex items-center">
+                  <div className="h-10 mb-4 flex items-center">
                     <span className="font-mono text-sm font-semibold text-accent">
                       {String(realEstateSites.length).padStart(2, '0')} / LIVE
                       SITES
                     </span>
                   </div>
 
+                  {/* 行业眉标 — 与五张软件卡同形态（CaseStudyCard） */}
+                  <Eyebrow tone="tertiary" className="block mb-2">
+                    Real estate
+                  </Eyebrow>
+
                   <h3 className="text-base font-medium text-txt-primary mb-2 tracking-tight">
                     Real Estate Launch Sites
                   </h3>
-                  <p className="text-txt-tertiary text-sm leading-relaxed mb-4">
+                  <p className="text-txt-secondary text-base leading-relaxed mb-4">
                     Pre-construction marketing sites for GTA developments — one
                     brokerage client, every launch live in production.
                   </p>

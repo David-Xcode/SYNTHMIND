@@ -11,8 +11,9 @@ import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 import StatCard from '@/components/shared/StatCard';
 import { caseStudies } from '@/data/case-studies';
+import { processSteps } from '@/data/process';
 import { realEstateSites } from '@/data/real-estate';
-import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
+import { BASE_OPEN_GRAPH, INDUSTRIES_SERVED, SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'About Synthmind | Modern Software for Traditional Industries',
@@ -23,8 +24,7 @@ export const metadata: Metadata = {
     ...BASE_OPEN_GRAPH,
     url: `${SITE_URL}/about`,
     title: 'About Synthmind',
-    description:
-      'A Toronto-based team building software that actually works.',
+    description: 'A Toronto-based team building software that actually works.',
   },
 };
 
@@ -40,8 +40,8 @@ const stats = [
   {
     // 「100% Client Retention」零支撑绝对值已移除（v7 文案审计）；
     // 行业数可由数据层与 FAQ 交叉验证（insurance / real estate /
-    // accounting & tax / construction）
-    value: '4',
+    // accounting & tax / construction）——常量化后与首页信任带图签同源
+    value: String(INDUSTRIES_SERVED),
     label: 'Industries Served',
     color: 'text-accent-400',
   },
@@ -92,28 +92,8 @@ const values = [
   },
 ];
 
-const processSteps = [
-  {
-    title: 'Discover',
-    description:
-      'We observe your team in action — shadowing workflows, mapping pain points, and identifying the highest-impact automation opportunities.',
-  },
-  {
-    title: 'Design',
-    description:
-      'Rapid prototyping with real UI, not wireframes. You interact with working mockups so feedback is concrete and cycles are short.',
-  },
-  {
-    title: 'Build',
-    description:
-      'Iterative development with weekly demos. Our engineers ship production-quality code every sprint — no handoffs, no waiting.',
-  },
-  {
-    title: 'Scale',
-    description:
-      'Deployment, monitoring, and continuous optimization. We stay engaged post-launch to tune performance and extend capabilities as your needs grow.',
-  },
-];
+// processSteps 已提为 src/data/process.ts —— 首页 03 方法带复述同一套流程，
+// 两处消费同源（本页用 description 长版，首页用 summary 一句话版）
 
 export default function AboutPage() {
   return (
@@ -128,10 +108,10 @@ export default function AboutPage() {
         subtitle="Synthmind is a Toronto-based software team. We build software that modernizes how insurance, real estate, accounting, and construction companies operate — practical tools that work."
       />
 
-      {/* ── Section 2: Why We Exist — 行业问题 + 公司数据 ── */}
-      <section className="relative py-24 px-4">
-        <hr className="ruled-line absolute top-0 left-0 right-0" />
-
+      {/* ── Section 2: Why We Exist — 行业问题 + 公司数据 ──
+          hero 后第一章：不加 ruled-line（hero 光晕已承担分隔），pt 收半档
+          消除 PageHero pb-24 叠出的空档（IA v1 §2.4） */}
+      <section className="pt-12 pb-24 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
             {/* 左栏：叙事 */}
@@ -142,13 +122,12 @@ export default function AboutPage() {
                   light="Why We"
                   bold="Exist"
                   eyebrow="THE PROBLEM"
-                  align="left"
-                  size="md"
                 />
               </AnimateOnScroll>
 
               <AnimateOnScroll delay={150}>
-                <div className="-mt-8 space-y-5">
+                {/* -mt-8 hack 已随标题间距分级（mb-10）删除 */}
+                <div className="space-y-5">
                   <p className="text-base md:text-lg text-txt-secondary leading-relaxed">
                     Insurance brokers still scan paper documents by hand.
                     Construction project managers track million-dollar budgets
@@ -186,7 +165,8 @@ export default function AboutPage() {
       </section>
 
       {/* ── Section 3: What We Build — 3 种解决方案 ── */}
-      <section className="py-24 px-4">
+      <section className="relative py-24 px-4">
+        <hr className="ruled-line absolute top-0 left-0 right-0" />
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
@@ -205,7 +185,8 @@ export default function AboutPage() {
                   <h3 className="mt-3 font-display font-semibold stretch-wide text-lg text-txt-primary tracking-tight">
                     {solution.title}
                   </h3>
-                  <p className="mt-2 text-txt-tertiary text-sm leading-relaxed">
+                  {/* 承担实际阅读的正文 → secondary/base（IA v1 §2.2） */}
+                  <p className="mt-2 text-txt-secondary text-base leading-relaxed">
                     {solution.description}
                   </p>
                 </Card>
@@ -233,10 +214,13 @@ export default function AboutPage() {
             {values.map((value, index) => (
               <AnimateOnScroll key={value.title} delay={index * 80 + 100}>
                 <Card variant="static" className="h-full">
-                  <h3 className="font-display font-semibold stretch-wide text-lg text-txt-primary mb-2 tracking-tight">
+                  {/* 标题降 text-base（IA v1 §4.2）：60 字小卡不配 text-lg。
+                      正文同步提到 base 后标题与正文字号相同——层级改由
+                      Archivo 宽体的字形对比承担，不回调字号（§8 风险条款） */}
+                  <h3 className="font-display font-semibold stretch-wide text-base text-txt-primary mb-2 tracking-tight">
                     {value.title}
                   </h3>
-                  <p className="text-txt-tertiary text-sm leading-relaxed">
+                  <p className="text-txt-secondary text-base leading-relaxed">
                     {value.description}
                   </p>
                 </Card>
@@ -247,7 +231,8 @@ export default function AboutPage() {
       </section>
 
       {/* ── Section 5: Our Process — 水平四步 ── */}
-      <section className="py-24 px-4">
+      <section className="relative py-24 px-4">
+        <hr className="ruled-line absolute top-0 left-0 right-0" />
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
@@ -270,7 +255,7 @@ export default function AboutPage() {
                   <h3 className="mt-2 text-base font-medium text-txt-primary tracking-tight">
                     {step.title}
                   </h3>
-                  <p className="mt-2 text-txt-tertiary text-sm leading-relaxed">
+                  <p className="mt-2 text-txt-secondary text-base leading-relaxed">
                     {step.description}
                   </p>
                 </Card>

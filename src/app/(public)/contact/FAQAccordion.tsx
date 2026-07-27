@@ -36,7 +36,9 @@ export default function FAQAccordion({ faqs }: FAQAccordionProps) {
                 aria-expanded={isOpen}
                 aria-controls={panelId}
               >
-                <span className="text-sm font-medium text-txt-primary">
+                {/* 问题随答案一起提到 base：答案提档后若问题仍留 text-sm，
+                    同一张卡内会出现「标题小于正文」的层级倒挂 */}
+                <span className="text-base font-medium text-txt-primary">
                   {faq.question}
                 </span>
                 <span
@@ -68,7 +70,8 @@ export default function FAQAccordion({ faqs }: FAQAccordionProps) {
                 style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
               >
                 <div className="overflow-hidden">
-                  <p className="px-5 pb-5 text-txt-tertiary text-sm leading-relaxed">
+                  {/* FAQ 答案 = 承担实际阅读的正文 → secondary/base（§2.2） */}
+                  <p className="px-5 pb-5 text-txt-secondary text-base leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>

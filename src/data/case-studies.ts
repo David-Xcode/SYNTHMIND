@@ -6,8 +6,14 @@ export interface CaseStudy {
   slug: string;
   title: string;
   tagline: string;
+  /** 行业眉标（mono 大写展示用，如 "INSURANCE"）— 卡片与详情页元数据行消费。
+   * 注意：这是展示标签，不是「服务行业数」的计数源，后者见 INDUSTRIES_SERVED */
+  industry: string;
   url: string;
   logo: string;
+  /** 首页 02 精选段收录标记 — 精选口径 = 覆盖 BMS 三块核心能力
+   * （AI 文档处理 / 电子签署 / 保险 AI 助理），各占一个不同行业 */
+  featured?: boolean;
   challenge: string[];
   solution: string[];
   results: string[];
@@ -20,8 +26,10 @@ export const caseStudies: CaseStudy[] = [
     title: 'Easy-Sign',
     tagline:
       'Affordable e-signature platform built for Canadian small businesses.',
+    industry: 'Small business',
     url: 'https://www.easy-sign.ca/',
     logo: '/product/easy-sign.png',
+    featured: true,
     challenge: [
       'Small businesses relied on printing, mailing, and scanning paper documents for client signatures — a process that could take days for contracts, onboarding forms, and service agreements.',
       'Compliance requirements meant every signed document needed to be stored securely with a full audit trail, but most small businesses were using filing cabinets or loosely organized shared drives.',
@@ -52,8 +60,10 @@ export const caseStudies: CaseStudy[] = [
     slug: 't-one-submit',
     title: 'T-ONE Submit',
     tagline: 'AI-powered construction document submission system.',
+    industry: 'Construction',
     url: 'https://www.t-onegroup.com/',
     logo: '/product/T_One.png',
+    featured: true,
     challenge: [
       'Construction companies submit hundreds of documents per project — permits, drawings, change orders, RFIs — each with different formatting requirements from different municipalities and general contractors.',
       'Manual document preparation was error-prone: missing fields, wrong formats, and incomplete submissions caused delays and rework.',
@@ -85,6 +95,7 @@ export const caseStudies: CaseStudy[] = [
     title: 'Onest Insurance',
     tagline:
       'Streamlined quote intake and automated policy notification system for insurance brokers.',
+    industry: 'Insurance',
     url: 'https://www.onestinsurance.ca/',
     logo: '/product/onest-logo-cropped.svg',
     challenge: [
@@ -117,8 +128,10 @@ export const caseStudies: CaseStudy[] = [
     slug: 'brokertool-ai',
     title: 'BrokerTool.ai',
     tagline: 'AI assistant purpose-built for insurance brokers.',
+    industry: 'Insurance',
     url: 'https://brokertool.ai/',
     logo: '/product/brokertool.png',
+    featured: true,
     challenge: [
       'Insurance brokers spend significant time answering repetitive client questions about coverage details, policy terms, and claim procedures.',
       'New brokers face a steep learning curve — insurance products are complex, and training takes months before they can confidently handle client inquiries.',
@@ -149,6 +162,7 @@ export const caseStudies: CaseStudy[] = [
     title: 'GE Tax',
     tagline:
       'Professional website & bookkeeping app for a CPA firm in Toronto.',
+    industry: 'Accounting & tax',
     url: 'https://www.getax.ca/',
     logo: '/product/getax.png',
     challenge: [
@@ -190,4 +204,25 @@ export function getCaseStudyBySlug(slug: string): CaseStudy | undefined {
 
 export function getAllSlugs(): string[] {
   return caseStudies.map((cs) => cs.slug);
+}
+
+/** 首页 02 精选段 — 数组顺序即展示顺序，取消 featured 标记即从首页下架 */
+export const featuredCaseStudies = caseStudies.filter((cs) => cs.featured);
+
+/** 详情页页尾闭环：相邻案例（顺序派生，首尾环绕成闭环，永不出现死胡同） */
+export function getAdjacentCaseStudies(slug: string): {
+  prev: CaseStudy | null;
+  next: CaseStudy | null;
+} {
+  const index = caseStudies.findIndex((cs) => cs.slug === slug);
+  const size = caseStudies.length;
+  // 未收录（理论上不可达：详情页先 notFound）或只有一条时不给导航
+  if (index === -1 || size < 2) return { prev: null, next: null };
+  // 恰好两条：环绕会让 prev 与 next 指向同一条，并排渲染成两张同链接的卡
+  // ——只给 next（另一条仍是「下一站」，页尾不回退成死胡同）
+  if (size === 2) return { prev: null, next: caseStudies[(index + 1) % 2] };
+  return {
+    prev: caseStudies[(index - 1 + size) % size],
+    next: caseStudies[(index + 1) % size],
+  };
 }
