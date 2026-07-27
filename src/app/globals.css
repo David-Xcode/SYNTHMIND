@@ -31,30 +31,36 @@
   --border-heavy: rgba(74, 159, 229, 0.25);
 
   /* ── v4 Blueprint Material token ──
-     正本 = BlueprintObject 的面/线/光系（spec A.2 对照表）；
-     砖墙与按钮同源消费——改物件色阶必须同步此块。
+     正本 = BlueprintObject 的面/线/光系（spec A.2 对照表）。
      TSX 侧 STROKE 表保持字面量（SVG presentation attribute 的 var()
      替换在个别 WebView 失效，物件内已有同类坑注释）。
-     ⚠️ face-shade / edge-strong / edge-faint / seam-glow / seam-soft
-     五个当前无 CSS var() 消费方——它们是 TSX STROKE 表与砖 tile
-     data-URI 字面值的交叉锁定锚点，改值同步两侧，勿因「未使用」删除 */
+     ⚠️ v8 起除 face-tint 外**全簇无 CSS var() 消费方**（墙与按钮已迁至
+     --wall-* 石墨簇）——它们是 BlueprintObject TSX STROKE 表的交叉锁定
+     锚点，改值同步两侧，勿因「未使用」删除 */
   --mat-face-base: rgba(17, 22, 32, 0.9); /* bg-elevated 的高实度形态
-     （v4.1：缝隙透光由光槽层专职，面不再兼职透光——0.75 时代的鬼影线
-     口径废弃；SVG tile 内字面值与本 token 交叉锁定，改值两处同步） */
+     （v8：墙与 btn-secondary 已改消费不透明的 --wall-face-base；物件面
+     v3 起消费不透明 var(--bg-elevated) 实体化——本 token 已无消费方，
+     仅存历史锚点身份） */
   --mat-face-tint: rgba(
     74,
     159,
     229,
     0.05
-  ); /* 面受光提亮（物件 front 0.07 档的墙体折算） */
+  ); /* 面受光提亮（btn-secondary 在用；v2 物件 front 0.07 档的折算——
+     v3 物件已提档 0.10–0.02，本 token 档独立不随动） */
   --mat-face-shade: rgba(
     0,
     0,
     0,
     0.32
-  ); /* 压暗轴（物件 right 面 0.18–0.4 带内取值） */
-  --mat-edge-strong: rgba(74, 159, 229, 0.5); /* = STROKE.edgeFront */
-  --mat-edge-faint: rgba(74, 159, 229, 0.22); /* = STROKE.inner */
+  ); /* 压暗轴（物件 right 面 v3 0.30–0.55 带内取值） */
+  --mat-edge-strong: rgba(
+    74,
+    159,
+    229,
+    0.62
+  ); /* = STROKE.edgeFront（v3 提档） */
+  --mat-edge-faint: rgba(74, 159, 229, 0.3); /* = STROKE.inner（v3 提档） */
   --mat-seam-glow: rgba(74, 159, 229, 0.7); /* = 物件横缝光心 */
   --mat-seam-soft: rgba(74, 159, 229, 0.55); /* = 物件竖缝光心/淡入终值 */
 
@@ -78,13 +84,57 @@
     159,
     229,
     0.05
-  ); /* 内反射渐变起（右上，朝余晖） */
+  ); /* 内反射渐变起（v8 起在**左上**，朝石墨墙的 45° 掠射光；
+     消费方 = .card-glass 的 135deg 渐变，改一处必须改另一处） */
   --glass-reflect-b: rgba(74, 159, 229, 0); /* 内反射渐变止 */
+
+  /* ── v8 石墨墙材质 token（Graphite Wall v8）──
+     正本 = 2026-07-27-graphite-wall-v8-design spec §3。墙自立门户：
+     与物件 --mat-* / 玻璃 --glass-* 三簇分离，共享明度轴逻辑不共享值。
+     受光模型 = 左上 45° 掠射光（全站唯一光向）；墙后无任何发光体。
+     ⚠️ 全部落在既有豁免内：既有 hex 的不透明形态（#111620 = bg-elevated、
+     #080B10 = bg-base）+ 中性明度轴（白/黑低 alpha）+ accent 低 alpha
+     ——零新字面色。tile data-URI 内字面值与本簇交叉锁定，改值两处同步 ── */
+  --wall-face-base: #111620; /* 实心石板（= --mat-face-base 的不透明形态） */
+  --wall-face-lit: rgba(255, 255, 255, 0.055); /* 上棱受光 */
+  --wall-face-lit-k: rgba(255, 255, 255, 0.03); /* 左棱受光（侧弱于顶） */
+  --wall-face-tint: rgba(
+    74,
+    159,
+    229,
+    0.028
+  ); /* 受光面里一丝蓝 = 全墙唯一蓝味 */
+  --wall-face-shade: rgba(0, 0, 0, 0.42); /* 下缘背光带 */
+  --wall-face-shade-k: rgba(0, 0, 0, 0.3); /* 右缘背光带 */
+  --wall-face-edge: rgba(0, 0, 0, 0.3); /* 下 1px 硬暗棱 */
+  --wall-face-edge-k: rgba(0, 0, 0, 0.2); /* 右 1px 硬暗棱 */
+  --wall-bed-base: #080b10; /* 砖床基底（= bg-base） */
+  --wall-bed-shade: rgba(0, 0, 0, 0.45); /* 槽整体压暗 → 有效 rgb(4,6,9) */
+  --wall-bed-lit: rgba(255, 255, 255, 0.018); /* 槽内下/右壁反弹光 hairline */
+  --wall-bed-dark: rgba(0, 0, 0, 0.35); /* 砖窝底内阴影峰值（光照不到井深处） */
+  --wall-bed-dark-t: rgba(0, 0, 0, 0.4); /* 横槽上壁：上一块砖的接触投影 */
+  --wall-bed-dark-k: rgba(0, 0, 0, 0.28); /* 竖槽左壁：左一块砖的接触投影 */
+
+  /* 砖 tile（96 viewBox，砖体画在 translate(6,6) 的 90×90 区，缝区透明）——
+     **全站唯一一张砖图**：静态路径直接平铺（露出其下砖床），真砖 div 用
+     background-size = pitch + position = −seam 把同一张图对位到砖盒，
+     两条路径像素同源，不存在双份字面值需要同步。
+     图层自下而上：实底 → 蓝味 → 下/右背光带 → 上/左倒角亮带 → 四边硬棱。
+     倒角亮带宽度 = 厚度的主要来源（10% ≈ 5px @56 档） */
+  --wall-tile-brick: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.028'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0.78' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.42'/></linearGradient><linearGradient id='r' x1='0' y1='0' x2='1' y2='0'><stop offset='0.82' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.3'/></linearGradient><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.055'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient><linearGradient id='k' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.03'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient></defs><g transform='translate(6,6)'><rect width='90' height='90' fill='%23111620'/><rect width='90' height='90' fill='url(%23a)'/><rect width='90' height='90' fill='url(%23b)'/><rect width='90' height='90' fill='url(%23r)'/><rect width='90' height='90' fill='url(%23t)'/><rect width='90' height='90' fill='url(%23k)'/><rect width='90' height='1' fill='%23ffffff' fill-opacity='0.055'/><rect width='1' height='90' fill='%23ffffff' fill-opacity='0.03'/><rect x='89' width='1' height='90' fill='%23000000' fill-opacity='0.2'/><rect y='89' width='90' height='1' fill='%23000000' fill-opacity='0.3'/></g></svg>");
+
+  /* 砖床 tile（96 viewBox）— 两条路径共用同一张，几何对齐由构造保证。
+     凸凹线索对调：砖上/左亮、下/右暗；槽上/左暗（上一块砖的接触投影 = 渐变
+     y/x，对应 --wall-bed-dark-t / -k）、下/右亮（反弹光 hairline = --wall-bed-lit）。
+     砖窝底内阴影（渐变 s = --wall-bed-dark）= 光照不到井深处，砖 fade 时露出。
+     ⚠️ s 从 offset 0 的**全透明**起、0.06 才到峰值：真砖 div 的抗锯齿上边缘
+     会漏出其下砖床，峰值若压在 y=0 会在每块砖顶缘织出一条暗线 */
+  --wall-tile-bed: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='y' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0.4'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='x' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23000000' stop-opacity='0.28'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='0.06' stop-color='%23000000' stop-opacity='0.35'/><stop offset='0.45' stop-color='%23000000' stop-opacity='0'/></linearGradient></defs><rect width='96' height='96' fill='%23080b10'/><rect width='96' height='96' fill='%23000000' fill-opacity='0.45'/><g transform='translate(6,6)'><rect width='90' height='90' fill='url(%23s)'/></g><rect width='96' height='6' fill='url(%23y)'/><rect width='6' height='96' fill='url(%23x)'/><rect y='5' width='96' height='1' fill='%23ffffff' fill-opacity='0.018'/><rect x='5' width='1' height='96' fill='%23ffffff' fill-opacity='0.018'/></svg>");
 
   /* ── 砖墙 pitch — 静态材质层与 WallBricks 同读（JS 只读不定，
      永不产生第二事实源）；缝宽恒 = pitch/16（tile viewBox 等比缩放保
-     DOM 砖与静态 tile 几何等价）；v5 密度定案 56px（灯半径 200px ≈
-     7 砖直径，单砖缩放/推移清晰可读），阶梯见下方媒体查询 ── */
+     DOM 砖与静态 tile 几何等价）；v8 密度沿用 56px（井半径 150px ≈
+     5 砖直径，单砖缩放/推移清晰可读），阶梯见下方媒体查询 ── */
   --wall-brick-w: 56px;
   --wall-seam: 3.5px;
 
@@ -93,9 +143,9 @@
 }
 
 /* 方砖 pitch 阶梯 — 超宽屏放大；--wall-seam 同步 = pitch/16。
-   v6 全视口真砖阵：DOM 砖数随视口线性（56 基准一屏 ≈700，超宽
+   全视口真砖阵：DOM 砖数随视口线性（56 基准一屏 ≈700，超宽
    3440×1440 @64 档 ≈1242 为现实上限；v4.2 的 512 池已退役）；
-   触屏/RM/无 JS 路径零 DOM 砖 = 静态 tile 同密度铺满，无独立窄屏档 */
+   触屏/RM/无 JS 路径零 DOM 砖 = 砖床 + 砖 tile 同密度铺满，无独立窄屏档 */
 @media (min-width: 2200px) {
   :root {
     --wall-brick-w: 64px;
@@ -195,17 +245,22 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   BlueprintWall 真砖重力井 · Lantern Wall v6
-   概念：墙 = 光前面的一排真砖；指针 = 压在墙上的重力井。
-   - 单层砖纪律：桌面指针路径 = 铺满视口的真砖 div（缝隙是真空隙，
-     墙后的光直接从缝里透出，无假光层）；触屏/RM/无 JS = 静态 tile
-     （像素等价）。两者经 [data-live] 互斥切换，任何时刻只有一层砖
-   - 墙属场景（.bp-wall fixed）：内容从墙前滚过，墙与光都不动——
-     零滚动耦合
+   BlueprintWall 石墨墙 · Graphite Wall v8
+   设计定案：docs/superpowers/specs/2026-07-27-graphite-wall-v8-design.md
+   概念：墙 = 一面被左上 45° 掠射光斜照的实心石墨砌体；指针 = 压在
+   上面的重力井。**墙后没有任何发光体**（v6 的角落余晖 + 指针灯已退役）。
+   - 厚度靠材料自己读出：受光棱线 / 倒角亮带 / 背光压暗带 / 凹槽的
+     凸凹线索对调 / 逐砖明度不均——不靠光渗出来
+   - 深度靠**变暗**：砖陷得越深 opacity 越低，露出砖床槽底（更暗）；
+     v6「透出墙后的光」语义就此反转（坑里本来就该暗）
+   - 层纪律（v6「单层砖」的 v8 修订）：**一层砖 + 一层砖床，砖床恒在
+     砖后**。砖床不是砖也不是光，是砖的凹槽；判别标准 = 不参与遮掩、
+     不冒充光、不随帧变化。v5「tile + DOM 砖 + 逐格底衬 + 假涌光」
+     四层互相遮掩的架构仍然被禁
+   - 墙属场景（.bp-wall fixed）：内容从墙前滚过，墙不动——零滚动耦合
    - 指针交互（WallBricks）：全局 3 标量弹簧（井心 x/y + 强度），
-     近针的砖向墙内塌陷成碗（坑心最深、坑壁沿坡度朝坑心倾 ≤15°、
-     材料向坑心微聚、井深处砖面渐透明），塌陷张开的缝与渐透的砖体
-     透出墙后真灯光——一切响应都是井心位置的纯函数
+     近针的砖向墙内塌陷成碗（坑心最深 36px、坑壁沿坡度朝坑心倾、
+     材料向坑心微聚、井深处砖面渐暗）——一切响应都是井心位置的纯函数
    ═══════════════════════════════════════════════ */
 
 .bp-wall {
@@ -215,103 +270,83 @@ body {
   pointer-events: none;
 }
 
-/* 角落余晖 — 从视口右上角透进墙后的一片固定微光（fixed：光属场景
-   不属墙），加全场极低环境光兜底（离光角落砖缝不至死黑）。
-   静态、零 JS——无指针/触屏/RM 路径的墙也有光可透；亮度压在氛围档，
-   指针灯是唯一主角（穿场光束已退役——与内容抢层级） */
-.bp-wall-ambient {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 60% 50% at 100% 0%,
-      rgba(74, 159, 229, 0.3),
-      rgba(74, 159, 229, 0.09) 45%,
-      transparent 75%
-    ),
-    linear-gradient(rgba(74, 159, 229, 0.035), rgba(74, 159, 229, 0.035));
-}
-
-/* 指针灯 — 墙后的灯（fixed 定尺寸圆，JS 只写 transform/opacity =
-   纯合成零重绘）；画在砖面层下：光只从缝隙透出 = 指针周围亮起
-   十字缝光网格。涌光豁免 v6 口径（正本 = 2026-07-26 v6 spec 受光模型）：
-   光心 α≤0.9、随强度弹簧驱动、离开归零——0.9 隔着 α0.9 砖面读作
-   10% 透射，仅真缝隙处全量透出 */
-.bp-wall-lamp {
-  position: absolute;
-  left: -280px;
-  top: -280px;
-  width: 560px;
-  height: 560px;
-  opacity: 0;
-  background: radial-gradient(
-    circle closest-side,
-    rgba(74, 159, 229, 0.9),
-    rgba(74, 159, 229, 0.28) 50%,
-    transparent 100%
-  );
-}
-
-/* 层提升只在真砖接管后生效——触屏/RM/无 JS 路径的灯恒 opacity:0，
-   不值得常驻合成层 */
-.bp-wall[data-live] .bp-wall-lamp {
-  will-change: transform, opacity;
-}
-
-/* 静态方砖面 — 无指针路径（触屏/RM/无 JS）的那一层砖：单元素 SVG
-   data-URI tile（一格一砖：缝归 tile 左/上缘透明，透出其下的余晖/
-   指针灯；面 rect 从 (seam,seam) 起），与真砖 div 阵像素等价；
-   桌面指针接管后由 [data-live] 隐藏——任何时刻只有一层砖。
-   tile 内字面色值与 --mat-* token 交叉锁定（data URI 无法消费 var()——
-   同 BlueprintObject STROKE 表机制，改值两处同步）：面基底
-   rgba(17,22,32,0.9) = --mat-face-base、受光沉降 0.05 = --mat-face-tint、
-   底缘厚度带 0.22 = --mat-face-shade 折算档、1px 棱线 = 中性明度轴豁免区。
-   z-index 1 = 恒压过墙后光层（lamp DOM 序在后也被压下） */
+/* 无 JS/触屏/RM 路径的墙 = 砖床 + 砖两层 tile 叠加平铺（砖层缝区透明，
+   露出其下砖床）；桌面真砖接管后本元素**不隐藏**，改行当只留砖床。
+   两条路径共用同一张床 tile ⇒ 几何对齐由构造保证，不可能错位。
+   tile 内字面色值与 :root 的 --wall-* 簇交叉锁定（data URI 无法消费
+   var()——同 BlueprintObject STROKE 表机制，改值两处同步） */
 .bp-wall-face {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.05'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.22'/></linearGradient></defs><rect x='6' y='6' width='90' height='90' fill='%23111620' fill-opacity='0.9'/><rect x='6' y='6' width='90' height='90' fill='url(%23t)'/><rect x='6' y='91' width='90' height='5' fill='url(%23s)'/><rect x='6' y='6' width='90' height='1' fill='%23ffffff' fill-opacity='0.04'/><rect x='6' y='6' width='1' height='90' fill='%23ffffff' fill-opacity='0.02'/><rect x='95' y='6' width='1' height='90' fill='%23000000' fill-opacity='0.16'/></svg>");
+  background-image: var(--wall-tile-brick), var(--wall-tile-bed);
   background-size: var(--wall-brick-w) var(--wall-brick-w);
 }
 
-/* 真砖接管开关 — 桌面指针路径建砖后 WallBricks 在 .bp-wall 上落
-   data-live：静态 tile 隐藏、真砖阵上场（像素等价 = 无感切换）。
-   单层砖纪律：两者互斥存在，永不叠加 */
+/* 真砖接管开关 — 建砖后 WallBricks 在 .bp-wall 上落 data-live：
+   砖层交给真砖阵，本元素只留砖床（砖床恒在砖后，永不消失） */
 .bp-wall[data-live] .bp-wall-face {
-  visibility: hidden;
+  background-image: var(--wall-tile-bed);
 }
 
 /* 真砖阵容器（WallBricks 懒启动）— 视口级：砖 left/top 建时写死
-   （一次布局），逐帧只写 transform/opacity；与静态 tile 同 z，
-   互斥显示无层序问题 */
+   （一次布局），逐帧只写 transform/opacity。z 2 = 恒压在砖床之上
+   （两层共存后写死层序，不再依赖 DOM 序） */
 .bp-wall-grid {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   /* 圈内砖逐帧被 3D transform 提升合成层、出圈降级——contain 把
      布局/重绘失效域锁在墙盒内，不外溢重排 700+ 兄弟砖之外的页面
-     （井形变 ≤16px 恒在墙盒内，paint 裁切无可见副作用） */
+     （井形变 ≤36px 恒在墙盒内，paint 裁切无可见副作用） */
   contain: layout paint style;
 }
 
-/* 真砖 — face 专用 SVG tile（与静态 tile 同渐变栈、无缝偏移版）：
-   background-size 100% ⇒ 各 MQ 档与静态 tile 等比缩放一致；字面
-   色值与 --mat-* token 交叉锁定（同上）。面基底 α0.9 ⇒ 墙后灯光
-   恒以 10% 透射砖面；井压下陷时 JS 再写 opacity（≤0.25 降幅）——
-   陷得越深，墙后真灯光渗出越多（无独立假光层） */
+/* 真砖 — 与静态路径**共用同一张砖图**（零双份字面值）：tile 是 96 单位、
+   砖体画在 6..96；把 background-size 设成一个 pitch、原点左上各移 −seam，
+   砖体就正好落在 faceSize(= pitch − seam) 的元素盒里。各 MQ 档自动成立
+   （56−3.5 / 64−4 / 96−6 同为 16:1），与静态 tile 像素同源。
+   面**不透明**：v8 砖是实心石板，opacity 只在井压下陷时由 JS 写
+   （≤0.35 降幅），露出的是砖床槽底 = 变暗 */
 .bp-brick {
   position: absolute;
-  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><defs><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.05'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.22'/></linearGradient></defs><rect width='90' height='90' fill='%23111620' fill-opacity='0.9'/><rect width='90' height='90' fill='url(%23t)'/><rect y='85' width='90' height='5' fill='url(%23s)'/><rect width='90' height='1' fill='%23ffffff' fill-opacity='0.04'/><rect width='1' height='90' fill='%23ffffff' fill-opacity='0.02'/><rect x='89' width='1' height='90' fill='%23000000' fill-opacity='0.16'/></svg>");
-  background-size: 100% 100%;
+  background-image: var(--wall-tile-brick);
+  background-size: var(--wall-brick-w) var(--wall-brick-w);
+  background-position: calc(-1 * var(--wall-seam)) calc(-1 * var(--wall-seam));
+  background-repeat: no-repeat;
+}
+
+/* 逐砖明度微差 — 真砌的墙不可能每块砖一模一样。三变体共享同一张
+   data-URI（多层 background 叠一层纯色覆盖），建砖时按**空间哈希**定一次
+   class（WallBricks 的 variantOf——线性式 (a·c+b·r)%3 的等值集恒为直线，
+   会织出对角条纹，与系数是否素数无关），零逐帧成本；变异只在真砖阵，
+   静态 tile 用基态单一明度。
+   🚨 0.004 不是笔误：覆盖层在深色底上的明度杠杆极度不对称
+   （结果 = base×(1−α) + 255×α）。在 rgb(17,22,32) 上——黑 α0.035
+   = 乘 0.965 = −3.5%；白 α0.022 会把 R 从 17 抬到 22.2 = +31%（砖会发白）。
+   要同量级的 +3.5%，白侧只需 α≈0.004。两个 alpha 的 8bit 落点分别是
+   9/255 与 1/255（压缩器会输出 #00000009 / #ffffff01）——**任何把 alpha
+   四舍五入到 2 位小数的工具都会把白侧抹成 0（变体消失）或 0.01（强 2.5 倍）**。
+   三变体均值 ≈ +0.2% ⇒ 接管时全墙明度无整体台阶 */
+.bp-brick--a {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.035), rgba(0, 0, 0, 0.035)),
+    var(--wall-tile-brick);
+}
+.bp-brick--c {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.004), rgba(255, 255, 255, 0.004)),
+    var(--wall-tile-brick);
 }
 
 /* ═══════════════════════════════════════════════
-   Card System v7 — 玻璃检视窗（压在灯箱墙前的玻璃）
+   Card System v7 材质 / v8 受光 — 玻璃检视窗（压在石墨墙前的玻璃）
    设计定案：docs/superpowers/specs/2026-07-26-card-system-v7-glass-design.md
+   （受光模型经 2026-07-27-graphite-wall-v8-design 修订）
    唯一授权入口 = Card 组件（shared/），业务代码不得直接写这些类。
-   材质叙事：v6 的墙后有真光（余晖 + 指针灯），玻璃第一次有光学意义——
-   毛玻璃把墙后灯光揉成柔光晕、砖缝光磨成雾光（零新增光源）。
+   材质叙事：v6 时代靠墙后灯光，v8 墙后全灭后改由**材质本身**支撑——
+   毛玻璃把石墨砖面的棱线与凹槽揉成柔光、把砖缝磨成雾（零光源，
+   分离感全部来自 blur 与面底 alpha）。
    变体 = 交互语义：interactive 可点（顶起 + tilt）/ static 纯展示 /
    container 外壳静——「不可点却带可点式 hover」的旧病灶就此修复。
    transform 写入者分层：.card-tilt JS 弹簧逐帧 / 本体 hover 顶起
@@ -320,13 +355,15 @@ body {
 
 /* 基态 = 光滑玻璃档（无 blur，恒定成本 ≈0，兼作老内核回退）：
    厚度三件套 = 顶棱受光白线 + 底缘压暗（中性明度轴，与按钮/砖同语言）
-   + accent 低 alpha 内反射（225deg：高光朝右上，与墙后余晖同向） */
+   + accent 低 alpha 内反射（v8 起 135deg：高光朝**左上**，与石墨墙的
+   45° 掠射光同向。v7 的 225deg 朝右上是为了对着 v6 的右上角余晖——
+   那个光源已随 v8「墙后全灭」删除，不改就是朝着不存在的光源反光） */
 .card-glass {
   position: relative;
   border-radius: 8px;
   border: 1px solid var(--border-default);
   background:
-    linear-gradient(225deg, var(--glass-reflect-a), var(--glass-reflect-b) 55%),
+    linear-gradient(135deg, var(--glass-reflect-a), var(--glass-reflect-b) 55%),
     var(--glass-face-solid);
   box-shadow:
     inset 0 1px 0 var(--glass-edge-top),
@@ -334,16 +371,17 @@ body {
   transition: border-color 0.3s var(--ease-out-expo);
 }
 /* 毛玻璃档 — 支持 backdrop-filter 才升级（老内核/微信 WebView 自动停留
-   光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——墙后指针灯
-   透过玻璃揉成柔光晕。性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3）。
+   光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——石墨墙的
+   砖缝与棱线透过玻璃被磨成雾。性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3）。
    -webkit- 前缀必须写：Safari ≤17 / iOS ≤17 只认前缀形态 */
 @supports (
-  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
-) {
+    (backdrop-filter: blur(1px)) or
+    (-webkit-backdrop-filter: blur(1px))
+  ) {
   .card-glass {
     background:
       linear-gradient(
-        225deg,
+        135deg,
         var(--glass-reflect-a),
         var(--glass-reflect-b) 55%
       ),
@@ -431,8 +469,8 @@ body {
    唯一授权入口 = ModuleButton 组件（shared/），业务代码不得直接写类。
    语义 = 砌进墙里的一块砖（BlueprintObject 模块交互的按钮版）：
    rest 与墙齐平（四周 3px 槽缝环可见、槽内常态微光）→ hover 顶出
-   （per-element perspective 的 translateZ 近大投影 + 槽光涌出洗上墙，
-   与砖墙翻板涌光同一「光从墙里照出来」语言）→ active 按入槽内 →
+   （per-element perspective 的 translateZ 近大投影 + 槽光涌出洗上墙）
+   → active 按入槽内 →
    disabled 齐平变暗。v4.1 的 --btn-dy 悬浮状态机 / 双伪元素反向抵消 /
    btnHoverIdle 呼吸 / backglow 全部退役。
    transform 写入者分层（纪律不变，infinite 写入者归零）：
@@ -515,12 +553,17 @@ body {
   color: var(--accent);
   font-weight: 500;
   font-size: 0.875rem;
-  /* 字面意义的一块砖：砖 tile 同栈（--mat-face-base 实底 +
-     --mat-face-tint 受光沉降 + 顶棱白线/底缘压暗 inset） */
+  /* 字面意义的一块砖：砖同栈（v8 起消费 --wall-face-base 实心石板——
+     按钮语义 = 砌进墙里的一块砖，砖变石墨按钮必须跟）。
+     ⚠️ 面下方不是墙而是 frame::before 铺的 var(--bg-base) 槽腔实底，
+     所以旧值 rgba(17,22,32,0.9) 的实际合成是 0.9×(17,22,32)+0.1×(8,11,16)
+     = rgb(16,21,30)；换成不透明后是 rgb(17,22,32)，差 +1/+1/+2——
+     不是「零变化」，是感知阈下的位移。--mat-face-tint 受光沉降保留
+     = 按钮是块「特别的砖」 */
   border: 1px solid var(--border-strong);
   background:
     linear-gradient(180deg, var(--mat-face-tint), transparent 55%),
-    var(--mat-face-base);
+    var(--wall-face-base);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     inset 0 -2px 0 rgba(0, 0, 0, 0.28);
@@ -531,7 +574,7 @@ body {
   /* accent 提亮叠在同一砖面基底上 — 不引入新字面色 */
   background:
     linear-gradient(0deg, rgba(74, 159, 229, 0.08), rgba(74, 159, 229, 0.08)),
-    var(--mat-face-base);
+    var(--wall-face-base);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     inset 0 -2px 0 rgba(0, 0, 0, 0.28),
@@ -575,9 +618,12 @@ body {
     inset 0 1px 2px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
-/* 涌光层 — hover 顶出时槽光涌出洗上墙（与砖墙翻板涌光同一豁免语言，
-   spec §2.5/§4）：opacity-only 过渡；:has 老内核不支持时软降级 =
-   涌光恒不亮（槽内常态微光仍在，无害） */
+/* 涌光层 — hover 顶出时槽光涌出洗上墙（spec §2.5/§4）：opacity-only 过渡；
+   :has 老内核不支持时软降级 = 涌光恒不亮（槽内常态微光仍在，无害）。
+   ⚠️ v8 起墙是**惰性材料、墙后零光源**，本层与槽内常态微光不再由「光在
+   墙后」背书——现行口径 = 按钮是**通电的模块**（primary 本就是 accent 渐变
+   通电砖），槽光属**内容层**的光，与墙的零光源纪律正交而非冲突。
+   墙侧任何形式的发光仍然被禁 */
 .btn-module-frame::after {
   content: "";
   position: absolute;
@@ -760,9 +806,10 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   Hero Blueprint Object v2 — Bonded Assembly 砌合组合体（CSS preserve-3d）
-   设计定案：docs/superpowers/specs/2026-07-26-blueprint-object-v2-modular-design.md
-   （v1 正本 2026-07-25-blueprint-object-design.md，透视链/降级链结论全部继承）
+   Hero Blueprint Object v3 — Solid Machine 哑光实体机身（CSS preserve-3d）
+   设计定案：docs/superpowers/specs/2026-07-27-blueprint-object-v3-solid-design.md
+   （v2 砌合布局 2026-07-26-blueprint-object-v2-modular-design.md、
+   v1 正本 2026-07-25-blueprint-object-design.md，透视链/降级链结论全部继承）
    透视链纪律：scene(perspective) → spring / root / float / sway / 本体 / 模块三层
    （scene 之后全部 preserve-3d，scene 只供 perspective 不入 3D 上下文——
    否则 backglow/shadow 会重新参与深度排序）；任何一层断链都会把面元素压扁回 2D 投影
@@ -803,7 +850,7 @@ body {
 .obj-float {
   transform-style: preserve-3d;
   animation: objFloat 7s ease-in-out infinite;
-  animation-delay: 2.4s; /* 入场编排（~2.6s）尾声接管 */
+  animation-delay: 2.4s; /* 入场编排（~2.8s，末笔 dots 2.45s+0.5s 淡入）尾声接管 */
 }
 
 /* 常态摇曳 — ±3°（与指针 yaw ±7° 同轴叠加峰值 10°，不破倾角纪律） */
@@ -852,35 +899,50 @@ body {
   animation-delay: var(--solidify-delay, 0.9s);
 }
 
-/* 逐面着色 — 平面体的静态 flat shading：光源固定左上前方
-   提亮走 accent 低 alpha（蓝色环境光），压暗走中性黑 — 不引入第二色相 */
+/* 逐面着色 — 平面体的静态 flat shading（v3 Solid Machine 对比拉开）：
+   光源固定左上前方（与墙 v8 掠射光同向）；受光面明显亮于前脸、背光面明显暗——
+   面与面的明度差 + inset 棱线厚度暗示才是「实心」的来源，不是 alpha。
+   提亮走 accent 低 alpha（蓝色环境光）+ 中性白受光棱线，压暗走中性黑
+   —— 均为明度轴，不引入第二色相（豁免口径 = CLAUDE.md §4 物件条目，v3 扩展） */
 /* 实底必须与页面背景明确分离 — 否则物件读作空壳线框 */
 .bp-face-fill--front {
   background:
-    linear-gradient(160deg, rgba(74, 159, 229, 0.07), rgba(74, 159, 229, 0)),
+    linear-gradient(160deg, rgba(74, 159, 229, 0.1), rgba(74, 159, 229, 0.02)),
     var(--bg-elevated);
+  /* 顶棱受光 + 底缘压暗 — 与按钮/玻璃卡同源的厚度暗示（静态，不参与动画） */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
+/* 顶面 = 受光面最亮；白洗与 accent 环境光**同向**自前棱（y=depth 侧 =
+   朝光的棱，rotateX(90°) 后局部 +y 映射世界 +z）向后衰减——两层反向会把
+   「最亮」送给背光的后棱，破坏左上前方光源模型 */
 .bp-face-fill--top {
   background:
-    linear-gradient(180deg, rgba(74, 159, 229, 0.12), rgba(74, 159, 229, 0.03)),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.05), transparent 60%),
+    linear-gradient(0deg, rgba(74, 159, 229, 0.2), rgba(74, 159, 229, 0.06)),
     var(--bg-elevated);
 }
+/* 右侧面 = 背光面最暗 */
 .bp-face-fill--right {
   background:
-    linear-gradient(200deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.4)),
+    linear-gradient(200deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.55)),
     var(--bg-elevated);
 }
 /* core 前面板 — 环心微光垫底；radial 圆心/半径随变体走 CSS 变量
-   （桌面 ring center 96,46 r70 / 移动 44,28 r50，由 ModuleShell 内联下发） */
+   （桌面 ring center 123,59 r90 / 移动 44,28 r50，由 ModuleShell 内联下发） */
 .bp-face-fill--core {
   background:
     radial-gradient(
-      circle var(--core-r, 70px) at var(--core-x, 96px) var(--core-y, 46px),
-      rgba(74, 159, 229, 0.12),
+      circle var(--core-r, 90px) at var(--core-x, 123px) var(--core-y, 59px),
+      rgba(74, 159, 229, 0.16),
       transparent 70%
     ),
-    linear-gradient(160deg, rgba(74, 159, 229, 0.08), rgba(74, 159, 229, 0.01)),
+    linear-gradient(160deg, rgba(74, 159, 229, 0.1), rgba(74, 159, 229, 0.02)),
     var(--bg-elevated);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
 
 /* ── v2 模块系统（Bonded Assembly）──
@@ -947,7 +1009,8 @@ body {
   }
 }
 
-/* 缝隙发光条 — z=54 埋于前面板(z=60)后方：对齐时从 6px 缝漏微光，
+/* 缝隙发光条 — 埋于前面板后方 ~9px（z 随变体：桌面 66/前脸 75，移动 54/60）：
+   对齐时从缝口漏微光，
    模块滑出时露出更多（纯几何结果）；静态 blur 不参与动画（层内一次栅格化） */
 .bp-seam-glow {
   position: absolute;
@@ -1027,6 +1090,8 @@ body {
    v2 的 0.64 缩放台已删除；背光宽度收窄贴合 300px 低台 */
 .bp-object-scene--mobile {
   --backglow-w: 340px;
+  --shadow-w: 240px;
+  --shadow-h: 36px;
 }
 /* 320 级窄屏兜底 — 300px 低台 + 轴测投影超出 272px 内容盒，整体缩放让位
    （scale 挂在 root 上不断透视链：root 本就 preserve-3d，加 transform 无碍） */
@@ -1039,14 +1104,14 @@ body {
 
 /* 物件背光 — 低调环境光，把哑光机体从深底里托出来
    渲染于弹簧层外（HeroObjectPhysics 内 spring 的兄弟节点），光源不随指针旋转
-   宽度显式锁定物件尺度（默认 380px，移动场景 340px）：
+   宽度显式锁定物件尺度（v3 桌面默认 460px，移动场景 340px）：
    scene 是整列宽，吃百分比会让光晕随列宽漂移 */
 .bp-object-backglow {
   position: absolute;
   top: -10%;
   bottom: -10%;
   left: 50%;
-  width: var(--backglow-w, 380px);
+  width: var(--backglow-w, 460px);
   transform: translateX(-50%);
   background: radial-gradient(
     ellipse 55% 45% at 50% 46%,
@@ -1085,8 +1150,10 @@ body {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 240px;
-  height: 36px;
+  /* 尺寸随变体：v3 桌面 300×44（物件 360 等比）；移动场景经 --shadow-* 保持
+     240×36 原值——300px 低台配 300px 全宽投影会读作发光底座而非落影 */
+  width: var(--shadow-w, 300px);
+  height: var(--shadow-h, 44px);
   background: radial-gradient(
     ellipse 50% 50% at 50% 50%,
     rgba(74, 159, 229, 0.1),

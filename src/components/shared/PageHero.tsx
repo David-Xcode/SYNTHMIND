@@ -2,7 +2,7 @@
 // about / products 共享的页头区块（contact 自 v7 起用紧凑标题行，不再消费）：
 // 径向光晕 + 图签 + light/bold 标题 + 副标题
 // v6：背景 = layout 级 fixed 场景砖墙（BlueprintWall，内容从墙前滚过）；
-// 本组件的网格与 depth-drift 深度层已退役（深度由材质层次与墙后灯光承担）
+// 本组件的网格与 depth-drift 深度层已退役（深度由材质层次与掠射光下的明暗承担）
 
 import AnimateOnScroll from './AnimateOnScroll';
 import SheetLabel from './SheetLabel';

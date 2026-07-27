@@ -75,7 +75,7 @@ export default function HeroObjectPhysics({
 
     // 监听区域 = 整个 hero section（物件对指针的感知范围）
     const section = scene.closest('section') ?? scene;
-    // hover 命中区 = 物件本体（280px 根容器），不是整个右栏空白
+    // hover 命中区 = 物件本体（360px 根容器），不是整个右栏空白
     const hoverArea = scene.querySelector('.bp-object-root') ?? scene;
 
     const yaw: SpringState = { x: 0, v: 0 };

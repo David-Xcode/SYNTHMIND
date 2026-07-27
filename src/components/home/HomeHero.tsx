@@ -108,8 +108,8 @@ export default function HomeHero() {
             物理本就是桌面专属，双实例挂载只会白白重复监听）
             min-w-0：<lg 轨道（grid-cols-1 = minmax(0,1fr)）本不受 300px 抬高；
             ≥lg 的 [7fr_5fr] 轨道最小值是 auto，min-w-0 才是那里的护栏——
-            当前松弛（物件 280px < 1024px 断点下 5fr 份额 ≈386px），若将来
-            加宽物件/收窄 gap 就会咬合，勿删；<340px 真兜底 = scale(0.85) */}
+            v3 物件 360px 后 1024px 断点下 5fr 份额 ≈386px 余量已趋零，
+            这道护栏正在承重，勿删；<340px 真兜底 = scale(0.85) */}
         <div className="min-w-0">
           <div className="hero-tilt hidden lg:block">
             <HeroObjectPhysics>

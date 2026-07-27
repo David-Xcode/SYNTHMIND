@@ -1,54 +1,70 @@
 'use client';
 
-// ─── 真砖重力井 · Lantern Wall v6 ───
-// BlueprintWall 的动态层：指针 = 压在墙上的重力井 + 墙后的一盏灯。
+// ─── 真砖重力井 · Graphite Wall v8 ───
+// BlueprintWall 的动态层：指针 = 压在石墨砌体上的重力井。
+// **墙后没有任何发光体**（v6 的指针灯已退役）——本组件只推砖，不点灯。
 //
-// 单层真砖（v5 的「静态 tile + DOM 砖 + 逐格底衬 + 假涌光」四层互相
-// 遮掩机器全部退役）：
-// - 首次 pointermove 一次性铺满视口的真砖 div（零子元素零底衬），
-//   同帧隐藏静态 tile（.bp-wall[data-live]，两者像素等价 = 无感接管）
-//   ——任何时刻只存在一层砖
-// - 缝隙是真空隙：墙后的灯（.bp-wall-lamp）与角落余晖直接从缝里
-//   透出，无需任何假光层；砖塌陷张开的缝透出的就是真灯光
-// - 墙属场景（.bp-wall fixed）：内容从墙前滚过，墙与光都不动——
-//   零滚动耦合（无 scroll 监听、无文档坐标、无越界裁切）
+// 砖 + 砖床两层（v6「单层砖」的 v8 修订）：
+// - 首次 pointermove 一次性铺满视口的真砖 div（零子元素），同帧让静态
+//   tile 丢掉砖层只留砖床（.bp-wall[data-live]）——砖床恒在砖后
+// - 缝隙是真凹槽：砖床 tile 画出槽的压暗与接触投影，砖陷下去时缝张开、
+//   露出更多槽底 = 更暗
 //
 // 重力井物理（全局仅 3 标量弹簧：井心 lx/ly + 强度 li，
 // 砖的一切响应都是井心位置的纯函数，零砖级状态）：
 // - 下陷：坑心砖沿 -z 陷入 ≤DEPTH（透视自然变小变远）
 // - 坡斜：坑壁砖沿碗坡朝坑心倾 ≤TILT°（坑底经中心阻尼放平）
 // - 聚拢：材料向坑心微聚 ≤PULL px（坑心缝受压闭合、坑缘缝拉开）
-// - 透光：井深处砖面 opacity 渐降 ≤FADE——墙后真灯光从砖体渗出
+// - 渐暗：井深处砖面 opacity 渐降 ≤FADE——露出更暗的砖床槽底
+//   （v6 的「透出墙后灯光」语义已反转：坑里本来就该暗）
 //
 // 门控继承：hover+fine 且非 RM 才接管；触屏/RM/无 JS = 静态 tile
-// 就是那一层砖。只写 transform / opacity；弹簧收敛即停帧。
+// （砖床 + 砖两层叠加）就是那面墙。只写 transform / opacity；
+// 弹簧收敛即停帧。
 
 import { useEffect, useRef } from 'react';
 import { listenMql } from '@/lib/listen-mql';
 
-const RADIUS = 200; // 重力井影响半径（px）
-const DEPTH = 16; // 坑心最大下陷（px，-z；perspective 600 下约 2.6% 透视缩）
+const RADIUS = 150; // 重力井影响半径（px）— v8 收窄：≈5 砖直径，坡更陡
+const DEPTH = 36; // 坑心最大下陷（px，-z；perspective 600 下约 5.7% 透视缩）
 const PULL = 3; // 向坑心最大聚拢（px）——对向砖合拢 ≤ 缝宽，坑心缝闭合不互叠
-const SHRINK = 0.05; // 微缩上限（比例）——保证坑内砖四周缝隙可见透光
-const TILT = 15; // deg — 碗壁坡度倾斜上限（绕砖心，无铰链/背面问题）
-const FADE = 0.25; // 井心砖面透明度降幅——陷得越深，墙后灯光渗出越多
-const STIFFNESS = 120; // 井心弹簧 — 跟手且带一点余韵
-const DAMPING = 18; // ζ≈0.82
+const SHRINK = 0.05; // 微缩上限（比例）——与透视缩合计 ≈10%，缝张开露槽底
+const TILT = 20; // deg — 碗壁坡度倾斜**上限**（绕砖心，无铰链/背面问题）。
+// 实际峰值远低于上限且**随 pitch 档变**（damp = min(1, d/faceSize)）：
+// 8.47° @56 档 / 7.41° @64 / 4.94° @96，均在 d≈50px 取极值（v8 spec §7.1）。
+// 砖角抬升的力臂是半对角 26.25·√2 = 37.12px（不是半宽）——最坏角
+// z = −36u² + 37.12·sin(20u°·u) ≈ −23u² < 0 对所有 d 成立：
+// **没有任何砖会凸到墙面之前**
+const FADE = 0.35; // 井心砖面透明度降幅——陷得越深，露出的砖床槽底越多 = 越暗
+const STIFFNESS = 105; // 井心弹簧 — 石墨重物：沉稳
+const DAMPING = 20; // ζ≈0.976 近临界，几乎无过冲
 const REST_EPS = 0.05; // px — 位置停帧阈（亚像素）
 const REST_V_EPS = 0.5; // px/s — 速度停帧阈：沿用 0.05 档要多空转 ~0.8s 才停帧，0.5 无可见差
 const MAX_DT = 0.033; // 秒 — tab 切回防积分爆炸
 
+// 逐砖明度变异（真砌的墙不可能每块砖一模一样）——空串 = 基态 tile 原样
+const VARIANTS = [' bp-brick--a', '', ' bp-brick--c'];
+
+// 🚨 必须是**非线性**哈希：任何线性式 (a·c + b·r) % 3 的等值集都是直线，
+// 整面墙会织出规则的对角条纹——系数是不是素数完全无关（7 ≡ 13 ≡ 1 mod 3，
+// (c·7 + r·13) % 3 恒等于 (c + r) % 3，正是本函数取代的那个错误写法）。
+// 大素数乘 + XOR + 位混合打散；`>>> 0` 不可省：`^` 产出有符号 int32，
+// 负数取模会得到负下标 → VARIANTS[负] = undefined → class 变成 "brickundefined"
+const variantOf = (c: number, r: number) => {
+  let h = (c * 73856093) ^ (r * 19349663);
+  h ^= h >>> 13;
+  return VARIANTS[(h >>> 0) % 3];
+};
+
 export default function WallBricks() {
-  const lampRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const lamp = lampRef.current;
     const grid = gridRef.current;
-    if (!lamp || !grid) return;
+    if (!grid) return;
     // closest 而非 parentElement：将来若中间包一层 div，data-live 挂错
-    // 节点会导致 tile 不隐藏 → 双层砖（单层砖纪律的静默破坏路径）
-    const wall = grid.closest<HTMLElement>('.bp-wall'); // data-live 切换静态 tile
+    // 节点会导致砖层不撤 → 砖床上叠两层砖（层纪律的静默破坏路径）
+    const wall = grid.closest<HTMLElement>('.bp-wall'); // data-live 撤静态砖层
 
     // 能力门控：真 hover + 细指针，且非 reduced-motion
     const capable = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -82,10 +98,10 @@ export default function WallBricks() {
     let resizeTimer = 0;
 
     // 铺满视口的真砖（一次性；resize 换档/换尺寸后重建）。
-    // left/top 建时写死（一次布局），逐帧只写 transform/opacity
+    // left/top 与明度变异 class 建时写死（一次布局），逐帧只写 transform/opacity
     const build = () => {
       if (!wall) {
-        // 挂错节点时 data-live 落不下——宁可不建砖，不破单层砖纪律
+        // 挂错节点时 data-live 落不下——宁可不建砖，不破层纪律
         buildFailed = true;
         return;
       }
@@ -110,7 +126,7 @@ export default function WallBricks() {
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const b = document.createElement('div');
-          b.className = 'bp-brick';
+          b.className = `bp-brick${variantOf(c, r)}`;
           b.style.left = `${c * pitch + seam}px`;
           b.style.top = `${r * pitch + seam}px`;
           b.style.width = `${faceSize}px`;
@@ -121,14 +137,12 @@ export default function WallBricks() {
         }
       }
       grid.appendChild(frag);
-      wall.dataset.live = ''; // 接管：静态 tile 隐藏，真砖上场（wall 非空由 build 首行守卫保证）
+      wall.dataset.live = ''; // 接管：静态砖层撤下只留砖床，真砖阵上场
       ready = true;
     };
 
-    // 依当前井心落样式：灯 + 全砖扫描（平方距离先筛，圈外双零跳过）
+    // 依当前井心落样式：全砖扫描（平方距离先筛，圈外双零跳过）
     const render = () => {
-      lamp.style.transform = `translate3d(${lx.toFixed(2)}px, ${ly.toFixed(2)}px, 0)`;
-      lamp.style.opacity = li.toFixed(3);
       const r2 = RADIUS * RADIUS;
       const half = faceSize / 2;
       for (let i = 0; i < bricks.length; i++) {
@@ -231,7 +245,7 @@ export default function WallBricks() {
       kick();
     };
 
-    // 离开窗口 = 井撤压 + 灯熄灭：强度归零，一根弹簧带全部砖归位
+    // 离开窗口 = 井撤压：强度归零，一根弹簧带全部砖归位
     const onLeave = () => {
       ti = 0;
       kick();
@@ -268,9 +282,7 @@ export default function WallBricks() {
       rafId = 0;
       bricks = [];
       grid.textContent = '';
-      if (wall) delete wall.dataset.live; // 静态 tile 复位
-      lamp.style.opacity = '';
-      lamp.style.transform = '';
+      if (wall) delete wall.dataset.live; // 静态砖层复位（砖床原样）
     };
 
     // 会话中途开启 reduced-motion → 拆除真砖，回到静态 tile
@@ -295,11 +307,5 @@ export default function WallBricks() {
     };
   }, []);
 
-  // lamp 画在砖层下（z auto < face/grid z1）——层序由 z-index 决定
-  return (
-    <>
-      <div ref={lampRef} className="bp-wall-lamp" />
-      <div ref={gridRef} className="bp-wall-grid" />
-    </>
-  );
+  return <div ref={gridRef} className="bp-wall-grid" />;
 }

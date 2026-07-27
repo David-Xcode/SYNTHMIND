@@ -1,40 +1,32 @@
-// ─── Hero Blueprint Object v2/v3 · Bonded Assembly 砌合组合体 ───
-// 设计定案：docs/superpowers/specs/2026-07-26-blueprint-object-v2-modular-design.md
-//          docs/superpowers/specs/2026-07-26-living-blueprint-v3-design.md（mobile 变体）
-// v2 桌面：七个独立模块（M.01–M.07，砌砖错缝布局，280×344×120 竖塔）
-// v3 移动：同一制图语言的横陈变体（M.01–M.05，300×168×120 低台，ELEV. 立面图纸）
+// ─── Hero Blueprint Object v3 · Solid Machine 哑光实体机身 ───
+// 设计定案：docs/superpowers/specs/2026-07-27-blueprint-object-v3-solid-design.md
+//          （v2 七模块砌合 / 移动横陈变体的布局与编排全部继承）
+// v3 桌面：360×440×150 原生重标（280 体系退役——CSS 3D 分辨率上限 = 布局尺寸，
+// transform scale 放大只会放大位图），缝 8px、标注 11px tertiary、蚀刻加密
+// v3 移动：300×168×120 几何不动（320px 窄屏约束），材质/描边/标注 10px 同步提档
 // 各模块沿签名轴做慢周期错位-停驻-归位循环（modDrift 错峰，永不停止），
 // 缝隙后方埋发光条（对齐漏微光，错开露内光），hover 单模块独立偏移+增亮
 // 入场叙事 Draft→Build→Ship：棱线在装配偏移位逐笔绘制 → 模块滑入合体 → 蚀刻/缝光亮起
 // 所有 .bp-draw 元素必须是 <path>：pathLength 在 rect/circle 上 WebKit 不支持，
-// 会把 dasharray 归一化破坏成 1px 点线（圆/矩形一律 A / H V Z 路径命令改写）
+// 会把 dasharray 归一化破坏成 1px 点线（圆/矩形一律 A / H V Z 路径命令改写）；
+// 装饰性虚线刻度圈用 .bp-fade（dasharray 与 pathLength 归一化互斥，不能进 bp-draw）
 // 透视链纪律：模块三层 wrapper（asm/drift/hover）全部 preserve-3d，缺一层 WebKit 压扁
 // WebKit 零平面相交不变量：内墙右面/非顶行顶面不渲染；缝光条只做平行溢出
 // Server Component — 装饰性图形 aria-hidden；指针物理在 HeroObjectPhysics（桌面变体专属）
 
 import type { CSSProperties, ReactNode } from 'react';
 
-// 组合体进深 — 两变体统一 120（core 前脸内凹至 z=52 制造 8px 凹槽）
-const DEPTH = 120;
-
 // 描边色阶 — 同一蓝色相不同 alpha（逐面明度贴合固定光源：左上前方）
+// v3 全档提亮（哑光实体机身）；与 :root 的 --mat-edge-* 交叉锁定，改值两处同步
 const STROKE = {
-  edgeFront: 'rgba(74, 159, 229, 0.5)',
-  edgeTop: 'rgba(74, 159, 229, 0.45)',
-  edgeRight: 'rgba(74, 159, 229, 0.38)',
-  detail: 'rgba(74, 159, 229, 0.3)',
-  inner: 'rgba(74, 159, 229, 0.22)',
-  core: 'rgba(74, 159, 229, 0.55)',
-  corePulse: 'rgba(74, 159, 229, 0.35)',
+  edgeFront: 'rgba(74, 159, 229, 0.62)',
+  edgeTop: 'rgba(74, 159, 229, 0.55)',
+  edgeRight: 'rgba(74, 159, 229, 0.45)',
+  detail: 'rgba(74, 159, 229, 0.4)',
+  inner: 'rgba(74, 159, 229, 0.3)',
+  core: 'rgba(74, 159, 229, 0.65)',
+  corePulse: 'rgba(74, 159, 229, 0.4)',
   boost: 'rgba(74, 159, 229, 0.95)',
-} as const;
-
-// mono 标注文字公共属性 — fill 走 class（个别 WebView 不在
-// presentation attribute 里做 var() 替换，会回退成黑色）
-const LABEL_PROPS = {
-  fontSize: 8,
-  letterSpacing: '0.08em',
-  className: 'font-mono bp-fade fill-txt-quaternary',
 } as const;
 
 // 蚀刻细节入场延迟（秒）— Ship 阶段：走线/图形 → 辅助刻线 → 图签文字 → 焊盘圆点
@@ -57,8 +49,12 @@ const MT = {
 } as const;
 
 // 核心圆环 — 两段圆弧拼整圆（circle 不能用 pathLength）
-const CORE_RING = 'M72 46 A24 24 0 1 1 120 46 A24 24 0 1 1 72 46 Z'; // 桌面 r24 @ (96,46)
+const CORE_RING = 'M92 59 A31 31 0 1 1 154 59 A31 31 0 1 1 92 59 Z'; // 桌面 r31 @ (123,59)
 const CORE_RING_M = 'M28 28 A16 16 0 1 1 60 28 A16 16 0 1 1 28 28 Z'; // 移动 r16 @ (44,28)
+
+// 小圆的 path 改写（安装孔/固定孔——bp-draw 纪律：circle 元素不可逐笔绘制）
+const circlePath = (cx: number, cy: number, r: number) =>
+  `M${cx - r} ${cy} A${r} ${r} 0 1 1 ${cx + r} ${cy} A${r} ${r} 0 1 1 ${cx - r} ${cy} Z`;
 
 interface ModuleDef {
   code: string; // 装配序列模块码（右侧面蚀刻，自下而上 = 真实装配顺序）
@@ -87,7 +83,7 @@ interface SeamDef {
   delay: string;
 }
 
-// ═══ 桌面变体 · 竖塔（v2 原样） ═══
+// ═══ 桌面变体 · 竖塔（v3 360×440×150，缝 8px） ═══
 // 模块表 — 自下而上 M.01→M.07；漂移周期/相位错峰（周期互质 + delay 交错），
 // 保证任意 5s 观察窗总有模块在动；drift delay ≥2.8s（入场 ~2.8s 收尾后接管）
 const MODULES: readonly ModuleDef[] = [
@@ -95,10 +91,10 @@ const MODULES: readonly ModuleDef[] = [
     // 图签底座 — 静止基准锚：不漂移、hover 只增亮不位移
     code: 'M.01',
     x: 0,
-    y: 296,
-    w: 280,
-    h: 48,
-    asm: [0, 14, 0],
+    y: 380,
+    w: 360,
+    h: 60,
+    asm: [0, 18, 0],
     asmDelay: '0.9s',
     drawDelay: '0s',
     solidifyDelay: '0.95s',
@@ -107,31 +103,31 @@ const MODULES: readonly ModuleDef[] = [
     // 输出左 — 通风格栅
     code: 'M.02',
     x: 0,
-    y: 224,
-    w: 94,
-    h: 66,
-    asm: [-20, 0, 0],
+    y: 288,
+    w: 120,
+    h: 84,
+    asm: [-26, 0, 0],
     asmDelay: '1s',
-    drift: [-8, 0, 0],
+    drift: [-10, 0, 0],
     driftDur: '14s',
     driftDelay: '6.4s',
-    hover: [-5, 0, 0],
+    hover: [-6, 0, 0],
     drawDelay: '0.1s',
     solidifyDelay: '1.05s',
   },
   {
-    // 输出右 — 双焊盘分线
+    // 输出右 — 双焊盘分线 + 端口阵列
     code: 'M.03',
-    x: 100,
-    y: 224,
-    w: 180,
-    h: 66,
-    asm: [0, 0, 26],
+    x: 128,
+    y: 288,
+    w: 232,
+    h: 84,
+    asm: [0, 0, 33],
     asmDelay: '1.1s',
-    drift: [0, 0, 12],
+    drift: [0, 0, 15],
     driftDur: '16s',
     driftDelay: '3.2s',
-    hover: [0, 0, 8],
+    hover: [0, 0, 10],
     drawDelay: '0.18s',
     solidifyDelay: '1.12s',
   },
@@ -139,91 +135,90 @@ const MODULES: readonly ModuleDef[] = [
     // SYNTH CORE — 前脸内凹，漂移时向前「呈递」
     code: 'M.04',
     x: 0,
-    y: 126,
-    w: 280,
-    h: 92,
-    core: { x: 96, y: 46, r: 70 },
-    asm: [0, 0, 30],
+    y: 162,
+    w: 360,
+    h: 118,
+    core: { x: 123, y: 59, r: 90 },
+    asm: [0, 0, 38],
     asmDelay: '1.2s',
-    drift: [0, 0, 14],
+    drift: [0, 0, 18],
     driftDur: '11s',
     driftDelay: '8s',
-    hover: [0, 0, 9],
+    hover: [0, 0, 11],
     drawDelay: '0.3s',
     solidifyDelay: '1.22s',
   },
   {
-    // 输入 — 文档蚀刻 + 下行走线
+    // 输入 — 文档队列蚀刻 + 下行走线
     code: 'M.05',
     x: 0,
-    y: 54,
-    w: 280,
-    h: 66,
-    asm: [24, 0, 0],
+    y: 70,
+    w: 360,
+    h: 84,
+    asm: [31, 0, 0],
     asmDelay: '1.3s',
-    drift: [10, 0, 0],
+    drift: [13, 0, 0],
     driftDur: '15s',
     driftDelay: '5s',
-    hover: [6, 0, 0],
+    hover: [8, 0, 0],
     drawDelay: '0.42s',
     solidifyDelay: '1.32s',
   },
   {
-    // 顶盖左 — 十字基准顶面
-    // 漂移/hover 只能向 −X：+X 超过 6px 缝就会与 M.07 前脸共面互穿（z-fighting）
+    // 顶盖左 — 刻度尺 + 十字基准顶面
+    // 漂移/hover 只能向 −X：+X 超过 8px 缝就会与 M.07 前脸共面互穿（z-fighting）
     code: 'M.06',
     x: 0,
     y: 0,
-    w: 180,
-    h: 48,
-    asm: [-20, 0, 0],
+    w: 232,
+    h: 62,
+    asm: [-26, 0, 0],
     asmDelay: '1.4s',
-    drift: [-8, 0, 0],
+    drift: [-10, 0, 0],
     driftDur: '13s',
     driftDelay: '12.4s',
-    hover: [-5, 0, 0],
+    hover: [-6, 0, 0],
     drawDelay: '0.52s',
     solidifyDelay: '1.42s',
     hasTop: true,
   },
   {
-    // 顶盖右 — 小端口模块
+    // 顶盖右 — 端口阵列模块
     code: 'M.07',
-    x: 186,
+    x: 240,
     y: 0,
-    w: 94,
-    h: 48,
-    asm: [0, 0, 30],
+    w: 120,
+    h: 62,
+    asm: [0, 0, 38],
     asmDelay: '1.45s',
-    drift: [0, 0, 14],
+    drift: [0, 0, 18],
     driftDur: '10s',
     driftDelay: '2.8s',
-    hover: [0, 0, 9],
+    hover: [0, 0, 11],
     drawDelay: '0.6s',
     solidifyDelay: '1.48s',
     hasTop: true,
   },
 ] as const;
 
-// 缝隙发光条 — z=54 埋于前面板（z=60）后方；水平缝自下而上 stagger 脉冲 =
+// 缝隙发光条 — z=66 埋于前面板（z=75）后方；水平缝自下而上 stagger 脉冲 =
 // 数据自底向上流经组合体；竖缝跟随所在行相位
-// （z 太深会被视角吃掉：6px 缝 + 16° 俯角下 z54 恰好漏出可感知的光带）
-// 尺寸超出缝口：溢出部分被 z60 前脸挡住，模块漂移让开时自动补位——
-// 横条 h14 覆盖漂移峰值投影缝隙（hover 再叠加时残留 ≤4px，由 blur 与
-// backglow 兜底读作内部阴影）；竖条向漂移方向加宽同理
+// （z 太深会被视角吃掉：8px 缝 + 16° 俯角下 z66 恰好漏出可感知的光带）
+// 尺寸超出缝口：溢出部分被 z75 前脸挡住，模块漂移让开时自动补位——
+// 横条 h18 覆盖漂移峰值投影缝隙；竖条向漂移方向加宽同理
 // ⚠️ 发光条平面不得与任何面相交（WebKit 无平面切分、按质心排序，
 // 相交时缝口 sliver 会整条消失）——内侧右面已因此不渲染，见 ModuleShell；
 // 竖条 top ≥2 也是这条纪律：顶行顶面位于 y=0 平面，条带避开即不相交
 const SEAMS: readonly SeamDef[] = [
-  { left: 2, top: 286, width: 276, height: 14, delay: '3.3s' },
-  { left: 2, top: 214, width: 276, height: 14, delay: '3.85s' },
-  { left: 2, top: 116, width: 276, height: 14, delay: '4.4s' },
-  { left: 2, top: 44, width: 276, height: 14, delay: '4.95s' },
-  { left: 85, top: 224, width: 16, height: 66, vertical: true, delay: '4.1s' },
-  { left: 171, top: 2, width: 16, height: 44, vertical: true, delay: '5.2s' },
+  { left: 2, top: 367, width: 356, height: 18, delay: '3.3s' },
+  { left: 2, top: 275, width: 356, height: 18, delay: '3.85s' },
+  { left: 2, top: 149, width: 356, height: 18, delay: '4.4s' },
+  { left: 2, top: 57, width: 356, height: 18, delay: '4.95s' },
+  { left: 109, top: 288, width: 20, height: 84, vertical: true, delay: '4.1s' },
+  { left: 221, top: 2, width: 20, height: 58, vertical: true, delay: '5.2s' },
 ];
 
-// ═══ 移动变体 · 横陈低台（v3 ELEV. 立面图纸） ═══
+// ═══ 移动变体 · 横陈低台（v3 ELEV. 立面图纸，几何不动） ═══
 // 同一物件的另一张视图：轴测角度/材质/缝光语言不变，砌合成 300×168 横构图
 // 竖缝错缝延续 bond pattern：R2 在 x186–192，R3 在 x108–114
 const MOBILE_MODULES: readonly ModuleDef[] = [
@@ -257,7 +252,7 @@ const MOBILE_MODULES: readonly ModuleDef[] = [
     solidifyDelay: '0.85s',
   },
   {
-    // 端口 — 承接核心出线
+    // 端口 — 承接核心出线（v3 起 2×2 阵列 + 汇流母线）
     code: 'M.03',
     x: 192,
     y: 58,
@@ -341,22 +336,54 @@ function Draw({
   );
 }
 
+// 装饰性虚线刻度圈 — bp-fade 淡入（dasharray 占用即不能走 bp-draw 的归一化）
+function DashRing({
+  d,
+  dash,
+  delay,
+}: {
+  d: string;
+  dash: string;
+  delay: string;
+}) {
+  return (
+    <path
+      d={d}
+      stroke={STROKE.inner}
+      strokeWidth={1}
+      strokeDasharray={dash}
+      className="bp-fade"
+      style={{ '--draw-delay': delay } as CSSProperties}
+    />
+  );
+}
+
+// mono 标注文字 — fill 走 class（个别 WebView 不在 presentation attribute 里
+// 做 var() 替换，会回退成黑色）；v3 提档：tertiary 基调，主标注可升 accent
 function MonoLabel({
   x,
   y,
   delay,
+  size = 11,
+  tone = 'tertiary',
   children,
 }: {
   x: number;
   y: number;
   delay: string;
+  size?: number;
+  tone?: 'tertiary' | 'accent';
   children: ReactNode;
 }) {
   return (
     <text
       x={x}
       y={y}
-      {...LABEL_PROPS}
+      fontSize={size}
+      letterSpacing="0.08em"
+      className={`font-mono bp-fade ${
+        tone === 'accent' ? 'fill-accent' : 'fill-txt-tertiary'
+      }`}
       style={{ '--draw-delay': delay } as CSSProperties}
     >
       {children}
@@ -386,112 +413,200 @@ function NodeDot({
 }
 
 // ── 桌面前面板蚀刻（各面局部坐标系）——跨模块走线在缝口对齐：
-// M.05 出线 x150 ↓穿缝→ M.04 入线 x150；M.04 出线 x200 ↓穿缝→ M.03 入线（局部 x100）
+// M.05 出线 x193 ↓穿缝→ M.04 入线 x193；M.04 出线 x256 ↓穿缝→ M.03 主干（局部 x128）
 const FRONT_ETCH: Record<string, ReactNode> = {
   'M.01': (
     <>
       {/* 图签栏分隔 + SYNTHMIND / S.01 / 1:1 */}
-      {['M168 0.5 V47.5', 'M224 0.5 V47.5'].map((d) => (
+      {['M216 0.5 V59.5', 'M288 0.5 V59.5'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
       ))}
-      <MonoLabel x={12} y={29} delay={T.labels}>
+      {/* 图形比例尺 — 呼应 1:1 栏（大小刻度交替，制图习惯） */}
+      <Draw d="M100 33 H188" stroke={STROKE.inner} delay={T.detailB} />
+      {['M100 27 V33', 'M122 30 V33', 'M144 27 V33', 'M166 30 V33', 'M188 27 V33'].map(
+        (d) => (
+          <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
+        ),
+      )}
+      <MonoLabel x={14} y={36} delay={T.labels}>
         SYNTHMIND
       </MonoLabel>
-      <MonoLabel x={178} y={29} delay={T.labels}>
+      <MonoLabel x={228} y={36} delay={T.labels}>
         S.01
       </MonoLabel>
-      <MonoLabel x={232} y={29} delay={T.labels}>
+      <MonoLabel x={304} y={36} delay={T.labels}>
         1:1
       </MonoLabel>
     </>
   ),
   'M.02': (
     <>
-      {/* 通风格栅 hairline */}
-      {['M16 22 H78', 'M16 33 H78', 'M16 44 H78'].map((d) => (
+      {/* 通风格栅 hairline（6 条，末条短）+ 对角固定孔 */}
+      {[
+        'M18 16 H102',
+        'M18 26 H102',
+        'M18 36 H102',
+        'M18 46 H102',
+        'M18 56 H102',
+        'M18 66 H84',
+      ].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
+      ))}
+      {[circlePath(10, 10, 2.5), circlePath(110, 74, 2.5)].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
       ))}
     </>
   ),
   'M.03': (
     <>
-      {/* 分线：承接 M.04 出线（全局 x200 = 本模块局部 x100）→ 双焊盘 */}
-      {['M100 0.5 V16', 'M100 16 H48 V30', 'M100 16 H152 V30'].map((d) => (
+      {/* 分线：承接 M.04 出线（全局 x256 = 本模块局部 x128）→ 双焊盘 */}
+      {['M128 0.5 V20', 'M128 20 H62 V38', 'M128 20 H194 V38'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detail} />
       ))}
-      {['M34 30 H62 V52 H34 Z', 'M138 30 H166 V52 H138 Z'].map((d) => (
+      {['M44 38 H80 V66 H44 Z', 'M176 38 H212 V66 H176 Z'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detail} />
       ))}
-      <NodeDot cx={100} cy={16} />
+      {/* 焊盘之间 2×3 端口阵列 */}
+      {[
+        'M108 44 H116 V52 H108 Z',
+        'M124 44 H132 V52 H124 Z',
+        'M140 44 H148 V52 H140 Z',
+        'M108 56 H116 V64 H108 Z',
+        'M124 56 H132 V64 H124 Z',
+        'M140 56 H148 V64 H140 Z',
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
+      ))}
+      <NodeDot cx={128} cy={20} />
+      <NodeDot cx={62} cy={52} />
+      <NodeDot cx={194} cy={52} />
     </>
   ),
   'M.04': (
     <>
-      {/* 核心微光呼吸 — 同路径宽描边叠加（corePulse，RM 下静态 0.35） */}
+      {/* 核心微光呼吸 — 同路径宽描边叠加（corePulse，RM 下静态 0.4） */}
       <path
         d={CORE_RING}
         stroke={STROKE.corePulse}
-        strokeWidth="6"
+        strokeWidth="7"
         className="bp-core-pulse"
       />
       <Draw d={CORE_RING} stroke={STROKE.core} delay={T.detail} width={1.25} />
-      {/* 罗盘刻度 */}
-      {['M96 14 V22', 'M96 70 V78', 'M64 46 H72', 'M120 46 H128'].map((d) => (
+      {/* r37 虚线刻度圈（24 段）+ 环内十字准星 */}
+      <DashRing
+        d="M86 59 A37 37 0 1 1 160 59 A37 37 0 1 1 86 59 Z"
+        dash="2 7.69"
+        delay={T.aux}
+      />
+      {['M123 51 V67', 'M115 59 H131'].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detail} />
+      ))}
+      {/* 罗盘主刻度（与环缘齐平，穿虚线圈 = 仪表盘惯例） */}
+      {['M123 18 V28', 'M123 90 V100', 'M80 59 H92', 'M154 59 H166'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.core} delay={T.detail} />
       ))}
-      {/* 入线（承接 M.05 出线 x150）与出线（→ M.03，x200 穿底缝） */}
-      <Draw d="M150 0.5 V46 H128" stroke={STROKE.detail} delay={T.detail} />
-      <Draw d="M96 78 V84 H200 V91.5" stroke={STROKE.detail} delay={T.detail} />
-      <MonoLabel x={158} y={77} delay={T.labels}>
+      {/* 取景器四角括弧 — 框定核心的校准靶 */}
+      {[
+        'M82 28 V18 H92',
+        'M154 18 H164 V28',
+        'M82 90 V100 H92',
+        'M154 100 H164 V90',
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
+      ))}
+      {/* 入线（承接 M.05 出线 x193）与出线（→ M.03，x256 穿底缝） */}
+      <Draw d="M193 0.5 V59 H166" stroke={STROKE.detail} delay={T.detail} />
+      <Draw d="M123 100 V108 H256 V117.5" stroke={STROKE.detail} delay={T.detail} />
+      {/* 右侧服务分缝 + 状态 pips（首格点亮） */}
+      <Draw d="M292 10 V108" stroke={STROKE.inner} delay={T.detailB} />
+      {[
+        'M304 92 H310 V98 H304 Z',
+        'M318 92 H324 V98 H318 Z',
+        'M332 92 H338 V98 H332 Z',
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
+      ))}
+      <MonoLabel x={186} y={96} delay={T.labels} tone="accent">
         SYNTH CORE
       </MonoLabel>
-      <NodeDot cx={128} cy={46} />
-      <NodeDot cx={200} cy={88} />
+      <NodeDot cx={166} cy={59} />
+      <NodeDot cx={256} cy={108} />
+      <NodeDot cx={307} cy={95} />
     </>
   ),
   'M.05': (
     <>
-      {/* 输入文档 + 内容行 */}
-      <Draw d="M24 13 H80 V53 H24 Z" stroke={STROKE.detail} delay={T.detail} />
-      {['M34 24 H70', 'M34 33 H70', 'M34 42 H62'].map((d) => (
+      {/* 输入主文档：标题行 + 内容行 */}
+      <Draw d="M30 14 H102 V70 H30 Z" stroke={STROKE.detail} delay={T.detail} />
+      {['M42 26 H74', 'M42 36 H90', 'M42 46 H90', 'M42 56 H82'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detail} />
       ))}
-      {/* 出线 → 穿底缝入 M.04 */}
-      <Draw d="M80 33 H150 V65.5" stroke={STROKE.detail} delay={T.detail} />
-      <NodeDot cx={80} cy={33} />
+      {/* 队列第二文档（出线从其下方穿过，y 避让） */}
+      <Draw d="M114 16 H168 V36 H114 Z" stroke={STROKE.detail} delay={T.detail} />
+      {['M126 24 H156', 'M126 30 H148'].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detail} />
+      ))}
+      {/* 出线 → 穿底缝入 M.04（x193 全局对齐） */}
+      <Draw d="M102 42 H193 V83.5" stroke={STROKE.detail} delay={T.detail} />
+      {/* 右区内向箭标 — 数据流入暗示 */}
+      {['M320 32 L306 42 L320 52', 'M338 32 L324 42 L338 52'].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
+      ))}
+      <NodeDot cx={102} cy={42} />
     </>
   ),
   'M.06': (
     <>
-      {/* 角部裁切标记 */}
-      {['M10 16 V8 H18', 'M162 8 H170 V16'].map((d) => (
+      {/* 角部裁切标记 + 刻度尺（大小刻度交替） */}
+      {['M12 20 V10 H22', 'M210 10 H220 V20'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
+      ))}
+      <Draw d="M40 46 H192" stroke={STROKE.inner} delay={T.detailB} />
+      {[
+        'M40 38 V46',
+        'M78 38 V46',
+        'M116 38 V46',
+        'M154 38 V46',
+        'M192 38 V46',
+        'M59 42 V46',
+        'M97 42 V46',
+        'M135 42 V46',
+        'M173 42 V46',
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
       ))}
     </>
   ),
   'M.07': (
     <>
-      {/* 小端口 */}
-      <Draw d="M38 15 H56 V33 H38 Z" stroke={STROKE.detail} delay={T.detailB} />
-      <NodeDot cx={47} cy={24} />
+      {/* 2×2 端口阵列（左上格点亮） */}
+      {[
+        'M42 12 H56 V26 H42 Z',
+        'M64 12 H78 V26 H64 Z',
+        'M42 34 H56 V48 H42 Z',
+        'M64 34 H78 V48 H64 Z',
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
+      ))}
+      <NodeDot cx={49} cy={19} />
     </>
   ),
 };
 
-// ── 移动前面板蚀刻 — 走线一笔：核心环 → 出线穿 R2 竖缝 → 端口焊盘 ──
+// ── 移动前面板蚀刻 — 走线一笔：核心环 → 出线穿 R2 竖缝 → 端口母线 ──
 const MOBILE_FRONT_ETCH: Record<string, ReactNode> = {
   'M.01': (
     <>
       {['M188 0.5 V47.5', 'M240 0.5 V47.5'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={MT.detailB} />
       ))}
-      <MonoLabel x={12} y={29} delay={MT.labels}>
+      <MonoLabel x={12} y={30} size={10} delay={MT.labels}>
         SYNTHMIND
       </MonoLabel>
-      <MonoLabel x={198} y={29} delay={MT.labels}>
+      <MonoLabel x={198} y={30} size={10} delay={MT.labels}>
         S.01
       </MonoLabel>
-      <MonoLabel x={248} y={29} delay={MT.labels}>
+      <MonoLabel x={248} y={30} size={10} delay={MT.labels}>
         ELEV.
       </MonoLabel>
     </>
@@ -510,24 +625,44 @@ const MOBILE_FRONT_ETCH: Record<string, ReactNode> = {
         delay={MT.detail}
         width={1.25}
       />
-      {/* 罗盘刻度（紧凑版） */}
-      {['M44 4 V10', 'M44 46 V52', 'M20 28 H26', 'M62 28 H68'].map((d) => (
+      {/* r20 虚线刻度圈（12 段）+ 环内十字准星（紧凑版） */}
+      <DashRing
+        d="M24 28 A20 20 0 1 1 64 28 A20 20 0 1 1 24 28 Z"
+        dash="2 8.47"
+        delay={MT.aux}
+      />
+      {['M44 23 V33', 'M38 28 H50'].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={MT.detail} />
+      ))}
+      {/* 罗盘主刻度（与环缘齐平） */}
+      {['M44 6 V12', 'M44 44 V50', 'M22 28 H28', 'M60 28 H66'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.core} delay={MT.detail} />
       ))}
       {/* 出线 → 穿 R2 竖缝入 M.03 */}
-      <Draw d="M68 28 H185.5" stroke={STROKE.detail} delay={MT.detail} />
-      <MonoLabel x={84} y={20} delay={MT.labels}>
+      <Draw d="M66 28 H185.5" stroke={STROKE.detail} delay={MT.detail} />
+      <MonoLabel x={84} y={18} size={10} delay={MT.labels} tone="accent">
         SYNTH CORE
       </MonoLabel>
-      <NodeDot cx={68} cy={28} delay={MT.dots} />
+      <NodeDot cx={66} cy={28} delay={MT.dots} />
     </>
   ),
   'M.03': (
     <>
-      {/* 入线（承接 M.02 出线）→ 端口 */}
+      {/* 入线（承接 M.02 出线）→ 汇流母线 → 2×2 端口阵列 */}
       <Draw d="M0.5 28 H24" stroke={STROKE.detail} delay={MT.detail} />
-      <Draw d="M24 16 H60 V40 H24 Z" stroke={STROKE.detail} delay={MT.detail} />
-      <NodeDot cx={42} cy={28} delay={MT.dots} />
+      <Draw d="M24 16 V40" stroke={STROKE.detail} delay={MT.detail} />
+      {['M24 16 H28', 'M24 40 H28'].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={MT.detail} />
+      ))}
+      {[
+        'M28 10 H40 V22 H28 Z',
+        'M52 10 H64 V22 H52 Z',
+        'M28 34 H40 V46 H28 Z',
+        'M52 34 H64 V46 H52 Z',
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.detail} delay={MT.detail} />
+      ))}
+      <NodeDot cx={24} cy={28} delay={MT.dots} />
     </>
   ),
   'M.04': (
@@ -539,36 +674,53 @@ const MOBILE_FRONT_ETCH: Record<string, ReactNode> = {
   ),
   'M.05': (
     <>
-      {/* 通风格栅 hairline */}
-      {['M120 20 H166', 'M120 30 H166', 'M120 40 H152'].map((d) => (
+      {/* 通风格栅 hairline（5 条，末条短） */}
+      {[
+        'M120 14 H166',
+        'M120 23 H166',
+        'M120 32 H166',
+        'M120 41 H166',
+        'M120 50 H152',
+      ].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.inner} delay={MT.detailB} />
       ))}
     </>
   ),
 };
 
-// ── 顶面蚀刻（仅顶行模块） ──
+// ── 顶面蚀刻（仅顶行模块；viewBox = w×depth） ──
 const TOP_ETCH: Record<string, ReactNode> = {
   'M.06': (
     <>
-      {/* 十字基准 + 基准环 */}
-      {['M76 60 H104', 'M90 46 V74'].map((d) => (
+      {/* 十字基准 + 基准环 + 四角安装孔 */}
+      {['M84 75 H116', 'M100 59 V91'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.aux} />
       ))}
       <Draw
-        d="M82 60 A8 8 0 1 1 98 60 A8 8 0 1 1 82 60 Z"
+        d="M90 75 A10 10 0 1 1 110 75 A10 10 0 1 1 90 75 Z"
         stroke={STROKE.detail}
         delay={T.aux}
       />
+      {[
+        circlePath(18, 18, 3),
+        circlePath(214, 18, 3),
+        circlePath(18, 132, 3),
+        circlePath(214, 132, 3),
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.inner} delay={T.aux} />
+      ))}
       {/* 前棱刻度（SVG 下缘 = 与正面共享的前棱） */}
-      {['M45 112 V119.5', 'M90 112 V119.5', 'M135 112 V119.5'].map((d) => (
+      {['M58 140 V149.5', 'M116 140 V149.5', 'M174 140 V149.5'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.inner} delay={T.aux} />
       ))}
     </>
   ),
   'M.07': (
     <>
-      {['M31 112 V119.5', 'M63 112 V119.5'].map((d) => (
+      {[circlePath(20, 18, 3), circlePath(100, 18, 3)].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.inner} delay={T.aux} />
+      ))}
+      {['M40 140 V149.5', 'M80 140 V149.5'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.inner} delay={T.aux} />
       ))}
     </>
@@ -603,8 +755,8 @@ const MOBILE_TOP_ETCH: Record<string, ReactNode> = {
 
 // ── 右侧面蚀刻：模块码（真实装配序列，结构性编号）+ 高模块的面板缝 ──
 const RIGHT_SEAMS: Record<string, string[]> = {
-  'M.04': ['M42 26 H108', 'M42 66 H108'],
-  'M.05': ['M42 33 H108'],
+  'M.04': ['M52 33 H135', 'M52 85 H135'],
+  'M.05': ['M52 42 H135'],
 };
 const MOBILE_RIGHT_SEAMS: Record<string, string[]> = {};
 
@@ -612,7 +764,11 @@ const MOBILE_RIGHT_SEAMS: Record<string, string[]> = {};
 interface VariantConfig {
   width: number; // hasRight（右缘判定）依赖它：写死字面量的话，
   // 将来改宽组合体右面会静默全部消失（不报错不掉 lint）
-  height: number; // 桌面 datum 的「H 344」标注取自它
+  height: number; // 桌面 datum 的「H 440」标注取自它
+  depth: number; // v3 起 per-variant（桌面 150 / 移动 120）
+  coreFrontZ: number; // core 前脸内凹终位（桌面 65 = 10px 凹；移动 52 = 8px 凹）
+  seamZ: number; // 缝光条 z（埋于前面板后方 ~9px）
+  labelSize: number; // 右侧面模块码字号（桌面 11 / 移动 10）
   modules: readonly ModuleDef[];
   seams: readonly SeamDef[];
   frontEtch: Record<string, ReactNode>;
@@ -627,8 +783,12 @@ interface VariantConfig {
 
 const VARIANTS: Record<'desktop' | 'mobile', VariantConfig> = {
   desktop: {
-    width: 280,
-    height: 344,
+    width: 360,
+    height: 440,
+    depth: 150,
+    coreFrontZ: 65,
+    seamZ: 66,
+    labelSize: 11,
     modules: MODULES,
     seams: SEAMS,
     frontEtch: FRONT_ETCH,
@@ -637,12 +797,16 @@ const VARIANTS: Record<'desktop' | 'mobile', VariantConfig> = {
     auxDelay: T.aux,
     labelDelay: T.labels,
     hasDatum: true,
-    rootClass: 'h-[420px] w-[280px]',
-    floatClass: 'top-[44px] h-[344px]',
+    rootClass: 'h-[540px] w-[360px]',
+    floatClass: 'top-[56px] h-[440px]',
   },
   mobile: {
     width: 300,
     height: 168,
+    depth: 120,
+    coreFrontZ: 52,
+    seamZ: 54,
+    labelSize: 10,
     modules: MOBILE_MODULES,
     seams: MOBILE_SEAMS,
     frontEtch: MOBILE_FRONT_ETCH,
@@ -674,8 +838,9 @@ function ModuleShell({
   top?: ReactNode;
 }) {
   const { x, y, w, h } = def;
-  const frontZ = def.core ? 52 : DEPTH / 2;
-  // 内侧右面（模块右棱不在组合体右缘）只能从 6px 缝口看到一条 sliver，
+  const depth = variant.depth;
+  const frontZ = def.core ? variant.coreFrontZ : depth / 2;
+  // 内侧右面（模块右棱不在组合体右缘）只能从 8px 缝口看到一条 sliver，
   // 却与缝隙发光条平面真实相交——WebKit 按质心排序会让缝光整条消失，
   // 与「顶面仅顶行渲染」同一条纪律：不渲染（缝内观感由发光条独占）
   const hasRight = x + w === variant.width;
@@ -701,7 +866,7 @@ function ModuleShell({
         '--hz': `${def.hover[2]}px`,
       } as CSSProperties)
     : undefined;
-  // core 环心发光底的 radial 参数随变体走 CSS 变量（桌面 96,46,70 / 移动 44,28,50）
+  // core 环心发光底的 radial 参数随变体走 CSS 变量（桌面 123,59,90 / 移动 44,28,50）
   const fillStyle = {
     '--solidify-delay': def.solidifyDelay,
     ...(def.core
@@ -755,14 +920,14 @@ function ModuleShell({
                 {front}
               </svg>
             </div>
-            {/* ── 右侧面（仅右缘模块；w<120 时 left 为负值 — 居中后旋转归位，几何正确） ── */}
+            {/* ── 右侧面（仅右缘模块；w<depth 时 left 为负值 — 居中后旋转归位，几何正确） ── */}
             {hasRight ? (
               <div
                 className="bp-face"
                 style={{
-                  left: (w - DEPTH) / 2,
+                  left: (w - depth) / 2,
                   top: 0,
-                  width: DEPTH,
+                  width: depth,
                   height: h,
                   transform: `rotateY(90deg) translateZ(${w / 2}px)`,
                 }}
@@ -772,12 +937,12 @@ function ModuleShell({
                   style={fillStyle}
                 />
                 <svg
-                  viewBox={`0 0 ${DEPTH} ${h}`}
+                  viewBox={`0 0 ${depth} ${h}`}
                   fill="none"
                   className="absolute inset-0 h-full w-full"
                 >
                   <path
-                    d={edge(DEPTH, h)}
+                    d={edge(depth, h)}
                     stroke={STROKE.edgeRight}
                     strokeWidth="1"
                     pathLength={1}
@@ -785,7 +950,7 @@ function ModuleShell({
                     style={drawStyle}
                   />
                   <path
-                    d={edge(DEPTH, h)}
+                    d={edge(depth, h)}
                     stroke={STROKE.boost}
                     strokeWidth="1"
                     className="bp-edge-boost"
@@ -801,8 +966,9 @@ function ModuleShell({
                   ))}
                   {/* SVG x 小端 = 前棱侧，模块码贴前棱 */}
                   <MonoLabel
-                    x={14}
-                    y={def.h / 2 + 3}
+                    x={16}
+                    y={def.h / 2 + 4}
+                    size={variant.labelSize}
                     delay={variant.labelDelay}
                   >
                     {def.code}
@@ -816,9 +982,9 @@ function ModuleShell({
                 className="bp-face"
                 style={{
                   left: 0,
-                  top: (h - DEPTH) / 2,
+                  top: (h - depth) / 2,
                   width: w,
-                  height: DEPTH,
+                  height: depth,
                   transform: `rotateX(90deg) translateZ(${h / 2}px)`,
                 }}
               >
@@ -827,12 +993,12 @@ function ModuleShell({
                   style={fillStyle}
                 />
                 <svg
-                  viewBox={`0 0 ${w} ${DEPTH}`}
+                  viewBox={`0 0 ${w} ${depth}`}
                   fill="none"
                   className="absolute inset-0 h-full w-full"
                 >
                   <path
-                    d={edge(w, DEPTH)}
+                    d={edge(w, depth)}
                     stroke={STROKE.edgeTop}
                     strokeWidth="1"
                     pathLength={1}
@@ -840,7 +1006,7 @@ function ModuleShell({
                     style={drawStyle}
                   />
                   <path
-                    d={edge(w, DEPTH)}
+                    d={edge(w, depth)}
                     stroke={STROKE.boost}
                     strokeWidth="1"
                     className="bp-edge-boost"
@@ -894,38 +1060,38 @@ export default function BlueprintObject({
                     top: s.top,
                     width: s.width,
                     height: s.height,
-                    transform: 'translateZ(54px)',
+                    transform: `translateZ(${v.seamZ}px)`,
                     '--seam-delay': s.delay,
                   } as CSSProperties
                 }
               />
             ))}
             {/* 浮动尺寸基准面 — 链外静止的全高标注：基准不动，模块在动
-                面宽 90（svg overflow:hidden，窄面会截断标注文字）；
-                中心 x=95+45=140，translateZ 170 → 世界 x=310：
-                大于 M.05 的一切位移峰值右面平面（drift+hover 296 / asm 304），
+                面宽 100（svg overflow:hidden，窄面会截断标注文字）；
+                中心 x=115+50=165，translateZ 235 → 世界 x=400：
+                大于 M.05 的一切位移峰值右面平面（drift+hover 381 / asm 391），
                 永不共面 z-fight，且尺寸线不压件（制图习惯）；移动变体省略 */}
             {v.hasDatum ? (
               <div
                 className="bp-datum"
                 style={{
-                  left: 95,
+                  left: 115,
                   top: 0,
-                  width: 90,
+                  width: 100,
                   height: v.height,
-                  transform: 'rotateY(90deg) translateZ(170px)',
+                  transform: 'rotateY(90deg) translateZ(235px)',
                 }}
               >
                 <svg
-                  viewBox={`0 0 90 ${v.height}`}
+                  viewBox={`0 0 100 ${v.height}`}
                   fill="none"
                   className="absolute inset-0 h-full w-full"
                 >
-                  {/* detail 档描边 — inner 档 0.22 会被侧面前缩透视吃到不可见 */}
+                  {/* detail 档描边 — inner 档会被侧面前缩透视吃到不可见 */}
                   {[
-                    `M45 6 V${v.height - 6}`,
-                    'M39 6 H51',
-                    `M39 ${v.height - 6} H51`,
+                    `M50 6 V${v.height - 6}`,
+                    'M43 6 H57',
+                    `M43 ${v.height - 6} H57`,
                   ].map((d) => (
                     <Draw
                       key={d}
@@ -934,7 +1100,8 @@ export default function BlueprintObject({
                       delay={T.datum}
                     />
                   ))}
-                  <MonoLabel x={53} y={175} delay="2.2s">
+                  {/* y 随 v.height 推导 — 改高时标注不脱离尺寸线中点 */}
+                  <MonoLabel x={58} y={v.height / 2 + 4} delay={T.labels}>
                     {`H ${v.height}`}
                   </MonoLabel>
                 </svg>
