@@ -21,6 +21,18 @@
 .env.production.local
 tsconfig.tsbuildinfo
 
+# 客户材料 / 商业文档 — 本仓是 PUBLIC 仓库，Office 文档一律不入库。
+# 起因：Union-Glen-网站策略方案.docx（自标「机密文件」，含竞品分析与转化策略）
+# 曾被跟踪进公开仓库，2026-07-27 审查发现后 git rm --cached 移出。
+# 客户材料放本地或客户资料库，不要放代码仓。
+*.docx
+*.doc
+*.pptx
+*.ppt
+*.xlsx
+*.xls
+*.pdf
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

@@ -5,13 +5,22 @@
 // 旧「透明底下划线」字段在砖墙上与背景混融（用户点名病灶），v7 改
 // 单据填写格：外置 mono label（Eyebrow tertiary）+ 实底凹格（.form-field，
 // 比玻璃卡面深一档）——墙 → 玻璃卡 → 填写格三层拉开。
-// 表单是全站唯一联系入口（邮箱已撤下展示）：提交走 Resend 双向确认闭环。
+// 表单是全站唯一联系入口（邮箱已撤下展示）：提交后只发管理员通知，
+// **不再给填写人发自动回执**（2026-07-27：回执让任何人都能用已验证域向
+// 任意地址投递可控正文，是发信中继滥用面的唯一放大器）。
+// 校验上限/邮箱形态/蜜罐字段名全部从 @/lib/contact-form 取，与服务端同源。
 
 import React, { useEffect, useRef, useState } from 'react';
-import Card from './Card';
+import {
+  EMAIL_PATTERN,
+  FIELD_LIMITS,
+  HONEYPOT_FIELD,
+} from '@/lib/contact-form';
 import Eyebrow from './Eyebrow';
 import IconBadge from './IconBadge';
 import ModuleButton from './ModuleButton';
+
+const ERROR_ID = 'contact-form-error';
 
 export default function ContactForm() {
   const [form, setForm] = useState({
@@ -20,10 +29,21 @@ export default function ContactForm() {
     subject: '',
     message: '',
   });
-  const [status, setStatus] = useState<
-    'idle' | 'sending' | 'sent' | 'error' | 'timeout'
-  >('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
+    'idle',
+  );
+  // 服务端返回的具体原因（字段超长 / 邮箱格式 / 限流 / 服务不可用）——
+  // 此前全部被吞成一句 "Something went wrong"，用户只能盲目重试。
+  const [errMsg, setErrMsg] = useState<string | null>(null);
   const successRef = useRef<HTMLDivElement>(null);
+  // 蜜罐值走 ref（不进受控 state，避免真人路径多一次渲染）
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  // 挂载时刻 — 提交耗时的基准。在 effect 里取值，避免拿到 SSR 时的时间戳。
+  const mountedAtRef = useRef(0);
+
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+  }, []);
 
   // 成功后把焦点移到状态卡片：原焦点在已卸载的提交按钮上会丢失，
   // 移焦同时让屏幕阅读器（role="status"）播报发送成功
@@ -37,9 +57,34 @@ export default function ContactForm() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const fail = (msg: string) => {
+    setStatus('error');
+    setErrMsg(msg);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 客户端先做与服务端同口径的收敛：required 对纯空格无效，
+    // 服务端会 400，白让用户等一个来回
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      subject: form.subject.trim(),
+      message: form.message.trim(),
+    };
+    if (
+      !payload.name ||
+      !payload.email ||
+      !payload.subject ||
+      !payload.message
+    ) {
+      fail('Please fill in every field.');
+      return;
+    }
+
     setStatus('sending');
+    setErrMsg(null);
 
     // 10 秒超时保护 — 防止 API 挂起时用户无限等待
     const controller = new AbortController();
@@ -49,22 +94,34 @@ export default function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, source: 'contact-page' }),
+        body: JSON.stringify({
+          ...payload,
+          [HONEYPOT_FIELD]: honeypotRef.current?.value ?? '',
+          elapsedMs: mountedAtRef.current
+            ? Date.now() - mountedAtRef.current
+            : undefined,
+        }),
         signal: controller.signal,
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send');
+        // 只回显服务端的 error 字段（设计给用户看的文案），不碰 details
+        throw new Error(
+          typeof data?.error === 'string' && data.error ? data.error : '',
+        );
       }
       setStatus('sent');
+      setErrMsg(null);
       setForm({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
-      // 区分超时 vs 其他错误
       if (err instanceof DOMException && err.name === 'AbortError') {
-        setStatus('timeout');
+        fail('Request timed out. Please check your connection and try again.');
       } else {
-        setStatus('error');
+        fail(
+          (err instanceof Error && err.message) ||
+            'Something went wrong. Please try again.',
+        );
       }
     } finally {
       clearTimeout(timeout);
@@ -75,14 +132,16 @@ export default function ContactForm() {
   // 此处再套 Card 会出现「玻璃卡套玻璃卡」双层棱线，审查第 1 轮修复）───
   if (status === 'sent') {
     return (
+      // 弹入用 animate-scale-in utility 而非内联 animation 字符串：keyframes
+      // 已于 2026-07-27 收进 tailwind.config，内联字符串引用的动画名一旦改动
+      // 不报错也不掉 lint，只会静默失去动画
       // biome-ignore lint/a11y/useSemanticElements: <output> only permits phrasing content; this status card holds block children (h3/button), so role="status" on a div is the correct ARIA pattern
       <div
         ref={successRef}
         tabIndex={-1}
         role="status"
         aria-live="polite"
-        className="focus:outline-none text-center py-4"
-        style={{ animation: 'scaleIn 0.5s cubic-bezier(0.16,1,0.3,1)' }}
+        className="focus:outline-none text-center py-4 animate-scale-in"
       >
         <IconBadge tone="success" size="lg" className="mx-auto mb-5">
           <svg
@@ -104,8 +163,8 @@ export default function ContactForm() {
           Message Sent
         </h3>
         <p className="text-txt-tertiary text-sm mb-6">
-          A confirmation is on its way to your inbox. We&apos;ll get back to
-          you within 24 hours.
+          Your message is with our team. We&apos;ll reply from a real inbox
+          within 24 hours.
         </p>
         <ModuleButton variant="secondary" onClick={() => setStatus('idle')}>
           Send another message
@@ -114,8 +173,34 @@ export default function ContactForm() {
     );
   }
 
+  const describedBy = errMsg ? ERROR_ID : undefined;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* 蜜罐 — 真人看不见（aria-hidden）也 tab 不到（tabIndex -1）；
+          被填即判脚本，服务端返回 200 假成功不告知对方被识破 */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+        }}
+      >
+        <label htmlFor="contact-company-website">Company website</label>
+        <input
+          id="contact-company-website"
+          ref={honeypotRef}
+          type="text"
+          name={HONEYPOT_FIELD}
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue=""
+        />
+      </div>
+
       {/* Name + Email */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
@@ -128,9 +213,11 @@ export default function ContactForm() {
             name="name"
             placeholder="Your name"
             required
+            maxLength={FIELD_LIMITS.name}
             value={form.name}
             onChange={handleChange}
             autoComplete="name"
+            aria-describedby={describedBy}
             className="form-field"
           />
         </div>
@@ -144,9 +231,15 @@ export default function ContactForm() {
             name="email"
             placeholder="you@company.com"
             required
+            maxLength={FIELD_LIMITS.email}
+            // pattern 与服务端正则同源：type="email" 会放行 a@localhost，
+            // 服务端要求点号 + ≥2 位 TLD，不对齐就是可预防的 400
+            pattern={EMAIL_PATTERN}
+            title="Enter a full email address, for example you@company.com"
             value={form.email}
             onChange={handleChange}
             autoComplete="email"
+            aria-describedby={describedBy}
             className="form-field"
           />
         </div>
@@ -163,8 +256,10 @@ export default function ContactForm() {
           name="subject"
           placeholder="What's this about?"
           required
+          maxLength={FIELD_LIMITS.subject}
           value={form.subject}
           onChange={handleChange}
+          aria-describedby={describedBy}
           className="form-field"
         />
       </div>
@@ -179,9 +274,11 @@ export default function ContactForm() {
           name="message"
           placeholder="Tell us about your project"
           required
+          maxLength={FIELD_LIMITS.message}
           rows={5}
           value={form.message}
           onChange={handleChange}
+          aria-describedby={describedBy}
           className="form-field resize-none"
         />
       </div>
@@ -195,11 +292,13 @@ export default function ContactForm() {
         >
           {status === 'sending' ? 'Sending...' : 'Send Message'}
         </ModuleButton>
-        {(status === 'error' || status === 'timeout') && (
-          <span role="alert" className="text-red-400 text-sm">
-            {status === 'timeout'
-              ? 'Request timed out. Please check your connection and try again.'
-              : 'Something went wrong. Please try again.'}
+        {status === 'error' && errMsg && (
+          <span
+            id={ERROR_ID}
+            role="alert"
+            className="text-red-400 text-sm text-center"
+          >
+            {errMsg}
           </span>
         )}
       </div>

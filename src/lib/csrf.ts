@@ -13,6 +13,16 @@ if (process.env.NODE_ENV === 'development') {
   ALLOWED_ORIGINS.push('http://127.0.0.1:3000');
 }
 
+// Vercel 预览部署：NODE_ENV 恒为 production，Origin 是 *.vercel.app，
+// 此前必然 403 —— 上线前无法端到端验证发信链路，容易被误判成「表单坏了」。
+// VERCEL_URL（本次部署）与 VERCEL_BRANCH_URL（分支别名）由平台注入，
+// 请求方无法伪造；且只在 VERCEL_ENV === 'preview' 时放行，生产不受影响。
+if (process.env.VERCEL_ENV === 'preview') {
+  for (const host of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]) {
+    if (host) ALLOWED_ORIGINS.push(`https://${host}`);
+  }
+}
+
 /**
  * 校验请求来源是否合法
  * 返回 null 表示通过，否则返回 403 Response
