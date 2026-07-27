@@ -54,7 +54,8 @@ export default function RealEstatePage() {
         subtitle="Pre-construction marketing sites delivered end to end for GTA developments — custom design systems, lead capture, and SEO, all live in production."
       />
 
-      <section className="relative pb-24 px-4">
+      {/* hero 后第一章：不加 ruled-line，pt 收半档（IA v1 §2.4） */}
+      <section className="relative pt-12 pb-24 px-4">
         <div className="max-w-6xl mx-auto">
           {/* 整体叙事 — 同一客户的长期合作（T-One 关系已公开：各盘页脚 +
               站内 T-ONE Submit case study），只陈述可数事实 */}
@@ -82,14 +83,13 @@ export default function RealEstatePage() {
               与全站图签节奏（缺 h2 会触发 axe heading-order） */}
           <div className="mt-16">
             {/* 无 sheetNo：本页只有这一个编号级 section，孤悬 01 暗示不存在的
-                02（编号只用于真实序列）；左对齐贴合本页叙事/stats 的左对齐节奏 */}
+                02（编号只用于真实序列）；章级 md + 左对齐现为 SectionTitle
+                默认，显式传参已随标题三档制去掉 */}
             <AnimateOnScroll>
               <SectionTitle
                 eyebrow="THE PORTFOLIO"
                 light="Every Site,"
                 bold="Live"
-                size="md"
-                align="left"
               />
             </AnimateOnScroll>
             <RealEstateSiteGrid />

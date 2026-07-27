@@ -63,7 +63,10 @@ export default function StatCard({
   return (
     <Card variant="static" pad={s.pad} className={s.align}>
       <div ref={ref}>
-        <div className={`font-mono font-bold ${s.value} ${valueClassName}`}>
+        {/* break-words：带单位词的长值（"under 15 minutes"）在窄列里换行而不溢出 */}
+        <div
+          className={`font-mono font-bold break-words ${s.value} ${valueClassName}`}
+        >
           {numberMatch ? (
             <>
               {/* SSR/未见基态直出真值（不是 0）：hydration 失败或 JS 被拦时

@@ -1,7 +1,10 @@
 // ─── 旗舰在建产品模块 · Blueprint ───
-// /products 第一段：AI 原生 BMS 的入口卡（2026-07-27 精简——完整介绍、
-// CSIO eDocs 标准详解与认证进度已迁到 /products/brokerage-platform，
+// /products 第一段 + 首页 01 段：AI 原生 BMS 的入口卡（2026-07-27 精简——
+// 完整介绍、CSIO eDocs 标准详解与认证进度已迁到 /products/brokerage-platform，
 // 本卡只留身份背书 + 一句话定位 + 能力标签 + 进入链接）
+// IA v1 §3：首页与 /products 双处消费同一组件——入口卡本就是为「一段话 +
+// 标签 + 链接」设计的，不复制 JSX。两处差异只有 subtitle 口径与章间分隔
+// （首页前面有信任带需要 ruled-line；/products 紧接 hero 不加线）。
 // CSIO 身份行走共享 <CsioMemberRow />（徽章 + 名录验证 + 官方新闻稿双外链）
 // 事实边界（完整版见平台详情页文件头）：不公开内部代号与客户身份；已签约方是
 // 经纪行不是保险公司；在建功能用名词式规格或 "designed to" 时态
@@ -23,10 +26,30 @@ const HIGHLIGHTS = [
   'Human-in-the-loop by design',
 ];
 
-export default function InDevelopmentShowcase() {
+// /products 默认口径 — 首页传自己的（说服链第一段要先说清「这是给谁的」）
+const DEFAULT_SUBTITLE =
+  "Taking everything we've learned shipping AI products and bringing it to Canada's insurance industry.";
+
+interface InDevelopmentShowcaseProps {
+  /** 本段紧接 PageHero 时置 true：不加 ruled-line（hero 光晕已承担分隔）
+   * 且 pt 收半档消除 hero pb-24 叠出的空档（IA v1 §2.4） */
+  afterHero?: boolean;
+  /** 覆盖 section 副标题 */
+  subtitle?: string;
+}
+
+export default function InDevelopmentShowcase({
+  afterHero = false,
+  subtitle = DEFAULT_SUBTITLE,
+}: InDevelopmentShowcaseProps) {
   return (
-    <section id="in-development" className="relative py-24 px-4 scroll-mt-24">
-      <hr className="ruled-line absolute top-0 left-0 right-0" />
+    <section
+      id="in-development"
+      className={`relative px-4 scroll-mt-24 ${afterHero ? 'pt-12 pb-24' : 'py-24'}`}
+    >
+      {!afterHero && (
+        <hr className="ruled-line absolute top-0 left-0 right-0" />
+      )}
 
       <div className="max-w-6xl mx-auto">
         <AnimateOnScroll>
@@ -35,13 +58,14 @@ export default function InDevelopmentShowcase() {
             eyebrow="WHAT WE'RE BUILDING"
             light="The AI-Native"
             bold="Brokerage Platform"
-            subtitle="Taking everything we've learned shipping AI products and bringing it to Canada's insurance industry."
-            size="md"
+            subtitle={subtitle}
           />
         </AnimateOnScroll>
 
         <AnimateOnScroll delay={100}>
-          <Card variant="container" accent>
+          {/* 旗舰卡规格（IA v1 §2.3）：container + accent + lg pad —— 一页
+              至多一张，其余卡片一律普通规格（md pad） */}
+          <Card variant="container" accent pad="lg">
             {/* CSIO 会员身份行 — 徽章 + 名录验证 + 官方新闻稿背书 */}
             <CsioMemberRow className="mb-6" />
 
@@ -55,7 +79,7 @@ export default function InDevelopmentShowcase() {
               Ontario, Canada
             </Eyebrow>
 
-            <p className="mt-4 max-w-3xl text-txt-secondary text-sm leading-relaxed">
+            <p className="mt-4 max-w-3xl text-txt-secondary text-base leading-relaxed">
               A brokerage management system for Ontario insurance brokerages,
               designed around CSIO data standards from day one. AI handles the
               paperwork — brokers make the decisions.

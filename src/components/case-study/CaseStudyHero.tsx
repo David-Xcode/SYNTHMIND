@@ -5,6 +5,7 @@
 
 import Image from 'next/image';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
+import Eyebrow from '@/components/shared/Eyebrow';
 import type { CaseStudy } from '@/data/case-studies';
 
 interface CaseStudyHeroProps {
@@ -33,9 +34,20 @@ export default function CaseStudyHero({ caseStudy }: CaseStudyHeroProps) {
         <h1 className="font-display font-semibold stretch-wide text-headline text-txt-primary mb-4 tracking-tight">
           {caseStudy.title}
         </h1>
-        <p className="text-lg text-txt-secondary leading-relaxed max-w-2xl mx-auto mb-6">
+        <p className="text-lg text-txt-secondary leading-relaxed max-w-2xl mx-auto mb-5">
           {caseStudy.tagline}
         </p>
+
+        {/* mono 元数据行（IA v1 §4.4 hero 增密）：行业从数据层派生；
+            上线状态是 caseStudies 集合的定义属性——本数据层只收已发货产品
+            （在建产品走 InDevelopmentShowcase），所以不另设恒为真的字段 */}
+        <AnimateOnScroll delay={120}>
+          <div className="mb-6 flex items-center justify-center gap-3">
+            <Eyebrow tone="tertiary">{caseStudy.industry}</Eyebrow>
+            <span aria-hidden="true" className="h-px w-4 bg-accent/40" />
+            <Eyebrow tone="tertiary">Live in production</Eyebrow>
+          </div>
+        </AnimateOnScroll>
 
         {/* 在线链接 */}
         <AnimateOnScroll delay={150}>

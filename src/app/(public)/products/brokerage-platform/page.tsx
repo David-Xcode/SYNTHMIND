@@ -26,6 +26,7 @@ import CTABanner from '@/components/shared/CTABanner';
 import HighlightTag from '@/components/shared/HighlightTag';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
+import SheetLabel from '@/components/shared/SheetLabel';
 import {
   BASE_OPEN_GRAPH,
   CSIO_PRESS_RELEASE_URL,
@@ -107,8 +108,9 @@ export default function BrokeragePlatformPage() {
         subtitle="CSIO eDocs that arrive filed and readable, AI review before a submission leaves the office, and an assistant that keeps the judgment calls with your brokers."
       />
 
-      {/* ── 01 CSIO 标准与 eDocs（页面重心） ── */}
-      <section className="relative pb-24 px-4">
+      {/* ── 01 CSIO 标准与 eDocs（页面重心） ──
+          hero 后第一章：不加 ruled-line，pt 收半档（IA v1 §2.4） */}
+      <section className="relative pt-12 pb-24 px-4">
         <div className="max-w-6xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
@@ -117,7 +119,6 @@ export default function BrokeragePlatformPage() {
               light="Built on the"
               bold="Industry Standard"
               subtitle="Canada's property & casualty industry already agreed on how carriers and brokerages exchange data. We build to that agreement instead of around it."
-              size="md"
             />
           </AnimateOnScroll>
 
@@ -132,17 +133,17 @@ export default function BrokeragePlatformPage() {
                 className="mt-5 max-w-3xl border-l-2 border-accent/25 pl-4"
               >
                 {/* 不加 italic：Manrope 无斜体字面，浏览器会合成伪斜体 */}
-                <p className="text-txt-secondary text-sm leading-relaxed">
+                <p className="text-txt-secondary text-base leading-relaxed">
                   &ldquo;A Toronto-based technology company that develops
                   AI-powered software to modernize how insurance organizations
                   operate.&rdquo;
                 </p>
-                <cite className="mt-1.5 block text-xs not-italic text-txt-tertiary">
+                <cite className="mt-2 block text-xs not-italic text-txt-tertiary">
                   — CSIO member announcement, July 2026
                 </cite>
               </blockquote>
 
-              <p className="mt-5 max-w-3xl text-txt-secondary text-sm leading-relaxed">
+              <p className="mt-5 max-w-3xl text-txt-secondary text-base leading-relaxed">
                 Synthmind is a member of CSIO — the Centre for Study of
                 Insurance Operations, the technology association of
                 Canada&apos;s property &amp; casualty insurance industry.
@@ -153,15 +154,19 @@ export default function BrokeragePlatformPage() {
             </Card>
           </AnimateOnScroll>
 
-          {/* eDocs 文档下载标准 — 本页重点 */}
+          {/* eDocs 文档下载标准 — 本页重点。
+              连续叙事出卡直排压墙（IA v1 §4.5 / 判据一）：三段正文不是可数
+              实体，包卡只会让它与上面的 CSIO 实体背书卡抢同一层级。
+              小节眉标走 SheetLabel（无编号——01 之下不再起第二套序列） */}
           <AnimateOnScroll delay={150}>
-            <Card variant="static" className="mt-5">
-              <h3 className="text-title font-display font-semibold stretch-wide text-txt-primary tracking-tight">
+            <div className="mt-10 max-w-3xl">
+              <SheetLabel>EDOCS DELIVERY</SheetLabel>
+              <h3 className="mt-4 text-title font-display font-semibold stretch-wide text-txt-primary tracking-tight">
                 Carrier documents, delivered to the standard
               </h3>
 
-              <div className="mt-4 max-w-3xl space-y-3">
-                <p className="text-txt-secondary text-sm leading-relaxed">
+              <div className="mt-5 space-y-4">
+                <p className="text-txt-secondary text-base leading-relaxed">
                   When a carrier issues a document — a billing notice, a
                   cancellation, a renewal package — the CSIO eDocs standard
                   defines how it reaches the brokerage: delivered electronically
@@ -169,7 +174,7 @@ export default function BrokeragePlatformPage() {
                   to be filed against the policy it belongs to. No portal
                   logins, no inbox archaeology, no re-keying.
                 </p>
-                <p className="text-txt-secondary text-sm leading-relaxed">
+                <p className="text-txt-secondary text-base leading-relaxed">
                   Our ingestion pipeline runs the full standard exchange — sign
                   in, list, retrieve, store — and then does the two things a
                   broker actually feels. It translates the raw document code
@@ -179,29 +184,30 @@ export default function BrokeragePlatformPage() {
                   than dropping it in an unmatched pile for someone to sort out
                   on Friday afternoon.
                 </p>
-                <p className="text-txt-secondary text-sm leading-relaxed">
+                <p className="text-txt-secondary text-base leading-relaxed">
                   We built support for all five eDocs segments in personal
                   lines, on the current code list and the legacy codes still in
                   circulation:
                 </p>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-1.5">
+              <div className="mt-5 flex flex-wrap gap-1.5">
                 {EDOCS_SEGMENTS.map((segment) => (
                   <HighlightTag key={segment}>{segment}</HighlightTag>
                 ))}
               </div>
-            </Card>
+            </div>
           </AnimateOnScroll>
 
-          {/* 认证进度 — 阶段 1 实测成绩 + 诚实的阶段 2 状态 */}
+          {/* 认证进度 — 阶段 1 实测成绩 + 诚实的阶段 2 状态（同上出卡直排） */}
           <AnimateOnScroll delay={200}>
-            <Card variant="static" className="mt-5">
-              <h3 className="text-title font-display font-semibold stretch-wide text-txt-primary tracking-tight">
+            <div className="mt-10 max-w-3xl">
+              <SheetLabel>CERTIFICATION STATUS</SheetLabel>
+              <h3 className="mt-4 text-title font-display font-semibold stretch-wide text-txt-primary tracking-tight">
                 Certification: the technical phase is behind us
               </h3>
 
-              <p className="mt-4 max-w-3xl text-txt-secondary text-sm leading-relaxed">
+              <p className="mt-5 text-txt-secondary text-base leading-relaxed">
                 CSIO delivered its official test batch to our certification
                 mailbox — 42 sample eDocs spanning current and legacy document
                 codes, including the multi-attachment and non-policy-level edge
@@ -210,7 +216,7 @@ export default function BrokeragePlatformPage() {
                 landed in the unmatched queue. Formal eDocs certification is in
                 progress; what remains is process, not engineering.
               </p>
-            </Card>
+            </div>
           </AnimateOnScroll>
         </div>
       </section>
@@ -226,7 +232,6 @@ export default function BrokeragePlatformPage() {
               light="One System for the"
               bold="Whole Brokerage"
               subtitle="Six capability areas, designed as one system rather than five separate tools that email each other. Here's what each is being built to do."
-              size="md"
             />
           </AnimateOnScroll>
 
@@ -238,7 +243,8 @@ export default function BrokeragePlatformPage() {
                   <h3 className="text-base font-medium text-txt-primary mb-3 tracking-tight">
                     {capability.title}
                   </h3>
-                  <p className="text-txt-tertiary text-sm leading-relaxed">
+                  {/* 能力说明 = 承担实际阅读的正文 → secondary/base（§2.2） */}
+                  <p className="text-txt-secondary text-base leading-relaxed">
                     {capability.body}
                   </p>
                   <div className="mt-auto pt-4 flex flex-wrap gap-1.5">
@@ -263,14 +269,13 @@ export default function BrokeragePlatformPage() {
               eyebrow="WHERE THIS IS HEADING"
               light="What's Proven,"
               bold="Coming Together"
-              size="md"
             />
           </AnimateOnScroll>
 
           <AnimateOnScroll delay={100}>
             <Card variant="static">
-              <div className="max-w-3xl space-y-3">
-                <p className="text-txt-secondary text-sm leading-relaxed">
+              <div className="max-w-3xl space-y-4">
+                <p className="text-txt-secondary text-base leading-relaxed">
                   These capability areas did not start on a whiteboard. Three of
                   them already run as separate production systems inside Ontario
                   brokerages — AI document review in one, broker workflow and
@@ -278,14 +283,14 @@ export default function BrokeragePlatformPage() {
                   campaigns in a third. Each earned its place against real
                   files, real deadlines, and real regulatory obligations.
                 </p>
-                <p className="text-txt-secondary text-sm leading-relaxed">
+                <p className="text-txt-secondary text-base leading-relaxed">
                   The platform brings that proven ground into a single system
                   built on CSIO standards from the first table. Brokerages have
                   already signed on, waiting on the system we are building for
                   them.
                 </p>
                 {/* 宗旨句 — 与主页 Unleash Human Potential 同轴 */}
-                <p className="text-txt-primary text-sm font-medium leading-relaxed">
+                <p className="text-txt-primary text-base font-medium leading-relaxed">
                   AI handles the paperwork — brokers make the decisions. Every
                   automation we ship leaves the judgment call with a licensed
                   human, because the goal was never to replace brokers. It was

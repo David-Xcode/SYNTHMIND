@@ -171,15 +171,18 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* FAQ — 可折叠手风琴 */}
-      <section className="py-24 px-4">
+      {/* FAQ — 可折叠手风琴。组级标题（size="sm"）：辅助内容不得压过页面 h1，
+          这是全站唯一一处层级倒挂（72px FAQ > 56px h1）的修正。
+          pt 收半档与表单区收拢成一页两章的节奏（IA v1 §4.3）。
+          无 sheetNo：本页唯一编号级 section，孤悬 01 暗示不存在的 02 */}
+      <section className="pt-12 pb-24 px-4">
         <div className="max-w-3xl mx-auto">
           <AnimateOnScroll>
             <SectionTitle
-              sheetNo="01"
               light="Common"
               bold="Questions"
               eyebrow="FAQ"
+              size="sm"
             />
           </AnimateOnScroll>
 

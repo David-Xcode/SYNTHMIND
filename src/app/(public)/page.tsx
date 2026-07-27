@@ -1,11 +1,20 @@
 // ─── 首页 · Blueprint ───
-// 极简着陆页（2026-07-26 瘦身定案）：Hero 活蓝图 + 信任带，到此为止——
-// 能力/作品/流程叙事全部收进 /products（Our Work），转化入口 = Hero 双按钮 +
-// 可点击 marquee logo。SiteHeader + SiteFooter 由 (public)/layout.tsx 提供
+// 说服链着陆页（IA v1 §3，2026-07-27 定案）：首页从「名片」扩成「整站缩略图」，
+// 每段回答一个问题并给出去处——
+//   Hero（动）你们做什么 → 信任带（半动）过渡 → 01 旗舰 BMS（静）我们在建什么
+//   → 02 精选案例（半动）凭什么信你 → 03 方法带（静）你们怎么做 → CTA（动）
+// 2026-07-26 的「Hero + 信任带即结束」瘦身版已退役：高价值访客（安省经纪行，
+// 由 CSIO 名录/新闻稿导入）此前在首页完全看不到 BMS 的存在，要两跳才到得了。
+// 01 段与 /products 消费同一个 <InDevelopmentShowcase />，不复制 JSX。
+// SiteHeader + SiteFooter 由 (public)/layout.tsx 提供
 
 import type { Metadata } from 'next';
+import FeaturedWork from '@/components/home/FeaturedWork';
 import HomeHero from '@/components/home/HomeHero';
+import ProcessStrip from '@/components/home/ProcessStrip';
 import SocialProofBar from '@/components/home/SocialProofBar';
+import InDevelopmentShowcase from '@/components/products/InDevelopmentShowcase';
+import CTABanner from '@/components/shared/CTABanner';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import JsonLd from '@/components/shared/JsonLd';
 import { BASE_OPEN_GRAPH, SITE_URL } from '@/lib/constants';
@@ -57,6 +66,23 @@ export default function HomePage() {
       <ErrorBoundary fallback={null}>
         <SocialProofBar />
       </ErrorBoundary>
+
+      {/* 01 — 旗舰在建产品。首页副标题先说清「这是给谁的」：访客可能是
+          从 CSIO 名录点进来的经纪行，第一句就要接住。
+          ⚠️ 不要复述卡内定位句（"A brokerage management system for Ontario
+          insurance brokerages…"）——两者同屏相距不到一屏，重复开头会读成卡壳 */}
+      <InDevelopmentShowcase subtitle="Built for Ontario brokerages by a CSIO member — the industry's data standard is where we start, not an integration we bolt on later." />
+
+      {/* 02 — 已上线精选：凭什么信你 */}
+      <FeaturedWork />
+
+      {/* 03 — 方法带：你们怎么做 */}
+      <ProcessStrip />
+
+      <CTABanner
+        headline="Tell us where your week goes."
+        subtitle="Insurance, real estate, accounting, construction — if your team is losing hours to paperwork, that is the conversation we want to have."
+      />
     </>
   );
 }

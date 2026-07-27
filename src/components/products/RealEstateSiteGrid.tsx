@@ -45,7 +45,8 @@ export default function RealEstateSiteGrid() {
                 {site.location}
               </Eyebrow>
 
-              <p className="mt-3 text-txt-tertiary text-sm leading-relaxed">
+              {/* 产品描述 = 承担实际阅读的正文 → secondary/base（IA v1 §2.2） */}
+              <p className="mt-3 text-txt-secondary text-base leading-relaxed">
                 {site.description}
               </p>
 

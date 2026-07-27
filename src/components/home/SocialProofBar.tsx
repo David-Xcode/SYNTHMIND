@@ -9,6 +9,7 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import SheetLabel from '@/components/shared/SheetLabel';
 import { caseStudies } from '@/data/case-studies';
 import { realEstateSites } from '@/data/real-estate';
+import { INDUSTRIES_SERVED } from '@/lib/constants';
 
 const REPEAT_COUNT = 4;
 
@@ -36,11 +37,15 @@ export default function SocialProofBar() {
     // overflow-clip-safe：clip 不创建 scroll container（overflow-hidden 会让
     // 子元素的 view() 时间轴绑到本节，sheet-reveal 退化）
     // v4：透墙 section（背景 = 满铺砖墙）；两端渐隐改 mask（.marquee-fade）
-    // 瘦身后本节是主页收尾 section — 底部放宽避免 marquee 紧贴 footer
-    <section className="pt-16 pb-24 overflow-clip-safe">
+    // IA v1 §3：本节不再是首页收尾，而是 hero 与 01 旗舰段之间的过渡带——
+    // 上下留白双双收紧，让它贴着 hero 读成同一口气
+    <section className="pt-10 pb-16 overflow-clip-safe">
       <AnimateOnScroll className="text-center">
+        {/* 可数口径的信任声明（§2.5）：数字从数据层派生，新增产品自动跟上；
+            行业数走 INDUSTRIES_SERVED，与 about stats 同源 */}
         <SheetLabel tone="tertiary" className="mb-8">
-          Trusted by businesses across industries
+          {caseStudies.length + realEstateSites.length} products live across{' '}
+          {INDUSTRIES_SERVED} industries
         </SheetLabel>
       </AnimateOnScroll>
 
@@ -61,7 +66,7 @@ export default function SocialProofBar() {
                   alt={`View ${item.label} project`}
                   width={120}
                   height={36}
-                  className="h-8 w-auto object-contain filter brightness-0 invert opacity-30 hover:opacity-80 hover:drop-shadow-accent transition-all duration-300"
+                  className="h-8 w-auto object-contain filter brightness-0 invert opacity-45 hover:opacity-80 hover:drop-shadow-accent transition-all duration-300"
                   suppressHydrationWarning
                 />
               </Link>
@@ -84,7 +89,7 @@ export default function SocialProofBar() {
                   alt=""
                   width={120}
                   height={36}
-                  className="h-8 w-auto object-contain filter brightness-0 invert opacity-30 hover:opacity-80 hover:drop-shadow-accent transition-all duration-300"
+                  className="h-8 w-auto object-contain filter brightness-0 invert opacity-45 hover:opacity-80 hover:drop-shadow-accent transition-all duration-300"
                   suppressHydrationWarning
                 />
               </Link>
