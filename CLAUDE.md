@@ -33,6 +33,27 @@
 - 新增地产盘 = 上线后在 `real-estate.ts` 加一条 + logo 放 `public/product/`；新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
 - 导航 label = **Our Work**（路由仍是 `/products`，2026-07-26 起）；主页 = Hero + SocialProofBar 两段极简结构，作品叙事全部在 `/products`
 
+### Brokerage Platform Page — IMPORTANT（在建旗舰产品）
+`/products/brokerage-platform`（2026-07-27 新建）是 AI 原生 BMS 的完整介绍页；
+`/products` 第一段的 `<InDevelopmentShowcase />` 已精简为入口卡（身份背书 + 一句话 +
+标签 + 进入链接），**长文案不要往回搬**。页面三段：CSIO 标准与 eDocs 认证（重心）/
+平台能力全景 / 产品蓝图 + 已签约经纪行。CSIO 身份行（徽章 + 名录 + 新闻稿双外链）
+= 共享组件 `<CsioMemberRow />`，两处消费，不要再写第二份 JSX。
+
+🚨 **对外事实红线（改这两处文案前必读，源文件头注释有完整版）**：
+- **客户绝不点名**：已上线的经纪运营系统服务真实经纪行——品牌名、生产数据量
+  （客户数 / case 数 / 账号数）、承保商白名单均属客户商业数据，未获书面授权不得出现
+- **CSIO 认证是进行时**：阶段 1 技术测试已跑通（官方 42 封样本批端到端、零 unmatched），
+  阶段 2 申请与 demo 未完成、证书未颁——只能写 "certification in progress"，
+  **禁写 "CSIO certified"**；**连 "CSIO-compliant" 也避开**（未认证前的合规声明
+  同样会被 CSIO 反问），一律改用 "built to / designed around CSIO standards"。
+  拿证后才可放开口径
+- **已签约方 = 经纪行（brokerages）不是保险公司（carriers）**——carrier 不使用
+  brokerage 管理系统，写成 carrier 是行业逻辑硬伤（2026-07-27 David 确认）；
+  不点名、不写数字（数字会被追问且会过时）
+- **在建产品时态**：能力描述用名词式规格或 "designed to / being built to"，
+  禁用「系统已经在做 X」的完成时态；内部项目代号不出现在任何对外文案
+
 ---
 
 ## 2. Design Concept — Blueprint（先读这个再写 UI）
