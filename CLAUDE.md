@@ -72,7 +72,7 @@ Three fonts loaded via `next/font/google` in root layout. Tailwind classes:
 
 | Font | Class | Usage | RESTRICTION |
 |------|-------|-------|-------------|
-| Archivo (variable, wdth 轴) | `font-display` | Page titles, hero headlines, bold words in SectionTitle | **NEVER for body text** |
+| Archivo (variable, wdth 轴) | `font-display` | Page titles, hero headlines, bold words in SectionTitle, 物件机身品牌铭牌（BlueprintObject 的 SYNTHMIND，v3.1 豁免） | **NEVER for body text**；图签编号/测量标注仍 mono-only |
 | Manrope | `font-sans` | Everything else (default body font) | Default — no class needed on body |
 | IBM Plex Mono | `font-mono` | 图签编号、测量标注、stat 数字、流程步骤号 | **NEVER for paragraphs or headings** |
 
@@ -283,6 +283,9 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ Hero 物件弹簧物理 — HeroObjectPhysics 的 rAF 欠阻尼弹簧（指针阻尼跟随 + 回摆 + hover scale ≈1.03；只写 transform / opacity / CSS 变量；mouse-tracking 豁免第 1 例）
 - ✅ `modAssemble` / `modDrift` — Hero 物件模块装配入场 + 错位-停驻-归位无限循环（漂移幅度 ≤18px / 装配入场偏移 ≤38px——物件 v3 随 360 体系等比重标，周期 ≥10s 错峰；仅 BlueprintObject 模块层）
 - ✅ `seamIn` / `seamPulse` / `coreIn` / `corePulse` — Hero 物件缝隙发光条与核心环微光呼吸（opacity only，低 alpha 禁强 bloom）
+- ✅ `trace-pulse` — 走线数据脉冲（stroke-dashoffset invisible-hold 间歇式；dash 4 gap 196 @ pathLength 100——gap 必须 > pathLength+dash，否则图案周期回绕会让 hold 期 dash 停在路径起点；头 α≤0.85、零 blur；周期 ≥9s 互异 + delay 实算错峰（**非**两两互质：gcd(9,15)=3，A/D 相位 45s 锁定、间隙恒 0.06s——改 dur/delay 必须重跑碰撞实算）、可见窗 ≤15%；仅 BlueprintObject 桌面变体走线 overlay）
+- ✅ `pip-cycle` — 状态灯序列（opacity 错相轮转，周期 ≥6s；RM 回落首格常亮；仅 BlueprintObject pips/端口阵列）
+- ✅ `ring-step` — 刻度圈步进（transform rotate steps(24)，5s/格；可读步进靠组内 index 索引亮格——24 段对称虚线圈自身旋转是逐像素空操作；禁连续旋转——持续重栅格化；仅 BlueprintObject 核心刻度圈）
 - ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤11px 沿签名轴（物件 v3 等比重标）+ 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）

@@ -1,6 +1,10 @@
-// ─── Hero Blueprint Object v3 · Solid Machine 哑光实体机身 ───
-// 设计定案：docs/superpowers/specs/2026-07-27-blueprint-object-v3-solid-design.md
+// ─── Hero Blueprint Object v3.1 · Nameplate & Living Traces 铭牌与活纹路 ───
+// 设计定案：docs/superpowers/specs/2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md
+// 基座 v3：docs/superpowers/specs/2026-07-27-blueprint-object-v3-solid-design.md
 //          （v2 七模块砌合 / 移动横陈变体的布局与编排全部继承）
+// v3.1：SYNTHMIND 升格 Archivo 宽体铭牌（三层叠印凸起字）、mono 标注统一微雕
+// 下投影（MonoLabel 内封装）；纹路加间歇式三件套（桌面专属，hold 期零重绘）：
+// trace-pulse 走线数据脉冲 / pip-cycle 状态灯轮转 / ring-step 刻度圈步进
 // v3 桌面：360×440×150 原生重标（280 体系退役——CSS 3D 分辨率上限 = 布局尺寸，
 // transform scale 放大只会放大位图），缝 8px、标注 11px tertiary、蚀刻加密
 // v3 移动：300×168×120 几何不动（320px 窄屏约束），材质/描边/标注 10px 同步提档
@@ -27,6 +31,7 @@ const STROKE = {
   core: 'rgba(74, 159, 229, 0.65)',
   corePulse: 'rgba(74, 159, 229, 0.4)',
   boost: 'rgba(74, 159, 229, 0.95)',
+  pulse: 'rgba(74, 159, 229, 0.85)', // trace-pulse 脉冲头（v3.1，哑光禁 bloom：无 blur/无 glow 副本）
 } as const;
 
 // 蚀刻细节入场延迟（秒）— Ship 阶段：走线/图形 → 辅助刻线 → 图签文字 → 焊盘圆点
@@ -337,29 +342,49 @@ function Draw({
 }
 
 // 装饰性虚线刻度圈 — bp-fade 淡入（dasharray 占用即不能走 bp-draw 的归一化）
+// step（v3.1）：ring-step 刻度圈步进（steps(24) 每 5s 瞬跳一格，桌面 r37 专属）。
+// ⚠️ 24 段虚线圈对 15° 旋转具有旋转对称性——只转圈本身是逐像素空操作（审查
+// 发现的几何盲点：每步把第 i 格精确挪到第 i+1 格原位）；可读的步进来自
+// index 索引亮格（与圈同组旋转的更亮一格，仪器盘靠索引读格）。步进组自含
+// bp-fade 入场（与 .bp-fade 二选一——animation 单属性会互撞）；
+// transform-box: fill-box 锚点 = 组内容包围盒中心，index 弧在圈上不扩包围盒
 function DashRing({
   d,
   dash,
   delay,
+  step = false,
+  index,
 }: {
   d: string;
   dash: string;
   delay: string;
+  step?: boolean;
+  index?: string;
 }) {
-  return (
+  const style = { '--draw-delay': delay } as CSSProperties;
+  const ring = (
     <path
       d={d}
       stroke={STROKE.inner}
       strokeWidth={1}
       strokeDasharray={dash}
-      className="bp-fade"
-      style={{ '--draw-delay': delay } as CSSProperties}
+      {...(step ? {} : { className: 'bp-fade', style })}
     />
+  );
+  if (!step) return ring;
+  return (
+    <g className="bp-ring-step" style={style}>
+      {ring}
+      {index ? <path d={index} stroke={STROKE.core} strokeWidth={1.5} /> : null}
+    </g>
   );
 }
 
 // mono 标注文字 — fill 走 class（个别 WebView 不在 presentation attribute 里
-// 做 var() 替换，会回退成黑色）；v3 提档：tertiary 基调，主标注可升 accent
+// 做 var() 替换，会回退成黑色；投影层是字面 rgba 不受该限制，仅 token 色
+// 必须走 class）；v3 提档：tertiary 基调，主标注可升 accent
+// v3.1 微雕：默认加单层下投影副本（dy +0.75，明度轴）——「冲压进面板」的
+// 质感统一语言，一处封装全局生效；bp-fade 入场移到 <g>（两份 text 同波次淡入）
 function MonoLabel({
   x,
   y,
@@ -375,41 +400,136 @@ function MonoLabel({
   tone?: 'tertiary' | 'accent';
   children: ReactNode;
 }) {
+  const shared = { x, fontSize: size, letterSpacing: '0.08em' };
   return (
-    <text
-      x={x}
-      y={y}
-      fontSize={size}
-      letterSpacing="0.08em"
-      className={`font-mono bp-fade ${
-        tone === 'accent' ? 'fill-accent' : 'fill-txt-tertiary'
-      }`}
-      style={{ '--draw-delay': delay } as CSSProperties}
+    <g className="bp-fade" style={{ '--draw-delay': delay } as CSSProperties}>
+      <text
+        {...shared}
+        y={y + 0.75}
+        fill="rgba(0, 0, 0, 0.45)"
+        className="font-mono"
+      >
+        {children}
+      </text>
+      <text
+        {...shared}
+        y={y}
+        className={`font-mono ${
+          tone === 'accent' ? 'fill-accent' : 'fill-txt-tertiary'
+        }`}
+      >
+        {children}
+      </text>
+    </g>
+  );
+}
+
+// 品牌铭牌 — Archivo 宽体三层叠印凸起字（v3.1，premium 的物理来源）：
+// 下投影 / 主体 / 顶部受光三份同基线 text 叠印；铭牌是 M.01 面板的主角，
+// fill 升 txt-secondary（比图签亮一档）；font-display 铭牌豁免见 CLAUDE.md §3
+function Nameplate({
+  x,
+  y,
+  size = 14,
+  delay,
+  children,
+}: {
+  x: number;
+  y: number;
+  size?: number;
+  delay: string;
+  children: ReactNode;
+}) {
+  const shared = {
+    x,
+    fontSize: size,
+    letterSpacing: '0.14em',
+    className: 'font-display font-semibold stretch-wide',
+  };
+  return (
+    <g
+      className="bp-fade"
+      // geometricPrecision：3D 栅格化面上关闭 hinting，亚像素叠印不糊边
+      style={
+        {
+          '--draw-delay': delay,
+          textRendering: 'geometricPrecision',
+        } as CSSProperties
+      }
     >
-      {children}
-    </text>
+      <text {...shared} y={y + 0.9} fill="rgba(0, 0, 0, 0.5)">
+        {children}
+      </text>
+      <text
+        {...shared}
+        y={y}
+        className={`${shared.className} fill-txt-secondary`}
+      >
+        {children}
+      </text>
+      <text {...shared} y={y - 0.6} fill="rgba(255, 255, 255, 0.05)">
+        {children}
+      </text>
+    </g>
+  );
+}
+
+// 走线数据脉冲 overlay — 间歇式（invisible-hold）：dash 4 gap 196 @ pathLength 100，
+// 一次爆发滑过全线（周期 ×12% 可见）后 hold 于终点外，hold 段零重绘。
+// ⚠️ gap 必须 > pathLength + dash（周期 200 > 行程 108）：spec 原定 4/96 的
+// 图案周期恰 = pathLength，-100 偏移 ≡ 0，hold 期会有一节 dash 永久停在
+// 路径起点（dash 图案无限平铺的周期性陷阱，实施实测发现，已回写 spec）；
+// 不得挂 .bp-draw（那套 pathLength=1 归一化，与本 overlay 互斥）；
+// fill 显式 none（已知坑：overlay 叠在既有走线之上，漏 fill 会糊面板）
+function TracePulse({
+  d,
+  dur,
+  delay,
+}: {
+  d: string;
+  dur: string;
+  delay: string;
+}) {
+  return (
+    <path
+      d={d}
+      fill="none"
+      stroke={STROKE.pulse}
+      strokeWidth={1.25}
+      strokeLinecap="round"
+      pathLength={100}
+      strokeDasharray="4 196"
+      className="bp-trace-pulse"
+      style={{ '--trace-dur': dur, '--trace-delay': delay } as CSSProperties}
+    />
   );
 }
 
 // 焊盘节点圆点 — Ship 阶段最后亮起（非 draw 元素，circle 可用）
+// cycle（v3.1）：port-cycle 轮转形态（lead = 基态常亮 + bpFade 入场；follow =
+// 基态灭，不消费 --draw-delay——它没有 bpFade 段）；焊盘节点语言全站一份实现
 function NodeDot({
   cx,
   cy,
   delay = T.dots,
+  cycle,
+  pipDelay,
 }: {
   cx: number;
   cy: number;
   delay?: string;
+  cycle?: 'lead' | 'follow';
+  pipDelay?: string;
 }) {
-  return (
-    <circle
-      cx={cx}
-      cy={cy}
-      r="2"
-      className="bp-fade fill-accent"
-      style={{ '--draw-delay': delay } as CSSProperties}
-    />
-  );
+  const className = cycle
+    ? `fill-accent ${cycle === 'lead' ? 'bp-port-cycle--lead' : 'bp-port-cycle'}`
+    : 'bp-fade fill-accent';
+  const style: CSSProperties = cycle
+    ? cycle === 'lead'
+      ? ({ '--pip-delay': pipDelay, '--draw-delay': delay } as CSSProperties)
+      : ({ '--pip-delay': pipDelay } as CSSProperties)
+    : ({ '--draw-delay': delay } as CSSProperties);
+  return <circle cx={cx} cy={cy} r="2" className={className} style={style} />;
 }
 
 // ── 桌面前面板蚀刻（各面局部坐标系）——跨模块走线在缝口对齐：
@@ -421,16 +541,23 @@ const FRONT_ETCH: Record<string, ReactNode> = {
       {['M216 0.5 V59.5', 'M288 0.5 V59.5'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
       ))}
-      {/* 图形比例尺 — 呼应 1:1 栏（大小刻度交替，制图习惯） */}
-      <Draw d="M100 33 H188" stroke={STROKE.inner} delay={T.detailB} />
-      {['M100 27 V33', 'M122 30 V33', 'M144 27 V33', 'M166 30 V33', 'M188 27 V33'].map(
-        (d) => (
-          <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
-        ),
-      )}
-      <MonoLabel x={14} y={36} delay={T.labels}>
+      {/* 图形比例尺 — 呼应 1:1 栏（大小刻度交替，制图习惯）；
+          v3.1 右移缩短（x148..188）：给 Archivo 铭牌让位——铭牌实测尾端
+          x131.4（getBBox），x140 起只剩 8.6px < spec 的 ≥12px，故再让到
+          x148（净距 16.6px）；改铭牌字号/字距必须重测这条 */}
+      <Draw d="M148 33 H188" stroke={STROKE.inner} delay={T.detailB} />
+      {[
+        'M148 27 V33',
+        'M158 30 V33',
+        'M168 27 V33',
+        'M178 30 V33',
+        'M188 27 V33',
+      ].map((d) => (
+        <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
+      ))}
+      <Nameplate x={14} y={38} delay={T.labels}>
         SYNTHMIND
-      </MonoLabel>
+      </Nameplate>
       <MonoLabel x={228} y={36} delay={T.labels}>
         S.01
       </MonoLabel>
@@ -480,6 +607,10 @@ const FRONT_ETCH: Record<string, ReactNode> = {
       <NodeDot cx={128} cy={20} />
       <NodeDot cx={62} cy={52} />
       <NodeDot cx={194} cy={52} />
+      {/* 段 D · 主干+左分支脉冲（拼合 d，overlay 专用——既有三笔蚀刻不动）；
+          四段 delay 9/10.6/12.1/4.1（dur 9/11/13/15）= 跨面可见窗错峰实算解
+          （首碰 54.6s，spec §2.1 示例值过不了自己的验收线，偏离已回写 spec） */}
+      <TracePulse d="M128 0.5 V20 H62 V38" dur="15s" delay="4.1s" />
     </>
   ),
   'M.04': (
@@ -492,19 +623,24 @@ const FRONT_ETCH: Record<string, ReactNode> = {
         className="bp-core-pulse"
       />
       <Draw d={CORE_RING} stroke={STROKE.core} delay={T.detail} width={1.25} />
-      {/* r37 虚线刻度圈（24 段）+ 环内十字准星 */}
+      {/* r37 虚线刻度圈（24 段）+ 环内十字准星；v3.1 起 steps(24) 步进轮转
+          （index 亮格在 12 点位首格，随组每 5s 跳一格；弧长 ≈ 一格 dash） */}
       <DashRing
         d="M86 59 A37 37 0 1 1 160 59 A37 37 0 1 1 86 59 Z"
         dash="2 7.69"
         delay={T.aux}
+        step
+        index="M123 22 A37 37 0 0 1 125 22.06"
       />
       {['M123 51 V67', 'M115 59 H131'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detail} />
       ))}
       {/* 罗盘主刻度（与环缘齐平，穿虚线圈 = 仪表盘惯例） */}
-      {['M123 18 V28', 'M123 90 V100', 'M80 59 H92', 'M154 59 H166'].map((d) => (
-        <Draw key={d} d={d} stroke={STROKE.core} delay={T.detail} />
-      ))}
+      {['M123 18 V28', 'M123 90 V100', 'M80 59 H92', 'M154 59 H166'].map(
+        (d) => (
+          <Draw key={d} d={d} stroke={STROKE.core} delay={T.detail} />
+        ),
+      )}
       {/* 取景器四角括弧 — 框定核心的校准靶 */}
       {[
         'M82 28 V18 H92',
@@ -516,8 +652,15 @@ const FRONT_ETCH: Record<string, ReactNode> = {
       ))}
       {/* 入线（承接 M.05 出线 x193）与出线（→ M.03，x256 穿底缝） */}
       <Draw d="M193 0.5 V59 H166" stroke={STROKE.detail} delay={T.detail} />
-      <Draw d="M123 100 V108 H256 V117.5" stroke={STROKE.detail} delay={T.detail} />
-      {/* 右侧服务分缝 + 状态 pips（首格点亮） */}
+      <Draw
+        d="M123 100 V108 H256 V117.5"
+        stroke={STROKE.detail}
+        delay={T.detail}
+      />
+      {/* 段 B · 入线脉冲 / 段 C · 出线脉冲（同面错峰，delay 见 M.03 注） */}
+      <TracePulse d="M193 0.5 V59 H166" dur="11s" delay="10.6s" />
+      <TracePulse d="M123 100 V108 H256 V117.5" dur="13s" delay="12.1s" />
+      {/* 右侧服务分缝 + 状态 pips */}
       <Draw d="M292 10 V108" stroke={STROKE.inner} delay={T.detailB} />
       {[
         'M304 92 H310 V98 H304 Z',
@@ -526,12 +669,38 @@ const FRONT_ETCH: Record<string, ReactNode> = {
       ].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detailB} />
       ))}
+      {/* pip-cycle 状态灯轮转（v3.1）— 6s 每格 1/3 相位接力；首格 = lead
+          基态常亮（替代旧静态 NodeDot(307,95)，RM 回落首格常亮的停机照）；
+          follower 不传 --draw-delay（无 bpFade 段，传了也是死变量） */}
+      {(
+        [
+          { x: 305, lead: true, delay: '3.6s' },
+          { x: 319, lead: false, delay: '5.6s' },
+          { x: 333, lead: false, delay: '7.6s' },
+        ] as const
+      ).map((p) => (
+        <rect
+          key={p.x}
+          x={p.x}
+          y={93}
+          width={4}
+          height={4}
+          className={`fill-accent ${p.lead ? 'bp-pip-cycle--lead' : 'bp-pip-cycle'}`}
+          style={
+            p.lead
+              ? ({
+                  '--pip-delay': p.delay,
+                  '--draw-delay': T.dots,
+                } as CSSProperties)
+              : ({ '--pip-delay': p.delay } as CSSProperties)
+          }
+        />
+      ))}
       <MonoLabel x={186} y={96} delay={T.labels} tone="accent">
         SYNTH CORE
       </MonoLabel>
       <NodeDot cx={166} cy={59} />
       <NodeDot cx={256} cy={108} />
-      <NodeDot cx={307} cy={95} />
     </>
   ),
   'M.05': (
@@ -542,12 +711,17 @@ const FRONT_ETCH: Record<string, ReactNode> = {
         <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detail} />
       ))}
       {/* 队列第二文档（出线从其下方穿过，y 避让） */}
-      <Draw d="M114 16 H168 V36 H114 Z" stroke={STROKE.detail} delay={T.detail} />
+      <Draw
+        d="M114 16 H168 V36 H114 Z"
+        stroke={STROKE.detail}
+        delay={T.detail}
+      />
       {['M126 24 H156', 'M126 30 H148'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.inner} delay={T.detail} />
       ))}
-      {/* 出线 → 穿底缝入 M.04（x193 全局对齐） */}
+      {/* 出线 → 穿底缝入 M.04（x193 全局对齐）+ 段 A 脉冲 */}
       <Draw d="M102 42 H193 V83.5" stroke={STROKE.detail} delay={T.detail} />
+      <TracePulse d="M102 42 H193 V83.5" dur="9s" delay="9s" />
       {/* 右区内向箭标 — 数据流入暗示 */}
       {['M320 32 L306 42 L320 52', 'M338 32 L324 42 L338 52'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
@@ -579,7 +753,7 @@ const FRONT_ETCH: Record<string, ReactNode> = {
   ),
   'M.07': (
     <>
-      {/* 2×2 端口阵列（左上格点亮） */}
+      {/* 2×2 端口阵列 */}
       {[
         'M42 12 H56 V26 H42 Z',
         'M64 12 H78 V26 H64 Z',
@@ -588,7 +762,24 @@ const FRONT_ETCH: Record<string, ReactNode> = {
       ].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={T.detailB} />
       ))}
-      <NodeDot cx={49} cy={19} />
+      {/* pip-cycle 端口换位（v3.1）— active 点 8s 顺时针巡回四端口；
+          左上 = lead 基态常亮（与 v3 静态 NodeDot 现状一致，RM 回落同态） */}
+      {(
+        [
+          { cx: 49, cy: 19, cycle: 'lead', delay: '4.4s' },
+          { cx: 71, cy: 19, cycle: 'follow', delay: '6.4s' },
+          { cx: 71, cy: 41, cycle: 'follow', delay: '8.4s' },
+          { cx: 49, cy: 41, cycle: 'follow', delay: '10.4s' },
+        ] as const
+      ).map((p) => (
+        <NodeDot
+          key={`${p.cx}-${p.cy}`}
+          cx={p.cx}
+          cy={p.cy}
+          cycle={p.cycle}
+          pipDelay={p.delay}
+        />
+      ))}
     </>
   ),
 };
@@ -600,9 +791,9 @@ const MOBILE_FRONT_ETCH: Record<string, ReactNode> = {
       {['M188 0.5 V47.5', 'M240 0.5 V47.5'].map((d) => (
         <Draw key={d} d={d} stroke={STROKE.detail} delay={MT.detailB} />
       ))}
-      <MonoLabel x={12} y={30} size={10} delay={MT.labels}>
+      <Nameplate x={12} y={32} size={12} delay={MT.labels}>
         SYNTHMIND
-      </MonoLabel>
+      </Nameplate>
       <MonoLabel x={198} y={30} size={10} delay={MT.labels}>
         S.01
       </MonoLabel>

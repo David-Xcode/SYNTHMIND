@@ -65,6 +65,12 @@
   --mat-edge-faint: rgba(74, 159, 229, 0.3); /* = STROKE.inner（v3 提档） */
   --mat-seam-glow: rgba(74, 159, 229, 0.7); /* = 物件横缝光心 */
   --mat-seam-soft: rgba(74, 159, 229, 0.55); /* = 物件竖缝光心/淡入终值 */
+  --mat-trace-pulse: rgba(
+    74,
+    159,
+    229,
+    0.85
+  ); /* = STROKE.pulse（v3.1 走线脉冲头，α 上限 0.85 哑光纪律） */
 
   /* ── v7 玻璃检视窗 token（Card System v7）──
      正本对照表 = 2026-07-26-card-system-v7-glass-design spec §1.2。
@@ -1099,6 +1105,157 @@ body {
   }
 }
 
+/* ── v3.1 活纹路三件套（Living Traces）— 克制仪器档，全部间歇式 ──
+   设计定案：2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design spec §2。
+   硬约束：3D 面内动画迫使该面重栅格化 → 一切新动画短爆发 + 长 hold，
+   hold 段属性值恒定 = 浏览器零重绘；桌面变体专属（移动蚀刻表不含
+   这些元素即天然不渲染，零 CSS 门控）；全部 delay ≥3s（入场 ~2.8s 收尾后接管） */
+
+/* 走线数据脉冲 — invisible-hold：dashoffset 4 = dash 整体在路径起点之前
+   （基态/hold 段均不可见，无需 opacity gate）；0→12% 滑过全线后 hold 到周期尾。
+   hold 值 -104 而非 -100：-100 时 dash 可见区间退化为路径终点单点，
+   零长 dash + round cap 是渲染器行为分歧的经典分支（Skia 会画圆点），
+   退 4 单位留出余量（gap 196 下 dash 副本仍全程在路径外）。
+   周期 9/11/13/15 各异但**并非两两互质**（gcd(9,15)=3 → A/D 的 LCM 仅 45s，
+   相对相位永久锁定、间隙恒 0.06s，靠 delay 实算解精确躲过而非靠漂移躲过）；
+   delay 组合为跨面可见窗错峰实算解（首碰 54.6s——周期互异下「任意时刻 ≤1 面」
+   无法对所有时刻成立，spec 已回写偏离）。⚠️ 改任一 dur/delay 必须重跑碰撞
+   实算，别按「互质所以安全」推——9/15 那对错一步就是每 45s 必现的固定碰撞 */
+@keyframes tracePulse {
+  0% {
+    stroke-dashoffset: 4;
+  }
+  12% {
+    stroke-dashoffset: -104;
+  }
+  100% {
+    stroke-dashoffset: -104;
+  }
+}
+.bp-trace-pulse {
+  stroke-dashoffset: 4;
+  animation: tracePulse var(--trace-dur, 9s) linear var(--trace-delay, 4.1s)
+    infinite;
+}
+
+/* 状态灯轮转 — opacity 错相接力（pips 6s 每格 1/3 相位 / 端口 8s 每点 1/4），
+   0.4s 缓坡防跳闪（6s 的 6.67% / 8s 的 5%），坡间 hold 段零重绘。
+   lead = 基态常亮格：bpFade 入场（dots 波次）+ 轮转接管零跳变（0% = 1，
+   代价是每循环比 follower 提前 0.4s 回亮——重亮坡在周期尾而非头，定案接受）；
+   follower 基态灭，轮转 0% = 0 → delay 期零影响；RM 回落「首格常亮」停机照 */
+@keyframes pipCycle {
+  0% {
+    opacity: 0;
+  }
+  6.67% {
+    opacity: 1;
+  }
+  33.33% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pipCycleLead {
+  0%,
+  33.33% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0;
+  }
+  93.33% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes portCycle {
+  0% {
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes portCycleLead {
+  0%,
+  25% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0;
+  }
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.bp-pip-cycle {
+  opacity: 0;
+  animation: pipCycle 6s ease-in-out var(--pip-delay, 3.6s) infinite;
+}
+.bp-pip-cycle--lead {
+  opacity: 0;
+  animation:
+    bpFade 0.5s ease-out both,
+    pipCycleLead 6s ease-in-out infinite;
+  animation-delay: var(--draw-delay, 0s), var(--pip-delay, 3.6s);
+}
+.bp-port-cycle {
+  opacity: 0;
+  animation: portCycle 8s ease-in-out var(--pip-delay, 4.4s) infinite;
+}
+.bp-port-cycle--lead {
+  opacity: 0;
+  animation:
+    bpFade 0.5s ease-out both,
+    portCycleLead 8s ease-in-out infinite;
+  animation-delay: var(--draw-delay, 0s), var(--pip-delay, 4.4s);
+}
+
+/* 核心刻度圈步进 — steps(24, end) 每 5s 瞬跳 15°（120s 整圈无缝循环）：
+   跳变间零插值 = hold 段零重绘，且「刻度轮跳格」比连续旋转更仪器（连续旋转
+   = 持续重栅格化，禁）。⚠️ 24 段虚线圈对 15° 步进具有旋转对称性——圈自身
+   的旋转是逐像素空操作，可读的步进由组内 index 索引亮格承担（挂载在
+   TSX 侧 DashRing 的 <g>，见组件注释；实施修订，spec §2.3 已回写）。
+   transform-box: fill-box 把旋转锚点锁到组内容包围盒中心 = 圈几何中心
+   ——缺省时 origin 落 viewBox 原点，两行缺一不可（Safari 实测项）。
+   自含 bpFade 入场（与 .bp-fade 二选一：animation 单属性，同挂会互撞） */
+@keyframes ringStep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bp-ring-step {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    bpFade 0.5s ease-out both,
+    ringStep 120s steps(24, end) infinite;
+  animation-delay: var(--draw-delay, 0s), 3s;
+}
+
 /* 浮动尺寸基准面 — 链外静止全高标注（模块动、基准不动的参照系）
    pointer-events 必须关：其投影带与右缘模块重叠，会吃掉 .bp-module 的 :hover */
 .bp-datum {
@@ -1360,7 +1517,13 @@ body {
   .bp-object-shadow,
   .bp-mod-drift,
   .bp-seam-glow,
-  .bp-core-pulse {
+  .bp-core-pulse,
+  .bp-trace-pulse,
+  .bp-pip-cycle,
+  .bp-pip-cycle--lead,
+  .bp-port-cycle,
+  .bp-port-cycle--lead,
+  .bp-ring-step {
     /* biome-ignore lint/complexity/noImportantStyles: scroll-driven/infinite animations ignore duration reset, must disable explicitly */
     animation: none !important;
   }
@@ -1374,5 +1537,16 @@ body {
   }
   .bp-core-pulse {
     opacity: 0.35;
+  }
+  /* v3.1 三件套的静态完成态（RM = 停机照不是黑机器）：
+     脉冲 overlay 静态无意义直接隐掉；轮转 lead 格/刻度圈补回常亮终值
+     （follower 基态 opacity 0，none 后自然灭，无需条目） */
+  .bp-trace-pulse {
+    opacity: 0;
+  }
+  .bp-pip-cycle--lead,
+  .bp-port-cycle--lead,
+  .bp-ring-step {
+    opacity: 1;
   }
 }
