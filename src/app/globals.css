@@ -17,9 +17,11 @@
   --accent: #4a9fe5;
   --accent-hover: #5daae9;
 
-  /* ── 文字层级 (冷白色调) — v4.2 无底纹排版提档：可读性全押字体对比度，
-     tertiary/quaternary 对墙面有效底（≈#10151E）实测 ≈6.5:1 / ≈4.6:1；
-     与 tailwind.config.js txt 表交叉锁定，改值两处同步 ── */
+  /* ── 文字层级 (冷白色调) — v4.2 无底纹排版提档：可读性全押字体对比度。
+     v8 基准（对砖面平底 --wall-face-base #111620）：tertiary 6.39:1 /
+     quaternary 4.60:1；砖顶受光棱带上另低 0.6–1.3 档（tertiary 仍 ≥4.54，
+     quaternary 跌到 ~3.8 —— 故 quaternary 恒为装饰专用，正文禁用）。
+     与 tailwind.config.js txt 表 + CLAUDE.md §4 交叉锁定，改值三处同步 ── */
   --text-primary: #e8ecf0;
   --text-tertiary: #929aa8;
   --text-quaternary: #78818f;
@@ -95,7 +97,9 @@
      ⚠️ 全部落在既有豁免内：既有 hex 的不透明形态（#111620 = bg-elevated、
      #080B10 = bg-base）+ 中性明度轴（白/黑低 alpha）+ accent 低 alpha
      ——零新字面色。tile data-URI 内字面值与本簇交叉锁定，改值两处同步 ── */
-  --wall-face-base: #111620; /* 实心石板（= --mat-face-base 的不透明形态） */
+  --wall-face-base: #111620; /* 实心石板（= --mat-face-base 的不透明形态）
+     🚨 提亮此值会把 --text-quaternary 压到 4.5:1 以下（当前 4.60，余量 0.10 档）
+     ——改前必须重算本文件 --text-* 注释与 CLAUDE.md §4 的对比度行 */
   --wall-face-lit: rgba(255, 255, 255, 0.055); /* 上棱受光 */
   --wall-face-lit-k: rgba(255, 255, 255, 0.03); /* 左棱受光（侧弱于顶） */
   --wall-face-tint: rgba(
@@ -120,7 +124,10 @@
      background-size = pitch + position = −seam 把同一张图对位到砖盒，
      两条路径像素同源，不存在双份字面值需要同步。
      图层自下而上：实底 → 蓝味 → 下/右背光带 → 上/左倒角亮带 → 四边硬棱。
-     倒角亮带宽度 = 厚度的主要来源（10% ≈ 5px @56 档） */
+     倒角亮带宽度 = 厚度的主要来源（10% ≈ 5px @56 档）。
+     注：1 tile 单位 = 56/96 = 0.583 CSS px，四边「1px 硬棱」在 56 档 DPR1 下
+     实为 ~58% 覆盖的抗锯齿线，装饰性质；凸凹读感由 3.5px 的槽渐变承担，
+     不依赖硬棱，DPR2 才是真 1px */
   --wall-tile-brick: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.028'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0.78' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.42'/></linearGradient><linearGradient id='r' x1='0' y1='0' x2='1' y2='0'><stop offset='0.82' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.3'/></linearGradient><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.055'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient><linearGradient id='k' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.03'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient></defs><g transform='translate(6,6)'><rect width='90' height='90' fill='%23111620'/><rect width='90' height='90' fill='url(%23a)'/><rect width='90' height='90' fill='url(%23b)'/><rect width='90' height='90' fill='url(%23r)'/><rect width='90' height='90' fill='url(%23t)'/><rect width='90' height='90' fill='url(%23k)'/><rect width='90' height='1' fill='%23ffffff' fill-opacity='0.055'/><rect width='1' height='90' fill='%23ffffff' fill-opacity='0.03'/><rect x='89' width='1' height='90' fill='%23000000' fill-opacity='0.2'/><rect y='89' width='90' height='1' fill='%23000000' fill-opacity='0.3'/></g></svg>");
 
   /* 砖床 tile（96 viewBox）— 两条路径共用同一张，几何对齐由构造保证。
@@ -303,16 +310,23 @@ body {
 }
 
 /* 真砖 — 与静态路径**共用同一张砖图**（零双份字面值）：tile 是 96 单位、
-   砖体画在 6..96；把 background-size 设成一个 pitch、原点左上各移 −seam，
-   砖体就正好落在 faceSize(= pitch − seam) 的元素盒里。各 MQ 档自动成立
-   （56−3.5 / 64−4 / 96−6 同为 16:1），与静态 tile 像素同源。
+   砖体画在 6..96，要把它对位到 faceSize(= pitch − seam) 的元素盒。
+   🚨 对位量必须**元素相对**，不得读 --wall-brick-w/--wall-seam：那两个
+   变量在 2200/3600px 断点瞬间翻档，而元素盒尺寸由 WallBricks 的 JS 写、
+   要等 200ms resize 防抖才重建——跨断点期间图与盒对不上（放大时右下暗边
+   裁到盒外、缩小时右下开缝露床）；滚动条出现导致的翻档更不触发 resize，
+   永不自愈。改用恒等式即可完全解耦：
+     seam = pitch/16 ⇒ faceSize = pitch·15/16 ⇒ pitch = 100%·16/15
+     background-position 的 100% ≡ (区域 − 图)×100% = faceSize − pitch = −seam
+   代价 = 把 seam = pitch/16 这条不变量硬编进 CSS，但它本来就已由 96/6
+   的 tile viewBox 承载（spec §12 交叉锁定清单），不是新增耦合。
    面**不透明**：v8 砖是实心石板，opacity 只在井压下陷时由 JS 写
    （≤0.35 降幅），露出的是砖床槽底 = 变暗 */
 .bp-brick {
   position: absolute;
   background-image: var(--wall-tile-brick);
-  background-size: var(--wall-brick-w) var(--wall-brick-w);
-  background-position: calc(-1 * var(--wall-seam)) calc(-1 * var(--wall-seam));
+  background-size: calc(100% * 16 / 15) calc(100% * 16 / 15);
+  background-position: 100% 100%;
   background-repeat: no-repeat;
 }
 
@@ -372,7 +386,9 @@ body {
 }
 /* 毛玻璃档 — 支持 backdrop-filter 才升级（老内核/微信 WebView 自动停留
    光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——石墨墙的
-   砖缝与棱线透过玻璃被磨成雾。性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3）。
+   砖缝与棱线透过玻璃被磨成雾。内反射 135deg 必须与基态 `.card-glass`
+   同步（**全站两处**，改一处必改另一处）。
+   性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3）。
    -webkit- 前缀必须写：Safari ≤17 / iOS ≤17 只认前缀形态 */
 @supports (
     (backdrop-filter: blur(1px)) or
@@ -602,9 +618,13 @@ body {
   isolation: isolate;
   display: inline-flex;
 }
-/* 槽缝环 — 墙上的砖槽（按钮四周 3px 槽缝）：槽腔 = 墙后深底（bg-base
-   实底），hairline 框 + 槽内常态微光 + 槽口上缘压暗（凹陷读感）——
-   与砖墙槽腔底衬同语言；rest 可见 = 「嵌在墙里」的静态证词 */
+/* 槽缝环 — 墙上的砖槽（按钮四周 3px 槽缝）：槽腔 = `--bg-base` 实底，
+   hairline 框 + 槽内常态微光 + 槽口上缘压暗（凹陷读感）；rest 可见
+   = 「嵌在墙里」的静态证词。
+   ⚠️ v8 起墙侧**确有**槽层（砖床 --wall-bed-*，合成后 rgb(4,6,9)），
+   而本槽腔是 --bg-base rgb(8,11,16)——**亮两档，v8 未统一**（改动会波及
+   全站按钮外观，超出墙体换代范围）。若将来要统一，改消费砖床合成值即可；
+   在此之前不要把注释写成「与砖墙槽同色」 */
 .btn-module-frame::before {
   content: "";
   position: absolute;

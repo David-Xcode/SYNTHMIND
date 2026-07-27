@@ -114,7 +114,7 @@ import SheetLabel from '@/components/shared/SheetLabel';
 - 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
 - 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
 - `BlueprintObject` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha），及其逐面着色 fill 的中性黑压暗渐变与中性白受光渐变/棱线、底缘压暗 inset（`rgba(0,0,0,α)` / `rgba(255,255,255,α)` — 均为明度轴不是第二色相；v3 Solid Machine 起物件面与按钮/玻璃卡共享厚度暗示语言，顶面白色受光洗属同一豁免，正本 = 2026-07-27-blueprint-object-v3-solid-design spec §2）。
-- 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）。**secondary 面基色消费 `var(--wall-face-base)`**（v8 起 = 石墨砖面同源实底，按钮语义 = 砌进墙里的一块砖）；槽缝环 = `var(--bg-base)` 实底（v6 起墙侧无槽腔层，此口径仅按钮消费）——基色一律走 token，不得回退字面 rgba。
+- 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）。**secondary 面基色消费 `var(--wall-face-base)`**（v8 起 = 石墨砖面同源实底，按钮语义 = 砌进墙里的一块砖）；槽缝环 = `var(--bg-base)` 实底——⚠️ v8 起墙侧**确有**槽层（砖床 `--wall-bed-*`，合成 rgb(4,6,9)），按钮槽腔 rgb(8,11,16) 比它**亮两档，v8 未统一**（统一会波及全站按钮外观，超出墙体换代范围）；在统一之前不得把两者写成同色。基色一律走 token，不得回退字面 rgba。
 - 背景 token 的 rgba 形态（半透明基面与投影）：`rgba(8,11,16,α)` = `--bg-base` #080B10、`rgba(12,16,23,α)` = bg-surface #0C1017——玻璃卡面底 / 按钮投影在用。**只允许这两个既有 hex 的 rgba 化，不得引入新的字面背景色**。
 - 功能反馈色（成功/错误状态专用，非装饰色相）：`emerald-400` / `red-400` 仅限 `IconBadge` 圆徽与表单错误提示文字——状态语义是国际惯例，不受单色相纪律约束，但**禁止把功能色用于装饰**。
 - 砖墙材质（globals.css `.bp-wall*` / `.bp-brick*` 块 + `:root` 的 `--wall-*` 簇，v8）：面基底/砖床基底 = 既有 hex 的不透明形态（`#111620` = bg-elevated、`#080B10` = bg-base），棱线/压暗 = 中性明度轴，受光沉降 = accent 低 alpha——**零新字面色**；砖 tile / 砖床 tile 的 SVG data-URI 内字面色值属此豁免（data URI 无法消费 var()，与 `--wall-*` token 交叉锁定，改值两处同步）。
@@ -149,11 +149,16 @@ import SheetLabel from '@/components/shared/SheetLabel';
 > v4.2 无底纹排版：正文直压砖墙，可读性全靠文字对比度——正文一律 ≥4.5:1；
 > tertiary/quaternary 与 globals.css `:root` 的 `--text-*` 双处声明交叉锁定，
 > 改值两处同步。
-> v8 基准（对 `--wall-face-base` #111620 实心砖面，= 全站最坏情形；砖缝
-> rgb(4,6,9) 上各高约 0.7–0.8 档）：primary 15.26 / secondary 8.09 /
-> tertiary 6.39 / quaternary 4.60。
-> 🚨 **quaternary 距 4.5 红线只剩 0.10 档**——任何提亮 `--wall-face-base`
-> 的改动都会把它压到线下，改砖面明度前必须重算这一行。
+> v8 基准（对砖面**平底** `--wall-face-base` #111620；砖缝 rgb(4,6,9) 上
+> 各高约 0.7–0.8 档）：primary 15.26 / secondary 8.09 / tertiary 6.39 /
+> quaternary 4.60。
+> ⚠️ 平底不是全站最坏：每块砖顶部有受光倒角带（峰值 ≈rgb(32,40,50)）与
+> 硬棱（≈rgb(44,50,61)），那里 tertiary 降到 5.25/**4.54**、quaternary 降到
+> 3.78/**3.27**。正文用 ≥tertiary 在棱上仍 ≥4.5 ✅；**quaternary 在棱上不合格
+> ——这正是它「装饰/aria-hidden 专用、正文禁用」的硬理由**。
+> 🚨 quaternary 在平底距 4.5 红线只剩 0.10 档——任何提亮 `--wall-face-base`
+> 的改动都会把它压到线下，改砖面明度前必须重算这一行（globals.css 的
+> `--text-*` 与 `--wall-face-base` 注释同为交叉锁定点）。
 
 ### Border CSS Variables (use in inline styles or globals.css)
 ```css
@@ -281,11 +286,11 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤11px 沿签名轴（物件 v3 等比重标）+ 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）
-- ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤36px / 坡斜上限 20°（实际峰值 8.47° @56 档，随 pitch 降至 4.94° @96；衰减函数在 d≈50px 取极值）/ 向心聚拢 ≤3px / 微缩 ≤5% / 渐暗 ≤35% 全部是井心位置的纯函数，零砖级状态；影响半径 ~150px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；**v8 起零发光豁免**——井深处的 opacity 降露出的是更暗的砖床槽底，不是光；per-element perspective 不建 preserve-3d 链，砖恒不越过墙面（角抬升力臂是半对角 37.12px 而非半宽，最坏角 z ≈ −23u² < 0 对所有 d 成立）；逐砖明度变异必须走**非线性**空间哈希（线性式 (a·c+b·r)%3 等值集恒为直线 → 对角条纹，与系数是否素数无关）；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 撤静态砖层、砖床原地留用，感知等价无感切换——真砖有 ±4% 逐砖明度变异、静态 tile 无，全墙均值差 ≈0），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
+- ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤36px / 坡斜上限 20°（实际峰值 8.47° @56 档，随 pitch 降至 4.94° @96；衰减函数在 d≈50px 取极值）/ 向心聚拢 ≤3px / 微缩 ≤5% / 渐暗 ≤35% 全部是井心位置的纯函数，零砖级状态；影响半径 ~150px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；**v8 起零发光豁免**——井深处的 opacity 降露出的是更暗的砖床槽底，不是光；per-element perspective 不建 preserve-3d 链，砖恒不越过墙面（角抬升力臂是半对角 37.12px 而非半宽，最坏角 z ≈ −23u² < 0 对所有 d 成立）；逐砖明度变异必须走**非线性**空间哈希（线性式 (a·c+b·r)%3 等值集恒为直线 → 对角条纹，与系数是否素数无关）；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 撤静态砖层、砖床原地留用；**感知等价而非像素等价**——实测砖体内部均值差 0.74/255、砖上左缘 1px 环带均值 11.26/255，后者是 3.5px 分数位的半像素抗锯齿，v6 即已存在，口径见 v8 spec §6.1），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
 - ✅ `btn-tilt` — 按钮悬停期微摆（ButtonTilt → `src/lib/pointer-tilt-engine.ts` 共享单例引擎，每按钮独立参数 k30 ζ0.6；倾角 ≤4°、仅指针在按钮盒内跟随（盒外即零——嵌墙砖在槽里不晃，v4.1 的 130px 邻域跟随已退役）；仅 hover+fine 且非 RM 挂引擎，触屏/RM/无 JS = 纯透传 span；与本体顶出 transition 分层两元素——JS 逐帧 / transition 永不同层；mouse-tracking 豁免第 3 例，仅限 ModuleButton）
 - ✅ `card-tilt` — interactive 卡指针倾斜（CardTilt → pointer-tilt-engine 同一共享引擎、per-entry 参数：≤2.5° k22 ζ0.65 慢弹簧「厚玻璃板惯性」，perspective 900px；盒内跟随盒外即零；仅 hover+fine 且非 RM 挂载，触屏/RM/无 JS = 纯静态透传；**全站禁止第二份引擎代码**；mouse-tracking 豁免第 4 例，仅限 Card interactive 变体）
 - ✅ 卡片 hover 顶起/active 微收 — interactive 卡本体 `perspective(900px) translateZ(8px)` transition + 投影落墙 + 边框增亮；active `translateZ(2px)` 0.09s 快过渡 + 投影回落半档（与 tilt 分层两元素，照 ModuleButton 先例；hover/active 均包 `@media (hover:hover)`；static/container 卡零 hover 位移）
-- ✅ 按钮顶出/按入 — 本体 `perspective() translateZ` transition（rest 齐平嵌墙 / hover +16px 顶出 / active −5px 按入 0.09s 快过渡；per-element perspective 不建 preserve-3d 链）+ 槽缝涌光 opacity 过渡（frame ::after，`:has(:hover)` 驱动，老内核软降级恒不亮；与砖墙涌光同一豁免语言；仅 .btn-primary/.btn-secondary。v4.1 的 btnHoverIdle 呼吸、backglow、`--btn-dy` 双层反向位移已全部退役）
+- ✅ 按钮顶出/按入 — 本体 `perspective() translateZ` transition（rest 齐平嵌墙 / hover +16px 顶出 / active −5px 按入 0.09s 快过渡；per-element perspective 不建 preserve-3d 链）+ 槽缝涌光 opacity 过渡（frame ::after，`:has(:hover)` 驱动，老内核软降级恒不亮；v8 起槽光属**内容层**的光（按钮是通电的模块），与墙的零光源纪律正交——不再由「砖墙涌光」背书，那套涌光已随 v8 删除；仅 .btn-primary/.btn-secondary。v4.1 的 btnHoverIdle 呼吸、backglow、`--btn-dy` 双层反向位移已全部退役）
 - ✅ `marquee` — infinite horizontal scroll (SocialProofBar)
 - ✅ `scaleIn` — 表单成功态缩放弹入
 - ✅ `scroll-pulse` / `scale-in-dot` — 滚动指示器
