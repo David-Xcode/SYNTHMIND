@@ -1,7 +1,15 @@
 # Synthmind — Blueprint Design System Rules
 
 > These rules encode the "Blueprint" design system（静默精密 / Quiet Precision — 蓝图制图语言）. All AI agents MUST follow them when implementing UI components, translating Figma designs, or modifying frontend code.
-> 设计定案与路线图正本：`docs/superpowers/specs/2026-07-25-frontend-redesign-design.md`
+>
+> **本文件是本仓的唯一约定正本**（`AGENTS.md` 只是指向这里的指针 + PR 规范；
+> 项目速览见 `README.md`）。**现行 spec 正本**（`docs/superpowers/specs/`）：
+> 墙 = `2026-07-27-graphite-wall-v8-design.md` · 卡 = `2026-07-26-card-system-v7-glass-design.md` ·
+> 物件 = `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md`
+> （几何/材质基座 = `2026-07-27-blueprint-object-v3-solid-design.md`，两文并读）·
+> 信息架构 = `2026-07-27-ia-hierarchy-redesign-design.md` ·
+> 概念奠基（仅 §1/§2/§7/§8 仍有效）= `2026-07-25-frontend-redesign-design.md`。
+> 🚨 **同目录其余 spec/brief 已退役，文件头带 🛑/📕 横幅——横幅优先于正文，别照旧版实施。**
 
 ## Code Language Policy
 
@@ -14,8 +22,8 @@
 ## 1. Project Structure
 
 - `src/app/layout.tsx` — 根 layout 只放 html/body/globals.css/metadata；页面壳层（SiteHeader/SiteFooter + BlueprintWall 单实例）在 `(public)/layout.tsx`
-- `src/data/` — TS 常量即内容层（非 CMS）：case-studies.ts（软件产品）/ real-estate.ts（地产盘）/ navigation.ts
-- `src/proxy.ts` — Next 16 middleware 约定文件（安全 header），命名是框架约定不是笔误
+- `src/data/` — TS 常量即内容层（非 CMS）：case-studies.ts（软件产品）/ real-estate.ts（地产盘）/ navigation.ts / process.ts（交付流程四步，about 详版 + 首页 ProcessStrip 一句话版**双消费同源，不复制第二份文案**）
+- 安全响应头（CSP / HSTS / nosniff / Permissions-Policy 等）在 `next.config.js` 的 `headers()`——2026-07-27 从 `src/proxy.ts`（Next 16 的 middleware 约定文件名）迁入并删除该文件：全站静态预渲染，为恒定 header 每请求跑一趟 Node middleware 不划算，平台在边缘直接附加即可。**别再建 `src/proxy.ts` / `middleware.ts`**，改 header 一律改 `next.config.js`
 - 其余目录结构以 `ls src/` 为准（shared 组件清单看 `src/components/shared/`）
 
 ### Component Reuse Rules
@@ -31,7 +39,15 @@
 - 展示：`/products` 作品网格一张项目卡（S.06，站内链接）+ `/products/real-estate` 聚合详情页（叙事 + stats + `<RealEstateSiteGrid />` 每盘外链真实站点）
 - 旧详情页 slug 在 `next.config.js` 中 `permanent:true`（= 308）重定向到 `/products/real-estate`（`#real-estate` 页内锚点已退役）
 - 新增地产盘 = 上线后在 `real-estate.ts` 加一条 + logo 放 `public/product/`；新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
-- 导航 label = **Our Work**（路由仍是 `/products`，2026-07-26 起）；主页 = Hero + SocialProofBar 两段极简结构，作品叙事全部在 `/products`
+- 导航 label = **Our Work**（路由仍是 `/products`，2026-07-26 起）
+
+### Homepage Structure — IMPORTANT
+🚨 **首页结构以 IA v1 为准（2026-07-27 起）** = Hero → SocialProofBar →
+01 `<InDevelopmentShowcase />` → 02 `<FeaturedWork />` → 03 `<ProcessStrip />` →
+`<CTABanner />` 六段说服链（要回答：你们做什么 / 凭什么信你 / 我下一步去哪）。
+2026-07-26 的「主页只留 Hero + SocialProofBar 两段极简」定案**已作废**——
+homepage-slim spec 里那三段删除指令已加退役横幅，**别再删 FeaturedWork /
+ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.md` §3）。
 
 ### Brokerage Platform Page — IMPORTANT（在建旗舰产品）
 `/products/brokerage-platform`（2026-07-27 新建）是 AI 原生 BMS 的完整介绍页；
@@ -64,7 +80,7 @@
 - 排版精度 > 空间/材质 > 动效 > 色彩数量
 - 编号只用于**真实序列**（图纸页码、流程步骤）；能力/价值等非序列内容禁止装饰性编号
 - 标注预算：**自由文本** mono 测量标注（如坐标、尺寸）每屏 ≤2 处；图签（SheetLabel）与卡片图纸编号（S.NN）属结构性编号，不计入预算
-- **石墨重力井墙（v8 Graphite Wall）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——概念 = **墙是一面被左上 45° 掠射光斜照的实心石墨砌体，指针是压在上面的重力井**。🚨 **墙后没有任何发光体**（v6 的角落余晖 `.bp-wall-ambient` + 指针灯 `.bp-wall-lamp` 已于 v8 整体退役，**禁止以任何形式复活**）：厚度靠材料自己读出（受光棱线 / 倒角亮带 / 背光压暗带 / 凹槽凸凹线索对调 / 逐砖明度不均），深度靠**变暗**（砖陷得越深 opacity 越低，露出更暗的砖床槽底——v6「透出墙后的光」语义已反转）。墙属场景（`.bp-wall` fixed 视口级，**内容从墙前滚过、墙不动**，零滚动耦合——v4 的「随滚」已退役）；**层纪律（v6 单层砖的 v8 修订）= 一层砖 + 一层砖床，砖床恒在砖后**：桌面指针路径 = WallBricks 首次 pointermove 铺满视口的真砖 div 阵，触屏/RM/无 JS = 静态 SVG tile（砖床 + 砖两层叠加），经 `.bp-wall[data-live]` 切换**砖层**（砖床两路径共用同一张 tile，永不消失）——砖床不是砖也不是光，是砖的凹槽，判别标准 = 不参与遮掩、不冒充光、不随帧变化；指针交互 = **重力井塌陷**（近针砖向墙内陷成碗 ≤36px、坑壁沿坡度朝坑心倾上限 20°/实际峰值 8.47° @56 档（随 pitch 降：7.41° @64 / 4.94° @96）、材料向坑心微聚、井深处砖面渐暗 ≤35%）；**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（v8 起墙侧**零发光豁免**——蓝味只剩受光棱线里的 α0.028）；内容层次二级：**L0 墙 / L2 玻璃检视窗卡片**——**任何 section 不得持有底色**（L1 已于 v4.2 退役；v8 定案见 2026-07-27-graphite-wall-v8-design spec）。**卡片 = 压在石墨墙前的玻璃检视窗（v7 材质 / v8 受光）**：毛玻璃把墙面材质揉成柔光、砖缝磨成雾（`@supports` 无 backdrop-filter 自动回退光滑玻璃档），内反射 `135deg` 高光朝**左上**与掠射光同向（v7 的 225deg 朝右上是对着已删除的余晖）——v4「图纸不是玻璃」条款已随 v6 物理修订退役（v7 定案见 2026-07-26-card-system-v7-glass-design spec）
+- **石墨重力井墙（v8 Graphite Wall）**：全站唯一背景 = `BlueprintWall`（单实例，(public)/layout 的 relative wrapper 内挂载）——概念 = **墙是一面被左上 45° 掠射光斜照的实心石墨砌体，指针是压在上面的重力井**。🚨 **墙后没有任何发光体**（v6 的角落余晖 `.bp-wall-ambient` + 指针灯 `.bp-wall-lamp` 已于 v8 整体退役，**禁止以任何形式复活**）：厚度靠材料自己读出（受光棱线 / 倒角亮带 / 背光压暗带 / 凹槽凸凹线索对调 / 逐砖明度不均），深度靠**变暗**（砖陷得越深 opacity 越低，露出更暗的砖床槽底——不是透出墙后的光）。墙属场景（`.bp-wall` fixed 视口级，**内容从墙前滚过、墙不动**，零滚动耦合）；**层纪律（v6 单层砖的 v8 修订）= 一层砖 + 一层砖床，砖床恒在砖后**：桌面指针路径 = WallBricks 首次 pointermove 铺满视口的真砖 div 阵，触屏/RM/无 JS = 静态 SVG tile（砖床 + 砖两层叠加），经 `.bp-wall[data-live]` 切换**砖层**（砖床两路径共用同一张 tile，永不消失）——砖床不是砖也不是光，是砖的凹槽，判别标准 = 不参与遮掩、不冒充光、不随帧变化；指针交互 = **重力井塌陷**（近针砖向墙内陷成碗 ≤36px、坑壁沿坡度朝坑心倾上限 20°、材料向坑心微聚、井深处砖面渐暗 ≤35%；实际峰值与 pitch 档差见 v8 spec §5）；**砖面禁绝网格纹路**；守单蓝色相 + 哑光禁强 bloom（v8 起墙侧**零发光豁免**——蓝味只剩受光棱线里的 α0.028）；内容层次二级：**L0 墙 / L2 玻璃检视窗卡片**——**任何 section 不得持有底色**（L1 已于 v4.2 退役；v8 定案见 2026-07-27-graphite-wall-v8-design spec）。**卡片 = 压在石墨墙前的玻璃检视窗（v7 材质 / v8 受光）**：毛玻璃把墙面材质揉成柔光、砖缝磨成雾（`@supports` 无 backdrop-filter 自动回退光滑玻璃档），内反射 `135deg` 高光朝**左上**与掠射光同向（v8 起唯一合法方向——朝右上的 225deg 是对着已删除的余晖，禁止回改）（材质正本 = 2026-07-26-card-system-v7-glass-design spec）
 
 ## 3. Typography — Archivo + Manrope + IBM Plex Mono
 
@@ -120,7 +136,13 @@ import SheetLabel from '@/components/shared/SheetLabel';
 - 砖墙材质（globals.css `.bp-wall*` / `.bp-brick*` 块 + `:root` 的 `--wall-*` 簇，v8）：面基底/砖床基底 = 既有 hex 的不透明形态（`#111620` = bg-elevated、`#080B10` = bg-base），棱线/压暗 = 中性明度轴，受光沉降 = accent 低 alpha——**零新字面色**；砖 tile / 砖床 tile 的 SVG data-URI 内字面色值属此豁免（data URI 无法消费 var()，与 `--wall-*` token 交叉锁定，改值两处同步）。
 - 玻璃卡材质（globals.css `.card-glass*` 块 + `:root` 的 `--glass-*` 簇，v7）：面底 = 既有背景 hex 的 rgba 化（`rgba(12,16,23,α)` / `rgba(8,11,16,α)`），棱线/压暗 = 中性明度轴，内反射 = accent 低 alpha——全部落在上述既有豁免口径内，**不得引入新字面色**；新玻璃材质决策优先消费 `--glass-*` token（正本对照表见 v7 spec §1.2）。
 
-**材质 token 三簇分离（v8）**：`--mat-*`（物件，正本对照表见 v4 spec A.2）/ `--wall-*`（石墨墙，正本 = v8 spec §3）/ `--glass-*`（玻璃卡，正本 = v7 spec §1.2）——**共享明度轴逻辑，不共享值**。墙/按钮的新材质决策消费 `--wall-*`，物件消费 `--mat-*`，卡片消费 `--glass-*`，一律不得另起字面 rgba。⚠️ v8 起 `--mat-*` 除 `--mat-face-tint` 外**全簇无 CSS 消费方**（墙与 btn-secondary 已迁至 `--wall-*`），它们是 `BlueprintObject` TSX STROKE 表的交叉锁定锚点——改物件 STROKE/face 色阶必须同步 `--mat-*`，**勿因「未使用」删除**（TSX 侧与 SVG data-URI tile 保持字面量是 SVG 的 var() 兼容豁免，均与 token 交叉锁定）。
+**材质 token 三簇分离（v8）**：`--mat-*`（物件，正本对照表见 v4 spec A.2）/ `--wall-*`（石墨墙，正本 = v8 spec §3）/ `--glass-*`（玻璃卡，正本 = v7 spec §1.2）——**共享明度轴逻辑，不共享值**。墙/按钮的新材质决策消费 `--wall-*`，物件消费 `--mat-*`，卡片消费 `--glass-*`，一律不得另起字面 rgba。⚠️ **`--mat-*` 簇的四类分工（2026-07-27 审查逐个核实后修正——此前笼统写作「除 face-tint 外全簇无消费方、全是交叉锁定锚点」，不准确）**：
+- **已被 CSS 消费（4）**：`--mat-face-tint` / `--mat-seam-glow` / `--mat-seam-soft` / `--mat-seam-rest`（后三者于 v8 审查中上岗，锁死缝光在 CSS/RM/门控三处的交接值）
+- **真交叉锁定锚点（3）**：`--mat-edge-strong` / `--mat-edge-faint` / `--mat-trace-pulse` —— 无 CSS 消费方，但与 `BlueprintObject` TSX 的 STROKE 表逐值对应，**改物件描边色阶必须同步，勿因「未使用」删除**
+- **假锚点（1）**：`--mat-face-shade` 值 0.32 落在 TSX 侧 0.30–0.55 的区间内，对不上任何单值，**不具备检测能力**——它给人「有交叉锁定」的错觉而实际没有
+- **死码（1）**：`--mat-face-base` 零消费方、零对应值，可删
+
+新材质决策一律消费对应簇，不得另起字面 rgba（TSX 侧与 SVG data-URI tile 保持字面量是 SVG 的 var() 兼容豁免，均与 token 交叉锁定）。
 
 ### Accent Scale (Synth Blue = 蓝图蓝)
 | Token | Hex | Usage |
@@ -130,6 +152,10 @@ import SheetLabel from '@/components/shared/SheetLabel';
 | `accent-700` | #2870AB | Dark accent |
 
 > 色阶只保留这三档。需要透明度用 opacity modifier：`bg-accent/10`、`border-accent/30`、`text-accent/50`。**禁止引入第二色相** — 单色相纪律是 Blueprint 的立场。
+
+**CSS 侧蓝色的唯一事实源 = `--accent-rgb: 74 159 229`**（2026-07-27 审查引入，替换掉 globals.css 里散落 40 处的 `74, 159, 229` 字面三元组）。需要带透明度的 accent 一律写 `rgb(var(--accent-rgb) / α)`，**不要再手打三元组**。
+`--accent-dark: #3488cc` 同时 token 化 —— 它是 §7 按钮 primary 渐变逐字授权的暗端，与 `src/lib/constants.ts` 的 `BRAND_ACCENT_DARK`（邮件 HTML 用）**交叉锁定，改一处必须同步另一处**。
+⚠️ 口径说明：「色阶只保留三档」针对的是 **Tailwind token 层**（组件写 class 时只有 accent / 400 / 700 可选）；`--accent-dark` 属**渐变构造用的 CSS 内部值**，不产出 utility、不供业务代码直接消费，两者不冲突。新增任何第四档 utility 仍然禁止。
 
 ### Background Layers (冷色海军黑)
 | Token | Hex | Usage |
@@ -248,7 +274,7 @@ Props：`variant`（interactive / static / container，**按交互语义选择�
 ### 三条踩过坑的硬规则 — IMPORTANT
 1. **禁止 `overflow-hidden` 包住任何含 `.sheet-reveal` 的子树**：hidden 会创建 scroll container，劫持 `view()` 时间轴的滚动器查找，整个子树的滚动动画**静默失效**（不报错、不掉 lint）。需要裁切时一律用 globals.css 的 `.overflow-clip-safe`（clip 不建 scroll container；老内核回落 hidden）。
 2. **`.bp-draw` 只能用在 `<path>` 上**：`pathLength` 在 `<rect>`/`<circle>` 上 WebKit 不支持，dasharray 归一化会碎成 1px 点线。矩形/圆都用等价 path 命令改写（见 BlueprintObject）。
-3. **`prefers-reduced-motion` 三件套**：scroll-driven 动画必须显式 `animation: none`（时长重置对其无效）；`animation-delay`/`transition-delay` 必须通配归零（否则分段 delay 变成逐个"闪现"）；infinite 动画（marquee / scroll-pulse 类）必须显式关闭（0.01ms 周期 = 每帧乱跳）。三者都已在 globals.css 的 reduced-motion 块落实，新增动画时对号入座。
+3. **`prefers-reduced-motion` 四件套**：scroll-driven 动画必须显式 `animation: none`（时长重置对其无效）；`animation-delay`/`transition-delay` 必须通配归零（否则分段 delay 变成逐个"闪现"）；infinite 动画（marquee / scroll-pulse 类）必须显式关闭（0.01ms 周期 = 每帧乱跳）；**`html { scroll-behavior: auto }` 必须显式还原**——平滑滚动不是 animation，四条时长/延迟通配重置对它一律无效，路由跳转回顶与 skip link 会照常整屏平滑滚动（2026-07-27 审查补入，此前长期漏网，是全站 a11y 唯一的实际缺口）。四者都已在 globals.css 的 reduced-motion 块落实，新增动画时对号入座。
 
 ### The ONE Scroll Entrance
 所有滚动入场动画用 `<AnimateOnScroll>`（内部 = `.sheet-reveal` 图纸沉降：scrub 关键帧只动 rotateX 5° + translateY + opacity；blur 揉入只活在 IO 内联路径——filter 进 scrub 关键帧会废掉毛玻璃，见 §5 Backdrop Root 纪律）。深度层异速位移（depth-drift）已于 v4 退役；v6 起墙属场景固定（fixed）、内容从墙前滚过，深度由材质层次（墙/卡片）与掠射光下的明暗承担——**内容层之间**禁止引入异速滚动层。
@@ -275,21 +301,29 @@ import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 - 首屏 load-time 词入场用 Server 直出 `.word-reveal`（零 JS 依赖），不要用 TextReveal（视口内元素不播动画）
 
 ### ALLOWED Animations（白名单，全站只允许这些）
+
+🚨 **两条覆盖全表的运行时纪律（2026-07-27 性能审查定案，正本 = `docs/CODE-REVIEW-2026-07-27.md` F1/F2）**：
+
+1. **Hero 物件视口门控**：`.bp-object-gate[data-idle]` → 子树 `animation-play-state: paused`（`HeroObjectViewportGate` client 岛用 IntersectionObserver 驱动）。**物件滚出视口即全体停帧**。起因：门控前，hero 早已离屏且鼠标不动时，桌面仍持续吃 **29.2% 主线程 / 每帧 225 次全文档 layout**；门控后 0.48% / 1 次。白名单授权的是「这些动画可以存在」，**不等于它们可以在没人看的时候继续跑**。
+2. **`modDrift` / `seamPulse` / `corePulse` / `objShadow` 现为桌面专属**（`@media (min-width:1024px) and (hover:hover)`），移动端只保留入场终值（静态值与 RM 块逐字同源，改一处必须同步另一处）。手机端 infinite 动画因此从 12 条降到 2 条。
+   ⚠️ **周期长 ≠ 便宜**：这四条的成本不来自频率，而来自「无法下放合成器」——`modDrift` 的关键帧值引用 `var()` 自定义属性，`seamPulse`/`corePulse` 位于 `preserve-3d` 子树内，Chrome 对这两类一律不做合成动画。新增物件动画前先确认它能否合成，不能合成就必须受上述两条门控约束。
+
 - ✅ `sheet-settle` — 图纸沉降入场（AnimateOnScroll；rotateX ≤5°）
 - ✅ `bp-draw` / `bp-fade` — SVG 逐笔绘制 + 标注淡入（Hero 物件、hairline 图标）
 - ✅ `hero-tilt` — Hero 物件滚动倾斜（scroll(root) scrub，前 600px；≥lg 专属——<lg 为横陈 ELEV. 变体不倾斜）
 - ✅ `bpSolidify` — Hero 物件面板实体化淡入（挂载于 `.bp-face-fill` / backglow，入场叙事 Build 阶段）
-- ✅ `objFloat` / `objSway` / `objShadow` — Hero 物件常态呼吸/摇曳/投影（`.obj-float` ≤±6px、`.obj-sway` ≤±3°、`.bp-object-shadow`；周期 ≥7s，仅 Hero 物件 BlueprintObject / HeroObjectPhysics）
+- ✅ `objFloat` / `objSway` / `objShadow` — Hero 物件常态呼吸/摇曳/投影（`.obj-float` ≤±6px、`.obj-sway` ≤±3°、`.bp-object-shadow`；周期 ≥7s，仅 Hero 物件 BlueprintObject / HeroObjectPhysics；三条均受视口门控，`objShadow` 另为桌面专属）
+  ⚠️ **已知未结项**：`objFloat`/`objSway` 在 `preserve-3d` 上做 transform 动画无法合成，hero **在视口内**时仍与砖阵 DOM 产生「每帧全文档 layout」的乘积效应。根治需把 `objFloat` 的位移移到扁平包装层（`objSway` 要带子面旋转，必须留在 3D 链内）。留待物件结构重构一并处理，别当新问题重复立项
 - ✅ Hero 物件弹簧物理 — HeroObjectPhysics 的 rAF 欠阻尼弹簧（指针阻尼跟随 + 回摆 + hover scale ≈1.03；只写 transform / opacity / CSS 变量；mouse-tracking 豁免第 1 例）
-- ✅ `modAssemble` / `modDrift` — Hero 物件模块装配入场 + 错位-停驻-归位无限循环（漂移幅度 ≤18px / 装配入场偏移 ≤38px——物件 v3 随 360 体系等比重标，周期 ≥10s 错峰；仅 BlueprintObject 模块层）
-- ✅ `seamIn` / `seamPulse` / `coreIn` / `corePulse` — Hero 物件缝隙发光条与核心环微光呼吸（opacity only，低 alpha 禁强 bloom）
-- ✅ `trace-pulse` — 走线数据脉冲（stroke-dashoffset invisible-hold 间歇式；dash 4 gap 196 @ pathLength 100——gap 必须 > pathLength+dash，否则图案周期回绕会让 hold 期 dash 停在路径起点；头 α≤0.85、零 blur；周期 ≥9s 互异 + delay 实算错峰（**非**两两互质：gcd(9,15)=3，A/D 相位 45s 锁定、间隙恒 0.06s——改 dur/delay 必须重跑碰撞实算）、可见窗 ≤15%；仅 BlueprintObject 桌面变体走线 overlay）
+- ✅ `modAssemble` / `modDrift` — Hero 物件模块装配入场 + 错位-停驻-归位无限循环（漂移幅度 ≤18px / 装配入场偏移 ≤38px——物件 v3 随 360 体系等比重标；周期 **各异 + delay 实算错峰，非两两互质**——gcd(14,16)=2、gcd(15,10)=5，改任一 driftDur/driftDelay 必须重跑最坏同步窗实算，别照旧注释假设互质；仅 BlueprintObject 模块层，**桌面专属 + 受视口门控**）
+- ✅ `seamIn` / `seamPulse` / `coreIn` / `corePulse` — Hero 物件缝隙发光条与核心环微光呼吸（opacity only，低 alpha 禁强 bloom；pulse 两条**桌面专属 + 受视口门控**，静态终值走 `--mat-seam-rest` 等 token 与 RM 块同源）
+- ✅ `trace-pulse` — 走线数据脉冲（stroke-dashoffset invisible-hold 间歇式；dash 4 gap 196 @ pathLength 100——gap 必须 > pathLength+dash，否则图案周期回绕会让 hold 期 dash 停在路径起点；头 α≤0.85、零 blur；周期 ≥9s 互异 + delay 实算错峰（**非**两两互质——改 dur/delay 必须按 v3.1 spec §2.1 重跑碰撞实算）、可见窗 ≤15%；仅 BlueprintObject 桌面变体走线 overlay）
 - ✅ `pip-cycle` — 状态灯序列（opacity 错相轮转，周期 ≥6s；RM 回落首格常亮；仅 BlueprintObject pips/端口阵列）
 - ✅ `ring-step` — 刻度圈步进（transform rotate steps(24)，5s/格；可读步进靠组内 index 索引亮格——24 段对称虚线圈自身旋转是逐像素空操作；禁连续旋转——持续重栅格化；仅 BlueprintObject 核心刻度圈）
 - ✅ Hero 物件单模块 `:hover` 偏移 — transition ≤11px 沿签名轴（物件 v3 等比重标）+ 描边增亮（`@media (hover: hover)` 限定防触屏粘滞；仅 `.bp-module`，卡片一律不做）
 - ✅ `reveal` — 页面加载入场（`animate-reveal` utility，仅 Hero 非 LCP 元素）
 - ✅ `wordReveal` — 首屏副标题词级交错入场（`.word-reveal`，Server 直出零 JS 依赖；≤8px 位移 / 2px blur，仅 load-time 词入场）
-- ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤36px / 坡斜上限 20°（实际峰值 8.47° @56 档，随 pitch 降至 4.94° @96；衰减函数在 d≈50px 取极值）/ 向心聚拢 ≤3px / 微缩 ≤5% / 渐暗 ≤35% 全部是井心位置的纯函数，零砖级状态；影响半径 ~150px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；**v8 起零发光豁免**——井深处的 opacity 降露出的是更暗的砖床槽底，不是光；per-element perspective 不建 preserve-3d 链，砖恒不越过墙面（角抬升力臂是半对角 37.12px 而非半宽，最坏角 z ≈ −23u² < 0 对所有 d 成立）；逐砖明度变异必须走**非线性**空间哈希（线性式 (a·c+b·r)%3 等值集恒为直线 → 对角条纹，与系数是否素数无关）；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 撤静态砖层、砖床原地留用；**感知等价而非像素等价**——实测砖体内部均值差 0.74/255、砖上左缘 1px 环带均值 11.26/255，后者是 3.5px 分数位的半像素抗锯齿，v6 即已存在，口径见 v8 spec §6.1），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层）
+- ✅ `brick-well` — 真砖重力井塌陷（WallBricks：全局仅 3 标量弹簧「井心 x/y + 强度」半隐式欧拉，砖的下陷 ≤36px / 坡斜上限 20° / 向心聚拢 ≤3px / 微缩 ≤5% / 渐暗 ≤35% 全部是井心位置的纯函数，零砖级状态；影响半径 ~150px、坑底经中心阻尼放平；逐帧只写 transform/opacity、圈外砖 lastW 双零跳过、弹簧收敛即停帧；**v8 起零发光豁免**——井深处的 opacity 降露出的是更暗的砖床槽底，不是光；per-element perspective 不建 preserve-3d 链，砖恒不越过墙面；逐砖明度变异必须走**非线性**空间哈希（线性式 (a·c+b·r)%3 等值集恒为直线 → 对角条纹，与系数是否素数无关）；仅 hover+fine 且非 RM 懒启动接管（`[data-live]` 撤静态砖层、砖床原地留用；**感知等价而非像素等价**），触屏/RM/无 JS = 静态 tile 原样；mouse-tracking 豁免第 2 例，仅限 BlueprintWall 砖层。⚠️ 改物理参数前必读 v8 spec §5–§6：实际峰值倾角/力臂推导/接管闪变逐像素实测均在那里，**上限之外的数值不得凭直觉改**）
 - ✅ `btn-tilt` — 按钮悬停期微摆（ButtonTilt → `src/lib/pointer-tilt-engine.ts` 共享单例引擎，每按钮独立参数 k30 ζ0.6；倾角 ≤4°、仅指针在按钮盒内跟随（盒外即零——嵌墙砖在槽里不晃，v4.1 的 130px 邻域跟随已退役）；仅 hover+fine 且非 RM 挂引擎，触屏/RM/无 JS = 纯透传 span；与本体顶出 transition 分层两元素——JS 逐帧 / transition 永不同层；mouse-tracking 豁免第 3 例，仅限 ModuleButton）
 - ✅ `card-tilt` — interactive 卡指针倾斜（CardTilt → pointer-tilt-engine 同一共享引擎、per-entry 参数：≤2.5° k22 ζ0.65 慢弹簧「厚玻璃板惯性」，perspective 900px；盒内跟随盒外即零；仅 hover+fine 且非 RM 挂载，触屏/RM/无 JS = 纯静态透传；**全站禁止第二份引擎代码**；mouse-tracking 豁免第 4 例，仅限 Card interactive 变体）
 - ✅ 卡片 hover 顶起/active 微收 — interactive 卡本体 `perspective(900px) translateZ(8px)` transition + 投影落墙 + 边框增亮；active `translateZ(2px)` 0.09s 快过渡 + 投影回落半档（与 tilt 分层两元素，照 ModuleButton 先例；hover/active 均包 `@media (hover:hover)`；static/container 卡零 hover 位移）
@@ -364,9 +398,18 @@ props 是**判别联合**：`href` 与 `disabled`/`type`/`onClick` 互斥——L
   （`--wall-face-base` 石墨实底 + `--mat-face-tint` 受光沉降 + 顶棱/底缘 inset）
 - 触屏无 hover：静态齐平嵌墙 + `:active` 按入传达质感（纯 CSS，无 JS 依赖）
 - `:focus-visible`：2px accent 外描边 + 3px offset（显式定义，勿删）
-- 触达面积 ≥44px — 由类内 `padding: 0.75rem 1.75rem` 锁定；**尺寸不接受
-  使用处 utility 覆写**（引擎块在 @tailwind utilities 之后，px-*/py-*/text-*
-  会被源序压掉——写了也不生效，别写）
+- 触达面积 ≥44px — 由类内 `padding: 0.75rem 1.75rem` 锁定
+- 🚨 **引擎块在 `@tailwind utilities` 之后，同特异性按源序压过使用处 utility——
+  它吞掉的远不止尺寸类**（2026-07-27 审查校正：旧表述只提尺寸，害人以为其余能覆写）。
+  在 `<ModuleButton className>` / `<Card className>` 里写下列属性**一律静默无效**，
+  不报错、不掉 lint、devtools 里能看到被划掉：
+  `display` / `align-items` / `justify-content` / `gap` / `padding` /
+  `border-radius` / `cursor` / `transition` / `color` / `font-weight` /
+  `font-size` / `border` / `background(-image|-color)` / `box-shadow`
+  **仍然生效的**：`margin` / `width` / `height` / flex 项属性 / `position` 偏移 /
+  `text-align` 等引擎未声明的属性。
+  要改上表任一项 = 改引擎本身或加组件 prop，**不要在使用处试图覆写**。
+  同款契约适用于 `.card-glass` 与 `.form-field`。
 - Primary: `linear-gradient(135deg, #4A9FE5, #3488CC)` background
 - Border radius: **8px**（与卡片统一；槽缝环 10px 包络）
 - Font: `text-sm font-semibold` (primary) / `text-sm font-medium` (secondary)

@@ -1,5 +1,11 @@
 # Hero「Blueprint Object」设计定案
 
+> 📕 **v1 阶段正本，已被后续版本迭代**（标注于 2026-07-27）
+> 物件现行正本 = `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md`
+> （v1 → v2 砌合组合体 → v3 哑光实体机身 → v3.1 铭牌与活纹路）。
+> 本文的透视链 / 降级链 / 弹簧物理结论被后续版本明文继承，几何与材质数值已全面重标——
+> 查现行数值请读 v3 / v3.1，不要用本文的数字。
+
 > 首页 Hero 右栏 3D 物件——从 2D SVG 活蓝图升维为有物理感的立体物件。
 > 参考基准：Resend 魔方（安静、有质感、靠存在传递实力）。
 > 上位正本：`2026-07-25-frontend-redesign-design.md`（Blueprint 设计系统）。

@@ -1,5 +1,12 @@
 # Living Blueprint v4 —「Blueprint Material」设计定案
 
+> 🛑 **已退役 — 勿作实施依据**（2026-07-27）
+> 墙体现行正本 = `2026-07-27-graphite-wall-v8-design.md`（经 v4.1 → v4.2 → v6 → v8
+> 四轮推翻）；按钮现行正本 = CLAUDE.md §7（Socketed Brick v4.2）；卡片现行正本 =
+> `2026-07-26-card-system-v7-glass-design.md`；物件现行正本 =
+> `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md`。
+> 本文仅存架构决策史。
+
 > 三个工作流把 Blueprint 从「一套活图纸系统」升维成「一间材质统一的工作室」：
 > Hero 物件确立为全站材质标准（WF-A），按钮长成它的同族功能件（WF-B），
 > 砖墙从 hero 彩蛋升级为全站满铺的动态背景材质（WF-C）。

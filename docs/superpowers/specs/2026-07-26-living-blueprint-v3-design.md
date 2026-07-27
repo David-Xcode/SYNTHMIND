@@ -1,5 +1,13 @@
 # Living Blueprint v3 — 移动端重构 + 砖墙背景 + 3D 模组按钮 设计定案
 
+> 🛑 **WF2（砖墙）/ WF3（按钮）已退役 — 勿作实施依据**（2026-07-27）
+> 墙体现行正本 = `2026-07-27-graphite-wall-v8-design.md`（本文的「BlueprintGrid 升维 /
+> 网格翘起」路线已于 v4.1 被方砖取代，砖面网格纹路现被明令禁绝）；按钮现行正本 =
+> CLAUDE.md §7（Socketed Brick v4.2 嵌墙砖）。
+> **WF1（移动端横陈 ELEV. 变体）仍然有效**，其现行口径以
+> `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md` 为准。
+> 本文其余部分仅存架构决策史。
+
 > 三个工作流把 Blueprint 从「一个活物件」升维成「一套活图纸系统」：
 > 移动端有自己的图纸（WF1）、网格背景藏着 3D 跟随系统（WF2）、
 > 按钮成为与 Hero 物件同语言的悬空模组（WF3）。

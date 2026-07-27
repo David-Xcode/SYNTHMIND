@@ -1,5 +1,10 @@
 # Synthmind v4.1 —「Square Brick Material」砖墙与按钮重设计（推翻 v4 部分定案的返工令）
 
+> ✅ **任务已于 2026-07-26 完成 — 仅存档，勿再执行。**
+> 本文是当时的施工任务书，其墙体/按钮定案已被 v4.2 → v6 → v8 连续推翻。
+> 现行正本：墙体 = `docs/superpowers/specs/2026-07-27-graphite-wall-v8-design.md`；
+> 按钮 = `CLAUDE.md` §7。
+
 ## 你接手的是什么
 
 - **v4 已实施并提交为基线**（commit `a7d9050`，其前是 v4 spec `241d0bc`）：

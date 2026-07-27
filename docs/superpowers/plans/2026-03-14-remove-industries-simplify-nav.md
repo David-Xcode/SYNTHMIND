@@ -1,12 +1,20 @@
 # Remove Industries & Rename Case Studies → Products
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> ✅ **已于 2026-03-14 全部完成 — 仅存档，勿再执行。**
+> **给 agent：不要按本文件动手。** 这里描述的文件早已删除或改名，照做只会去 `rm`
+> 不存在的路径、按已升级的框架 API 反向改写。全部 checkbox 已勾选以反映真实状态。
+> 落地证据：`src/app/(public)/industries/` 与 `src/data/industries.ts` 均不存在；
+> `next.config.js` 有对应 308 兜底；导航已是三链 About | Our Work | Contact
+> （label 后于 2026-07-26 由 "Products" 改为 "Our Work"，路由仍是 `/products`）。
+> 对应设计文档：`docs/superpowers/specs/2026-03-14-remove-industries-simplify-nav-design.md`。
+> 本仓现行约定见根目录 `CLAUDE.md`。
 
 **Goal:** Completely remove the "Industries" concept and rename "Case Studies" to "Products", resulting in a flat 3-link navigation: About | Products | Contact.
 
 **Architecture:** This is a deletion-heavy refactoring. We remove industry routes, components, data, and filters. We rename the case-studies route to products and update all internal links. The SiteHeader simplifies from dropdown nav to flat links.
 
-**Tech Stack:** Next.js 14, React 18, TypeScript, Tailwind CSS 3
+**Tech Stack（执行当时 · 2026-03）:** Next.js 14, React 18, TypeScript, Tailwind CSS 3
+（⚠️ 仓库现状已是 Next 16.2 / React 19.2 —— 本文件的 API 写法一律不可照抄）
 
 ---
 
@@ -48,7 +56,7 @@
 **Files:**
 - Modify: `src/data/case-studies.ts`
 
-- [ ] **Step 1: Remove industry type, fields, and filter function**
+- [x] **Step 1: Remove industry type, fields, and filter function**
 
 Remove `IndustrySlug` type (lines 4-8), remove `industry` and `industryLabel` from `CaseStudy` interface (lines 14-15), remove those fields from all 6 entries, remove `getCaseStudiesByIndustry` function (lines 243-244). Update file header comment.
 
@@ -75,12 +83,12 @@ Remove the comment on easy-sign about "跨行业产品".
 Remove `getCaseStudiesByIndustry` function entirely.
 Rename `getCaseStudyBySlug` → keep as is (still needed).
 
-- [ ] **Step 2: Verify no compile errors**
+- [x] **Step 2: Verify no compile errors**
 
 Run: `npx tsc --noEmit 2>&1 | head -30`
 Expected: Errors in files that still import removed types (will fix in later tasks)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/data/case-studies.ts
@@ -92,13 +100,13 @@ git commit -m "refactor: remove industry fields from case studies data"
 **Files:**
 - Delete: `src/data/industries.ts`
 
-- [ ] **Step 1: Delete file**
+- [x] **Step 1: Delete file**
 
 ```bash
 rm src/data/industries.ts
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/data/industries.ts
@@ -110,7 +118,7 @@ git commit -m "refactor: delete industries data file"
 **Files:**
 - Modify: `src/data/navigation.ts`
 
-- [ ] **Step 1: Rewrite to flat nav + rename Products**
+- [x] **Step 1: Rewrite to flat nav + rename Products**
 
 ```typescript
 // ─── 导航结构常量 ───
@@ -144,7 +152,7 @@ export const footerNav = {
 };
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/data/navigation.ts
@@ -160,7 +168,7 @@ git commit -m "refactor: simplify navigation to flat structure, rename to Produc
 **Files:**
 - Modify: `src/components/layout/SiteHeader.tsx`
 
-- [ ] **Step 1: Remove all dropdown/accordion logic**
+- [x] **Step 1: Remove all dropdown/accordion logic**
 
 Remove:
 - `ChevronIcon` component (lines 14-31)
@@ -175,12 +183,12 @@ Remove:
 
 The `NavItem` interface no longer has `children`, so no conditional rendering needed. All items render as plain `<Link>`.
 
-- [ ] **Step 2: Verify header renders correctly**
+- [x] **Step 2: Verify header renders correctly**
 
 Run: `npx tsc --noEmit 2>&1 | grep -i header`
 Expected: No errors
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/layout/SiteHeader.tsx
@@ -192,14 +200,14 @@ git commit -m "refactor: simplify SiteHeader to flat navigation without dropdown
 **Files:**
 - Modify: `src/components/layout/SiteFooter.tsx`
 
-- [ ] **Step 1: Remove Industries column, rename Projects → Products**
+- [x] **Step 1: Remove Industries column, rename Projects → Products**
 
 Remove the entire Industries `<div>` block (lines 57-75).
 Change grid from `md:grid-cols-4` to `md:grid-cols-3`.
 Rename "Projects" heading to "Products" (line 80).
 Change `footerNav.projects` to `footerNav.products` (line 83).
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/components/layout/SiteFooter.tsx
@@ -211,7 +219,7 @@ git commit -m "refactor: remove Industries column from footer, rename to Product
 **Files:**
 - Modify: `src/components/home/FeaturedCaseStudies.tsx`
 
-- [ ] **Step 1: Update links and remove industry badge**
+- [x] **Step 1: Update links and remove industry badge**
 
 - Change eyebrow from "Case Studies" to "Products" (line 24)
 - Change SectionTitle bold from "Projects" to "Products" (line 26)
@@ -220,7 +228,7 @@ git commit -m "refactor: remove Industries column from footer, rename to Product
 - Change "View case study" to "View product" (line 68)
 - Change "View All Projects" link href from `/case-studies` to `/products` (line 94)
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/components/home/FeaturedCaseStudies.tsx
@@ -232,12 +240,12 @@ git commit -m "refactor: update FeaturedCaseStudies links to /products, remove i
 **Files:**
 - Modify: `src/components/case-study/RelatedCaseStudies.tsx`
 
-- [ ] **Step 1: Update link and remove industryLabel**
+- [x] **Step 1: Update link and remove industryLabel**
 
 - Change `href={/case-studies/${cs.slug}}` to `href={/products/${cs.slug}}` (line 35)
 - Remove the industryLabel paragraph (lines 53-55): `<p className="text-txt-quaternary text-xs mb-2">{cs.industryLabel || 'Small Business'}</p>`
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/components/case-study/RelatedCaseStudies.tsx
@@ -259,7 +267,7 @@ git commit -m "refactor: update RelatedCaseStudies links, remove industry label"
 - Delete: `src/components/home/IndustryCards.tsx`
 - Delete: `src/app/(public)/case-studies/CaseStudyFilter.tsx`
 
-- [ ] **Step 1: Delete all files**
+- [x] **Step 1: Delete all files**
 
 ```bash
 rm -rf src/app/\(public\)/industries/
@@ -271,13 +279,13 @@ rm src/components/home/IndustryCards.tsx
 rm src/app/\(public\)/case-studies/CaseStudyFilter.tsx
 ```
 
-- [ ] **Step 2: Remove empty directories if any**
+- [x] **Step 2: Remove empty directories if any**
 
 ```bash
 rmdir src/components/industry/ 2>/dev/null || true
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add -A
@@ -291,13 +299,13 @@ git commit -m "refactor: delete industry routes, components, and filter"
 - Modify: `src/app/(public)/products/page.tsx` (the overview page)
 - Modify: `src/app/(public)/products/[slug]/page.tsx` (the detail page)
 
-- [ ] **Step 1: Rename directory**
+- [x] **Step 1: Rename directory**
 
 ```bash
 mv src/app/\(public\)/case-studies/ src/app/\(public\)/products/
 ```
 
-- [ ] **Step 2: Update overview page**
+- [x] **Step 2: Update overview page**
 
 In `src/app/(public)/products/page.tsx`:
 - Remove CaseStudyFilter import and usage
@@ -307,14 +315,14 @@ In `src/app/(public)/products/page.tsx`:
 - Render all products directly in a grid using GlassCard, linking to `/products/[slug]`
 - Remove industry badge (`industryLabel || 'Small Business'`) from cards
 
-- [ ] **Step 3: Update detail page**
+- [x] **Step 3: Update detail page**
 
 In `src/app/(public)/products/[slug]/page.tsx`:
 - Update canonical URL from `/case-studies/${slug}` to `/products/${slug}`
 - Update breadcrumb: `{ label: 'Products', href: '/products' }`
 - Update JSON-LD URL to `/products/${slug}`
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add -A
@@ -330,7 +338,7 @@ git commit -m "refactor: rename case-studies route to products, remove industry 
 **Files:**
 - Modify: `src/app/sitemap.ts`
 
-- [ ] **Step 1: Remove industry pages, update case-study paths**
+- [x] **Step 1: Remove industry pages, update case-study paths**
 
 Remove `import { getAllIndustrySlugs } from '@/data/industries'` (line 6).
 Remove entire `industryPages` block (lines 42-49).
@@ -338,7 +346,7 @@ Change static page URL from `/case-studies` to `/products` (line 34).
 Change case study URLs from `/case-studies/${slug}` to `/products/${slug}` (line 53).
 Remove `...industryPages` from return (line 59).
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/app/sitemap.ts
@@ -351,19 +359,19 @@ git commit -m "refactor: remove industry pages from sitemap, update to /products
 - Modify: `src/app/(public)/page.tsx`
 - Modify: `src/app/(public)/about/page.tsx`
 
-- [ ] **Step 1: Update homepage metadata**
+- [x] **Step 1: Update homepage metadata**
 
 Change title to: `'Synthmind | AI-Powered Software Studio'`
 Change description to remove "insurance, real estate, accounting, and construction":
 `'Toronto-based AI startup building tools that actually work. Workflow automation, legacy modernization, and custom AI solutions.'`
 
-- [ ] **Step 2: Update about page metadata**
+- [x] **Step 2: Update about page metadata**
 
 Change title to: `'About Synthmind | AI Software Studio'`
 Change description to remove specific industry mentions:
 `'Synthmind is a Toronto-based AI startup building software that modernizes traditional businesses. We deliver workflow automation, legacy modernization, and custom AI solutions.'`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/app/\(public\)/page.tsx src/app/\(public\)/about/page.tsx
@@ -375,14 +383,14 @@ git commit -m "refactor: update metadata to remove industry references"
 **Files:**
 - Modify: `src/lib/chatConstants.ts`
 
-- [ ] **Step 1: Remove industry section and update routes**
+- [x] **Step 1: Remove industry section and update routes**
 
 In `SYSTEM_PROMPT`:
 - Remove entire "### Industries We Serve" section (lines 53-57)
 - Update "### Products / Past Projects" URLs from `/case-studies/` to `/products/`
 - Update "### Website Pages" section: remove industry routes, change `/case-studies` to `/products`
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/lib/chatConstants.ts
@@ -394,7 +402,7 @@ git commit -m "refactor: update chat system prompt to remove industries"
 **Files:**
 - Modify: `tailwind.config.js`
 
-- [ ] **Step 1: Remove industry color tokens**
+- [x] **Step 1: Remove industry color tokens**
 
 Remove the `industry` color group from `theme.extend.colors`:
 ```
@@ -406,7 +414,7 @@ industry: {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add tailwind.config.js
@@ -415,20 +423,20 @@ git commit -m "refactor: remove industry color tokens from Tailwind config"
 
 ### Task 14: Final verification
 
-- [ ] **Step 1: Type check**
+- [x] **Step 1: Type check**
 
 Run: `npx tsc --noEmit`
 Expected: No errors
 
-- [ ] **Step 2: Build check**
+- [x] **Step 2: Build check**
 
 Run: `npm run build`
 Expected: Successful build with no errors
 
-- [ ] **Step 3: Dev server smoke test**
+- [x] **Step 3: Dev server smoke test**
 
 Run: `lsof -ti :3000 | xargs kill -9 2>/dev/null; npm run dev`
 Visit: `/`, `/about`, `/products`, `/products/easy-sign`, `/contact`
 Verify: No broken links, no industry references in UI
 
-- [ ] **Step 4: Final commit if any fixes needed**
+- [x] **Step 4: Final commit if any fixes needed**

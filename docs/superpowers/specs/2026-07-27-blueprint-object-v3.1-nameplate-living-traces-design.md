@@ -1,6 +1,8 @@
 # Blueprint Object v3.1 · Nameplate & Living Traces 铭牌与活纹路 — 设计定案
 
-> 日期：2026-07-27 ／ 状态：定案，待实施（交接给新 session 执行）
+> 日期：2026-07-27 ／ 状态：✅ **已实装**（commit `2499e43`「feat(design): Blueprint
+> Object v3.1 实装 — Archivo 铭牌三层叠印 + 间歇式活纹路三件套」）
+> **本文是物件系统的现行正本**——描述的是现状，不是未来计划。
 > 前作：2026-07-27-blueprint-object-v3-solid-design.md（v3 哑光实体，本次改动的几何/材质基座，已实装并推送 `c7e5042`）
 > David 两项方向决策（2026-07-27 确认）：**SYNTHMIND 用 Archivo 宽体铭牌** ／
 > **纹路动画走克制仪器档（间歇式三件套）**
@@ -157,7 +159,8 @@ SYNTH CORE 的 accent fill 保持，仅加同款投影。图签格字体不动�
 2. **§6 白名单 +3 条**（连参数上限一并入册）：
    - ✅ `trace-pulse` — 走线数据脉冲（stroke-dashoffset invisible-hold 间歇式；
      dash 4 gap 196 @ pathLength 100（gap > pathLength+dash 防周期回绕，
-     实施修订见 §2.1）、头 α≤0.85、零 blur；周期 ≥9s 互质错峰、
+     实施修订见 §2.1）、头 α≤0.85、零 blur；周期 ≥9s **各异（非两两互质——
+     gcd(9,15)=3，见 §2.1 碰撞实算）** + delay 实算错峰、
      可见窗 ≤15%；仅 BlueprintObject 桌面变体走线 overlay）
    - ✅ `pip-cycle` — 状态灯序列（opacity 错相轮转，周期 ≥6s；RM 回落首格常亮；
      仅 BlueprintObject pips/端口阵列）

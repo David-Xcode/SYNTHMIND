@@ -1,5 +1,10 @@
 # 信息架构与排版层级重构（IA v1 · Persuasion Chain）设计定案
 
+> ✅ **信息架构现行正本 · Phase 1–3 已实装**（`486229e` + merge `2565d18`）。
+> 本文 §3 的首页说服链**推翻**了 `2026-07-26-homepage-slim-ourwork-restructure-design.md`
+> §0#1/#4 与 §1 的「主页只留 Hero + 信任带」——该 spec 已加退役横幅；其地产打包 /
+> Our Work 命名 / 聚合详情页部分仍然有效。
+
 > 日期：2026-07-27
 > 前置调研：全站代码走查 + Playwright 1440px 实测截图（首页 / products / about /
 > contact / brokerage-platform / easy-sign case study）

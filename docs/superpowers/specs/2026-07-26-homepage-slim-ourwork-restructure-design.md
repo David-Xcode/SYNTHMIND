@@ -1,22 +1,45 @@
 # 主页瘦身 + Our Work 重构 + 地产聚合详情页 — 设计定案
 
-> 2026-07-26 · David 拍板。本 spec 覆盖三块联动改动：主页大瘦身、/products 页重排
-> （AI-Native BMS 升旗舰 + CSIO 新闻稿背书）、地产打包为一张项目卡 + 聚合详情页。
+> 🛑 **主页部分已被推翻 — 勿作实施依据**（2026-07-27）
+> **首页现行正本 = `2026-07-27-ia-hierarchy-redesign-design.md`（IA v1 · 说服链）。**
+> 被推翻的具体条款：**§0 决策 #1**（「主页全删，只留 Hero + Trusted by」）、
+> **§0 决策 #4**（「Capabilities / Process 内容彻底删除」）、**§1 主页删减**
+> （删 `FeaturedWork.tsx` / `ProcessSection.tsx` / `CapabilitiesSection.tsx`）。
+> IA v1 诊断出「首页 = Hero + 灰 logo 带即结束」正是说服链断裂的病灶，首页已恢复
+> 五段结构：Hero → SocialProofBar → 01 旗舰 BMS → 02 Shipped 精选（FeaturedWork
+> 已重建）→ 03 方法带（ProcessStrip，数据源 `src/data/process.ts`）→ CTABanner。
+> **照本文 §1 执行 = 把刚加回来的三段再删一遍。**
+>
+> ✅ **仍然有效（IA v1 未触碰，继续作为现行定案）**：
+> §0 决策 #2 地产只收已上线 5 盘 · #3 导航 label 改 "Our Work" / 路由保持 `/products` ·
+> #5 地产 = 一张项目卡（S.06）+ 聚合详情页 · #6 BMS 升 Our Work 页第一段旗舰；
+> §2 导航数据 · §3 Our Work 页重排（含 3.1 CSIO 背书口径与事实红线、3.2 作品网格）·
+> §4 地产聚合详情页（含 T-One 点名口径与联系方式红线）· §6 非目标。
+> §3.1 保留 `id="in-development"` 锚点亦是显式定案，勿当作僵尸代码删除。
+
+> 2026-07-26 · David 拍板。本 spec 覆盖三块联动改动：主页大瘦身（**已作废，见上**）、
+> /products 页重排（AI-Native BMS 升旗舰 + CSIO 新闻稿背书）、地产打包为一张项目卡 +
+> 聚合详情页。
 > 前置定案正本：v7 卡片系统（2026-07-26-card-system-v7-glass-design）、
-> v6 灯箱墙（2026-07-26-lantern-wall-v6-design）——本次不动任何材质/动效层。
+> 墙体（当时为 v6；**现行 = 2026-07-27-graphite-wall-v8-design**）——本次不动任何
+> 材质/动效层。
 
 ## 0. 用户拍板清单（逐条确认过）
 
 | # | 决策 | 结论 |
 |---|---|---|
-| 1 | 主页删减范围 | **全删，只留 Hero + Trusted by 滑动条**（Capabilities / FeaturedWork / Process / CTABanner 四段移除） |
+| 1 | 主页删减范围 | 🛑 **已被 IA v1 推翻，勿执行** — 原结论「全删，只留 Hero + Trusted by 滑动条」（Capabilities / FeaturedWork / Process / CTABanner 四段移除） |
 | 2 | 地产收录范围 | **只收已上线 5 盘**：Avella / Kingshaven / Woodbine Parkside / UnionGlens / **Rosaleen（新增）**。Quitowns、Bridle Path 未上线不收，上线后数据层加条目即可 |
 | 3 | 命名与路由 | **导航 label 改 "Our Work"，路由保持 /products 不动**（零 SEO 成本） |
-| 4 | Capabilities / Process 内容去向 | **彻底删除**（About 页已有 Approach/流程叙事，不搬运） |
+| 4 | Capabilities / Process 内容去向 | 🛑 **已被 IA v1 推翻，勿执行** — 原结论「彻底删除」；实际 Process 已提为 `src/data/process.ts` 双消费（about 详版 + 首页 ProcessStrip 一句话版） |
 | 5 | 地产形态 | **一张项目卡（作品网格 S.06）+ /products/real-estate 聚合详情页**，与软件产品完全平级 |
 | 6 | BMS 地位 | **升为 Our Work 页第一段旗舰模块**，链接 CSIO 官方新闻稿，用 Compass 可公开事实充实介绍，宗旨叙事 = 赋能 broker、释放人类潜能 |
 
-## 1. 主页（src/app/(public)/page.tsx）
+## 1. 主页（src/app/(public)/page.tsx） 🛑 整节已作废
+
+> **本节已被 `2026-07-27-ia-hierarchy-redesign-design.md` §3 全盘取代，勿执行。**
+> 下文保留原文只为记录决策史。现状：首页五段说服链，`FeaturedWork.tsx` 与
+> `ProcessStrip.tsx` 已重建并在用。
 
 **保留**：`JsonLd`（Organization）+ `HomeHero` + `SocialProofBar`。
 **移除引用并删除文件**：`CapabilitiesSection.tsx`、`FeaturedWork.tsx`、`ProcessSection.tsx`

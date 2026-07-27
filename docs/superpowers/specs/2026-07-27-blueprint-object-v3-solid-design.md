@@ -1,6 +1,9 @@
 # Blueprint Object v3 · Solid Machine 哑光实体机身 — 设计定案
 
-> 日期：2026-07-27 ／ 状态：定案
+> 日期：2026-07-27 ／ 状态：✅ **已实装**（`c7e5042`）。
+> ⚠️ 本文是 **v3.1 的几何/材质基座**，未被推翻但**不是最新**——铭牌与活纹路（trace-pulse /
+> pip-cycle / ring-step）定案在 `2026-07-27-blueprint-object-v3.1-nameplate-living-traces-design.md`。
+> 改物件前两文并读，冲突处以 v3.1 为准。
 > 前作：2026-07-25-blueprint-object-design.md（v1 透视链/降级链）、
 > 2026-07-26-blueprint-object-v2-modular-design.md（v2 七模块砌合）、
 > 2026-07-26-living-blueprint-v3-design.md（移动横陈变体）
