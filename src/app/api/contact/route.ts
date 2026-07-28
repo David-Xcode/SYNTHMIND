@@ -38,8 +38,14 @@ function getResendClient(): Resend {
 // 自动发信」这个动作本身仍留下三条与正文无关的风险——定向邮件轰炸、收件人投诉
 // 打击 synthmind.ca 的发信信誉、Resend 配额双倍消耗。这三条**只能靠跨实例限流
 // 压住**，本文件里的 Map 做不到。
-// 对应规则：path=/api/contact + method=POST，rate_limit / 3600s / 10 次 / by ip。
-// ⚠️ 规则生效后请回来把这段注释改成如实描述，别让下一个审查者重新推一遍。
+// ✅ 2026-07-28 已落地：Vercel Firewall 自定义规则 "Contact form rate limit"
+//    （path=/api/contact AND method=POST → rate_limit 3600s / 10 次 / by ip）
+//    已 publish 到生产。它是跨实例的真边界，本文件的 Map 只是热实例连点保护。
+// ⚠️ 现为 **log 档**：超限只记录、**不阻断**。这是刻意的第一阶段——直接 deny
+//    有误伤真客户的风险（同一 NAT 出口、同一办公室多人）。观察一两周真实流量后
+//    再把 --rate-limit-action 改成 deny。**在切到 deny 之前，平台侧只是在看，
+//    没有在拦**，别把它当已完成的防护。
+// 面板：Vercel → synthmind → Firewall → 规则名筛选可看命中流量。
 const RATE_WINDOW_MS = 60_000;
 const RATE_MAX_HITS = 3;
 // x-real-ip 缺失时全部请求会挤进同一个 'unknown' 桶（Vercel 恒设该头，此路径
