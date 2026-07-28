@@ -12,6 +12,12 @@
 /build
 /.next
 
+# vercel — link 后生成，含 orgId/projectId，且可能缓存凭据。本仓 PUBLIC，一律不入库
+.vercel
+
+# 浏览器自动化临时产物（截图/快照/console log），不属于源码
+.playwright-mcp
+
 # misc
 .DS_Store
 .env

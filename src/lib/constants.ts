@@ -6,6 +6,11 @@ export const SITE_URL = 'https://www.synthmind.ca';
 
 export const CONTACT_EMAIL = 'David.wang@synthmind.ca';
 
+// 发信地址 — Resend 已验证的发信域。管理员通知与客户回执共用同一发件人，
+// 此前是 route.ts 里的字面量；加第二封信后就会变成两处硬编码，故收拢于此。
+// ⚠️ 改这里等于换发信域，必须先在 Resend 后台完成新域的 DNS 验证，否则全部发信失败。
+export const MAIL_FROM = 'Synthmind <noreply@synthmind.ca>';
+
 // 服务行业数 — about stats 与首页信任带图签同源（此前两处各自硬编码 '4'）。
 // 口径 = insurance / real estate / accounting & tax / construction，可与
 // contact FAQ 交叉验证；产品卡的 industry 眉标是展示标签，不是这份清单的计数源

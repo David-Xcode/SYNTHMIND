@@ -133,7 +133,8 @@ import SheetLabel from '@/components/shared/SheetLabel';
 
 **豁免：**
 - 第三方技术品牌色（React 蓝、AWS 橙等）集中在 `src/lib/tech-brand-colors.ts`，组件不得内联 hex。
-- 邮件 HTML（`src/app/api/contact/route.ts`）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
+- 邮件 HTML（`src/lib/email-templates.ts`——2026-07-27 已从 route.ts 抽出，本处路径同步修正）的品牌色：邮件客户端不支持 CSS 变量 / Tailwind class，必须内联 hex，统一从 `src/lib/constants.ts` 的 `BRAND_ACCENT` / `BRAND_ACCENT_DARK` 取，不得在模板里写字面 hex。
+  🚨 **改邮件模板前必读该文件头的回执纪律**（正本在那里，此处只是指针）：全站两封信 = 管理员通知（发给自己）+ 客户回执（发给填表人）。**回执正文不得回显任何用户提交的内容**——这是回执能够存在的前提，不是可权衡的细节。旧回执正是因为原样回显 Subject/Message 而在 2026-07-27 被判为发信中继并整体删除。发信地址一律取 `MAIL_FROM`，不得写字面量。
 - `BlueprintObject` / 能力图标等 hairline SVG 的 rgba 描边色阶（同一蓝色相不同 alpha），及其逐面着色 fill 的中性黑压暗渐变与中性白受光渐变/棱线、底缘压暗 inset（`rgba(0,0,0,α)` / `rgba(255,255,255,α)` — 均为明度轴不是第二色相；v3 Solid Machine 起物件面与按钮/玻璃卡共享厚度暗示语言，顶面白色受光洗属同一豁免，正本 = 2026-07-27-blueprint-object-v3-solid-design spec §2）。
 - 按钮系统（globals.css §7 块）的厚度暗示 inset：中性白受光棱线 `rgba(255,255,255,α)` 与中性黑压暗 `rgba(0,0,0,α)`（同为明度轴）。**secondary 面基色消费 `var(--bg-elevated)`**（Void Field v1 §4.2 起直接锚到背景层级 token —— #111620 与砖墙时代那个已删除的面基色**逐位相同、零视觉变化**，换的只是语义锚点：按钮 = 悬在深空前的仪器面板键）；槽缝环 = `var(--bg-base)` 实底。✅ v8 遗留的未结项「按钮槽腔比砖床亮两档、未统一」已随砖床删除而**自动溶解**——背景层不再有任何槽结构，槽腔深浅从此只对自己负责。基色一律走 token，不得回退字面 rgba。
 - 背景 token 的 rgba 形态（半透明基面与投影）：`rgba(8,11,16,α)` = `--bg-base` #080B10、`rgba(12,16,23,α)` = bg-surface #0C1017——玻璃卡面底 / 按钮投影在用。**只允许这两个既有 hex 的 rgba 化，不得引入新的字面背景色**。

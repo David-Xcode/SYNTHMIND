@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { CONTACT_EMAIL } from '@/lib/constants';
+import { CONTACT_EMAIL, MAIL_FROM } from '@/lib/constants';
 import {
   CONTACT_SOURCE,
   EMAIL_REGEX,
@@ -9,7 +9,10 @@ import {
   MIN_SUBMIT_ELAPSED_MS,
 } from '@/lib/contact-form';
 import { checkCsrf } from '@/lib/csrf';
-import { renderAdminNotification } from '@/lib/email-templates';
+import {
+  renderAdminNotification,
+  renderCustomerReceipt,
+} from '@/lib/email-templates';
 
 // route segment config — 与 vercel.json 的 functions.maxDuration 同值。
 // 写在代码里的这份不会因目录结构变化而失配（vercel.json 按源码路径匹配）。
@@ -28,6 +31,15 @@ function getResendClient(): Resend {
 // 并发扩容 / 冷启动即绕过。它只能挡住「同一热实例上的连点」这一种最廉价的滥用。
 // 真正跨实例生效的限流是 Vercel Firewall 的 Rate Limit 规则（项目设置里配，零代码），
 // 或 KV/Redis 计数器——两者都未引入，所以不要把这段代码当成防护依据。
+//
+// 🚨 2026-07-28 起，平台侧限流从「已知不足」升级为**上线前置条件**：
+// 客户回执恢复后，每次提交会额外向**提交者自己填写的地址**发一封信。正文已去毒
+// （零用户内容回显，见 email-templates.ts 文件头），但「向未经所有权验证的地址
+// 自动发信」这个动作本身仍留下三条与正文无关的风险——定向邮件轰炸、收件人投诉
+// 打击 synthmind.ca 的发信信誉、Resend 配额双倍消耗。这三条**只能靠跨实例限流
+// 压住**，本文件里的 Map 做不到。
+// 对应规则：path=/api/contact + method=POST，rate_limit / 3600s / 10 次 / by ip。
+// ⚠️ 规则生效后请回来把这段注释改成如实描述，别让下一个审查者重新推一遍。
 const RATE_WINDOW_MS = 60_000;
 const RATE_MAX_HITS = 3;
 // x-real-ip 缺失时全部请求会挤进同一个 'unknown' 桶（Vercel 恒设该头，此路径
@@ -80,6 +92,52 @@ function devDetails(err: unknown): string | undefined {
     if (typeof e.message === 'string') return e.message;
   }
   return String(err);
+}
+
+// ── 两封信的死线 ──
+// 🚨 起因不是「慢」，是 try/catch **接不住「永不返回」**：Resend SDK v4 内部是
+// 裸 fetch，不带 timeout 也不带 AbortSignal。这是一类故障，两封信都会中招：
+// · 第 2 封挂起 → 函数跑满 maxDuration 或客户端 10s abort 先触发 → 一次**已经
+//   成功**的提交变成用户可见的超时失败 → 用户重试 → 你收到两封留言、对方收到
+//   两封回执。破的是「回执失败不改变提交成败」。
+// · 第 1 封挂起 → 函数被平台杀掉 → catch 不执行、sent 判定不执行、**[LOST_SUBMISSION]
+//   兜底日志不执行**、502 也不返回。留言正文没有落进任何地方，Vercel 侧只留一条
+//   Task timed out。那条兜底日志正是为「留言不人间蒸发」设计的，在挂起路径上却是
+//   空头支票——所以第 1 封的死线比第 2 封更要紧，它保护的是数据不是体验。
+// ⚠️ **三项不变量，改任一值前先对齐全部三项**：
+//     NOTIFY + RECEIPT  <  maxDuration  <  客户端 abort
+// 第三项容易被漏掉，而它恰恰是**最紧的绑定约束**：ContactForm.tsx 的 abort
+// 计时从 fetch **之前**起表，因此它买单的不只是服务端执行时间，还有连接建立、
+// 边缘路由与**冷启动**——而冷启动通常不计进 maxDuration。6000+2500 相对
+// maxDuration 尚余 1.5s，相对一个 10s 的客户端 abort 却会被 2s 冷启动顶穿：
+// 用户看到超时失败，而两封信其实都发了 → 重试 → 你收两封、对方收两封。
+// 故客户端 abort 现为 15s（那一侧有回指注释）。
+const NOTIFY_TIMEOUT_MS = 6000;
+const RECEIPT_TIMEOUT_MS = 2500;
+
+/**
+ * 给 promise 加死线。超时后原 promise 仍在后台跑（fetch 无法取消）：对第 2 封
+ * 可以接受（要么悄悄发出去、要么悄悄失败，都不影响本次成败）；对第 1 封则
+ * 保证了兜底日志与 502 一定跑得到。
+ * clearTimeout 不可省——留着的 timer 会拖住 event loop，延后函数实例结束。
+ * 错误的 `name` 而非 `message` 带标识：errorSummary() 为防 PII 只取 name/statusCode，
+ * 标识放 message 里会被丢掉，超时在日志里就与 SDK 任何抛错一字不差 ——
+ * 死线会因此失去自我监测能力（Resend p95 漂移时你无从判断该调高哪个值）。
+ */
+function withDeadline<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () =>
+        reject(
+          Object.assign(new Error(`deadline exceeded after ${ms}ms`), {
+            name: 'DeadlineExceeded',
+          }),
+        ),
+      ms,
+    );
+  });
+  return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
 }
 
 function badRequest(error: string, status = 400) {
@@ -210,8 +268,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // ── 发信：只发管理员通知 ──
-  // 面向陌生地址的自动回执已删除（发信中继滥用面的唯一放大器）。
+  // ── 发信第 1 封：管理员通知（业务命脉，成败以它为准）──
   const { subject: mailSubject, html } = renderAdminNotification({
     name,
     email,
@@ -223,13 +280,16 @@ export async function POST(request: NextRequest) {
   let sent = false;
   let failure: unknown = null;
   try {
-    const result = await getResendClient().emails.send({
-      from: 'Synthmind <noreply@synthmind.ca>',
-      to: [CONTACT_EMAIL],
-      subject: mailSubject,
-      replyTo: email,
-      html,
-    });
+    const result = await withDeadline(
+      getResendClient().emails.send({
+        from: MAIL_FROM,
+        to: [CONTACT_EMAIL],
+        subject: mailSubject,
+        replyTo: email,
+        html,
+      }),
+      NOTIFY_TIMEOUT_MS,
+    );
     if (result.error) {
       failure = result.error;
       console.error('Notification email API error', errorSummary(result.error));
@@ -245,6 +305,13 @@ export async function POST(request: NextRequest) {
     // 兜底持久化：Resend 是唯一出口，发不出去这条留言就没有任何人收到。
     // 写进 Vercel 运行日志至少能事后捞回——这是「留言不人间蒸发」压过
     // 「日志不留 PII」的**有意取舍**，仅在通知失败路径触发。
+    //
+    // ⚠️ **运维口径：这条日志会有假阳性**。死线命中时被放弃的 fetch 仍可能
+    // 投递成功，此时留言其实已经在你邮箱里。判据 = 看它前一行：若是
+    // `Notification email threw { name: 'DeadlineExceeded' }`，本条只表示
+    // **未确认送达**，不表示确实丢了——**人工补救前先查收件箱**，否则会照着
+    // 日志把同一条留言再处理一遍、给客户发第二次回复。
+    // 偏差方向是刻意的：宁可多报丢失，也不漏报。
     console.error(
       '[LOST_SUBMISSION]',
       JSON.stringify({
@@ -267,8 +334,49 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // ── 发信第 2 封：客户回执（尽力而为）──
+  // 🚨 位置不可上移：必须在管理员通知**确认送达之后**。顺序颠倒会复活
+  // 2026-07-27 审查发现 #10 —— 通知失败却已发出「我们已收到您的留言」，
+  // 用户被告知送达、你却什么也没收到，三个信号互相矛盾且留言真的丢了。
+  //
+  // 失败处理刻意与第 1 封不对称：回执发不出去不改变本次提交的成败，只降级
+  // 前端文案（不承诺一封根本没发出的确认信）。用 warn 而非 error，因为这不是
+  // 需要你介入的故障；也**不写 [LOST_SUBMISSION]** —— 留言此刻已在你邮箱里，
+  // 没有任何东西丢失，不该为此再往日志里落一份 PII。
+  //
+  // 正文零用户内容回显（renderCustomerReceipt 的不变量），故此处向陌生地址发信
+  // 不构成可控正文投递面；replyTo 指回 CONTACT_EMAIL，客户直接回复即到你手上。
+  let receiptSent = false;
+  try {
+    const receipt = renderCustomerReceipt({ name });
+    const result = await withDeadline(
+      getResendClient().emails.send({
+        from: MAIL_FROM,
+        to: [email],
+        replyTo: CONTACT_EMAIL,
+        subject: receipt.subject,
+        html: receipt.html,
+        text: receipt.text,
+      }),
+      RECEIPT_TIMEOUT_MS,
+    );
+    if (result.error) {
+      console.warn('Receipt email API error', errorSummary(result.error));
+    } else {
+      receiptSent = !!result.data;
+    }
+  } catch (err) {
+    console.warn('Receipt email threw', errorSummary(err));
+  }
+
   return NextResponse.json({
     success: true,
     message: 'Contact form submitted successfully',
+    // 前端据此决定成功态是否承诺「确认信已发出」——机器人路径的 silentSuccess()
+    // 不带此字段，因此假成功恒不承诺，无需额外分支。
+    // ⚠️ 语义是「已确认发出」而非「已发送」：死线命中后被放弃的 fetch 仍可能
+    // 投递成功，此时它是 false 但信到了。偏差方向恒为**少承诺**（用户看中性
+    // 文案却收到信，无矛盾），但**不要拿它做统计或去重计数**。
+    receiptSent,
   });
 }

@@ -5,9 +5,11 @@
 // 旧「透明底下划线」字段在满铺背景上混融（用户点名病灶），v7 改
 // 单据填写格：外置 mono label（Eyebrow tertiary）+ 实底凹格（.form-field，
 // 比玻璃卡面深一档）——背景 → 玻璃卡 → 填写格三层拉开。
-// 表单是全站唯一联系入口（邮箱已撤下展示）：提交后只发管理员通知，
-// **不再给填写人发自动回执**（2026-07-27：回执让任何人都能用已验证域向
-// 任意地址投递可控正文，是发信中继滥用面的唯一放大器）。
+// 表单是全站唯一联系入口（邮箱已撤下展示）：提交后先发管理员通知，送达后再发
+// 一封**正文零用户内容回显**的客户回执（2026-07-28 恢复；旧回执因原样回显
+// Subject/Message 成为发信中继放大器而于 2026-07-27 删除，纪律见 email-templates.ts 头）。
+// 🚨 成功文案必须跟着服务端的 receiptSent 走，不能写死承诺确认信 —— 回执是
+// 尽力而为的第二封，发失败时提交仍算成功，此时承诺一封没发出的信就是在骗用户。
 // 校验上限/邮箱形态/蜜罐字段名全部从 @/lib/contact-form 取，与服务端同源。
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -35,6 +37,9 @@ export default function ContactForm() {
   // 服务端返回的具体原因（字段超长 / 邮箱格式 / 限流 / 服务不可用）——
   // 此前全部被吞成一句 "Something went wrong"，用户只能盲目重试。
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  // 服务端是否确实发出了客户回执。仅在 true 时才承诺「确认信已发出」；
+  // 回执失败与机器人假成功路径都会落在 false，一律走中性文案。
+  const [receiptSent, setReceiptSent] = useState(false);
   const successRef = useRef<HTMLDivElement>(null);
   // 蜜罐值走 ref（不进受控 state，避免真人路径多一次渲染）
   const honeypotRef = useRef<HTMLInputElement>(null);
@@ -86,9 +91,14 @@ export default function ContactForm() {
     setStatus('sending');
     setErrMsg(null);
 
-    // 10 秒超时保护 — 防止 API 挂起时用户无限等待
+    // 超时保护 — 防止 API 挂起时用户无限等待。
+    // 🚨 15s 而非 10s：本计时从 fetch **之前**起表，除服务端执行时间外还要
+    // 覆盖连接建立、边缘路由与冷启动（后者不计进服务端 maxDuration）。
+    // 服务端两根死线之和 8.5s + 2s 冷启动已逼近 10s——按旧值会出现「两封信
+    // 其实都发了、用户却看到超时失败并重试」的最坏情形。
+    // 不变量：NOTIFY + RECEIPT < maxDuration < 此值（正本在 api/contact/route.ts）。
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
+    const timeout = setTimeout(() => controller.abort(), 15_000);
 
     try {
       const res = await fetch('/api/contact', {
@@ -113,6 +123,7 @@ export default function ContactForm() {
       }
       setStatus('sent');
       setErrMsg(null);
+      setReceiptSent(data?.receiptSent === true);
       setForm({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
@@ -163,10 +174,17 @@ export default function ContactForm() {
           Message Sent
         </h3>
         <p className="text-txt-tertiary text-sm mb-6">
-          Your message is with our team. We&apos;ll reply from a real inbox
-          within 24 hours.
+          {receiptSent
+            ? 'Your message is with our team, and a confirmation is on its way to your inbox. We’ll reply from a real inbox within 24 hours.'
+            : 'Your message is with our team. We’ll reply from a real inbox within 24 hours.'}
         </p>
-        <ModuleButton variant="secondary" onClick={() => setStatus('idle')}>
+        <ModuleButton
+          variant="secondary"
+          onClick={() => {
+            setStatus('idle');
+            setReceiptSent(false);
+          }}
+        >
           Send another message
         </ModuleButton>
       </div>
