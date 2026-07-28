@@ -4,8 +4,9 @@
 // IA v1 §4.4 出卡重构：Challenge/Solution 是**连续叙事**（多段正文），
 // 判据一判它出卡——此前每段包一张 static+accent 玻璃卡，一屏三张同规格窗
 // 让卡片彻底失去层级功能，读者也读不出「这三段是一个论证」。现在改为编号
-// 列表直排压墙：mono 序号承担次序，正文直接压在石墨墙上（正文档位 base/
-// secondary，对砖面 8.09:1，砖顶受光棱上仍 ≥4.5）。
+// 列表直排压背景：mono 序号承担次序，正文直接压在深空引力场上（正文档位
+// base/secondary，对最亮承载面「星云带芯」6.95:1 —— 砖墙时代的 8.09:1 与
+// 「受光棱上仍 ≥4.5」的论证随墙一并作废，现行基准见 CLAUDE.md §4）。
 // v4.2 的 bgClass、v7 的 Card 包裹均已连根删除；组件 API 未变。
 
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';

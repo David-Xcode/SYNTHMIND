@@ -137,7 +137,7 @@ function zeroTargets(): boolean {
 // 走 zeroTargets + kick 的话，隐藏期 rAF 本就不发帧，切回来还要先补跑一段
 // 回摆动画；直接清干净，切回即静止姿态。
 // （blur 不走这条——窗口失焦时页面往往仍可见，硬吸附会是一次可见跳变，
-//   那条沿用弹簧平滑归零，与 WallBricks 的 onBlur 同口径）
+//   那条沿用弹簧平滑归零，与 VoidFieldGL 的 onBlur 同口径）
 function snapToRest() {
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
@@ -157,7 +157,7 @@ function startEngine() {
 
   const onMove = (ev: PointerEvent) => {
     // 设备级门控（hover+fine）挡不住混合触屏笔记本的手指——事件级再滤
-    // （与 WallBricks 同一口径）：手指 pointermove 后无 pointerleave，
+    // （与 VoidFieldGL 同一口径）：手指 pointermove 后无 pointerleave，
     // 倾角会永久粘在触点姿态
     if (ev.pointerType === 'touch') return;
     // 与 onScroll 同一口径：只在真有 entry 需要动时才起帧。指针在所有盒外
@@ -215,7 +215,7 @@ function startEngine() {
     for (let i = 0; i < entries.length; i++) entries[i].rect = null;
   };
 
-  // Cmd-Tab / 切 tab / 原生对话框夺焦一般不触发 pointerleave——与 WallBricks
+  // Cmd-Tab / 切 tab / 原生对话框夺焦一般不触发 pointerleave——与 VoidFieldGL
   // 同款兜底：失焦按「指针离场」平滑归零，页面隐藏则硬吸附并停帧
   const onBlur = () => onLeave();
   const onVisibility = () => {

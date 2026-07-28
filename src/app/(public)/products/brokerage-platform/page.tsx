@@ -163,7 +163,7 @@ export default function BrokeragePlatformPage() {
           </AnimateOnScroll>
 
           {/* eDocs 文档下载标准 — 本页重点。
-              连续叙事出卡直排压墙（IA v1 §4.5 / 判据一）：三段正文不是可数
+              连续叙事出卡直排压背景（IA v1 §4.5 / 判据一）：三段正文不是可数
               实体，包卡只会让它与上面的 CSIO 实体背书卡抢同一层级。
               小节眉标走 SheetLabel（无编号——01 之下不再起第二套序列） */}
           <AnimateOnScroll delay={150}>

@@ -1,15 +1,17 @@
-// ─── 嵌墙砖按钮 · Living Blueprint v4.2 ───
+// ─── 嵌槽键按钮 · Living Blueprint v4.2 ───
 // 设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md（§4）
 // 全站按钮唯一授权入口：业务代码不得直接写 .btn-primary/.btn-secondary
 // （CSS 类是组件私有引擎——槽缝环层序 / 顶出状态机 / 尺寸锁定）
 //
-// 语义 = 砌进墙里的一块砖（BlueprintObject 模块交互的按钮版）：
-// rest 与墙齐平（槽缝环可见）→ hover 顶出 + 槽光涌出 → active 按入槽内
+// 语义 = 悬在深空前的仪器面板键（BlueprintObject 模块交互的按钮版；
+// Void Field v1 §4.2 起换锚，砖墙时代的「砌进墙里的一块砖」随墙退役，
+// 几何 / 槽缝环 / 槽光全部原样保留）：
+// rest 与面板齐平（槽缝环可见）→ hover 顶出 + 槽光涌出 → active 按入槽内
 // 结构（transform 写入者分层，JS 逐帧 / transition 各居一层）：
 // wrapper（.btn-module-frame 静态骨架：::before 槽缝环 + ::after 涌光层）
 // → ButtonTilt（.btn-tilt 悬停期 JS 弹簧微摆 ≤4°）
 // → 本体（pop/press transition）
-// v4.1 的呼吸（btnHoverIdle/phase 错峰）与 backglow 已随嵌墙语义退役。
+// v4.1 的呼吸（btnHoverIdle/phase 错峰）与 backglow 已随嵌槽语义退役。
 // 不加 'use client'（双栖）：server 树里 ButtonTilt 是小 client 岛，其余
 // 零 hydration；client 宿主（ContactForm/ErrorBoundary）自动随宿主打包
 //

@@ -27,7 +27,8 @@
      ⚠️ 交叉锁定（无法消费 var() 的地方，改值必须同步）：
        tailwind.config.js 的 accent #4A9FE5 / src/lib/constants.ts 的
        BRAND_ACCENT（邮件 HTML）/ BlueprintObject.tsx 的 STROKE 表 /
-       本文件砖 tile data-URI 里的 %234a9fe5 */
+       src/lib/void-field-shader.ts 的 GLSL `const vec3 BLUE`（0.290,
+       0.624, 0.898 = #4A9FE5 /255，逐位对应） */
   --accent-rgb: 74 159 229;
   --accent: rgb(var(--accent-rgb));
   --accent-hover: #5daae9;
@@ -37,9 +38,16 @@
   --accent-dark: #3488cc;
 
   /* ── 文字层级 (冷白色调) — v4.2 无底纹排版提档：可读性全押字体对比度。
-     v8 基准（对砖面平底 --wall-face-base #111620）：tertiary 6.39:1 /
-     quaternary 4.60:1；砖顶受光棱带上另低 0.6–1.3 档（tertiary 仍 ≥4.54，
-     quaternary 跌到 ~3.8 —— 故 quaternary 恒为装饰专用，正文禁用）。
+     Void Field v1 基准：背景层受**单条不变量**约束「背景任一**连续排版
+     承载面**的相对亮度 L ≤ 0.0323」（由 tertiary 的 L=0.32043 与
+     WCAG AA 4.5:1 反解），取代了砖墙时代那张「对各棱线」的六值梯队表。
+     ⚠️ 口径是连续承载面而**非逐像素全集**——星点是明文例外（spec §4.1.1）。
+     对最亮承载面（星云带芯 rgb(22,37,52)，L=0.017416 实测）：
+       primary 13.10 ✅ / secondary 6.95 ✅ / tertiary 5.50 ✅ /
+       quaternary 3.95 ❌ —— 与砖墙时代**结论一致**：quaternary 恒为
+       装饰 / aria-hidden 专用，正文禁用。这条不因换背景而松动。
+     （表中 primary/secondary 为纸面推算值，tertiary 为实测；纸面对带芯
+     L=0.017514 给 5.49，差异全在 dither 的 ±0.7/255 内，不必对齐到小数）
      与 tailwind.config.js txt 表 + CLAUDE.md §4 交叉锁定，改值三处同步 ── */
   --text-primary: #e8ecf0;
   --text-tertiary: #929aa8;
@@ -65,9 +73,8 @@
        ④ 死 token：face-base —— 既无 CSS 消费方也无 TSX 字面对应，
           仅存历史身份；清理需先改 CLAUDE.md §4 的保护条款 */
   --mat-face-base: rgba(17, 22, 32, 0.9); /* bg-elevated 的高实度形态
-     （v8：墙与 btn-secondary 已改消费不透明的 --wall-face-base；物件面
-     v3 起消费不透明 var(--bg-elevated) 实体化——本 token 已无消费方，
-     仅存历史锚点身份，见上表 ④） */
+     （btn-secondary 与物件面均已改消费不透明的 var(--bg-elevated)——
+     本 token 已无消费方，仅存历史锚点身份，见上表 ④） */
   --mat-face-tint: rgb(
     var(--accent-rgb) /
     0.05
@@ -107,8 +114,8 @@
 
   /* ── v7 玻璃检视窗 token（Card System v7）──
      正本对照表 = 2026-07-26-card-system-v7-glass-design spec §1.2。
-     与哑光 --mat-*（砖/按钮）分开：玻璃与砖是两种材质，共享明度轴
-     逻辑不共享值。全部 rgba 基于既有豁免色（bg-surface / bg-base 的
+     与哑光 --mat-*（物件/按钮）分开：玻璃与哑光面板是两种材质，共享
+     明度轴逻辑不共享值。全部 rgba 基于既有豁免色（bg-surface / bg-base 的
      rgba 化 + 中性明度轴 + accent 低 alpha），不引入新字面色 ── */
   --glass-blur: 12px; /* 毛玻璃采样半径上限（性能门槛见 spec §1.3） */
   --glass-face: rgba(12, 16, 23, 0.58); /* 毛玻璃档面底 — blur 已提供分离 */
@@ -128,107 +135,21 @@
   --glass-reflect-a: rgb(
     var(--accent-rgb) /
     0.05
-  ); /* 内反射渐变起（v8 起在**左上**，朝石墨墙的 45° 掠射光；
+  ); /* 内反射渐变起（在**左上**，朝主星云带的亮区——Void Field v1 起
+     光向锚点由「墙的 45° 掠射光」换成星云带，方向不变；
      消费方 = .card-glass 的 135deg 渐变，改一处必须改另一处） */
   --glass-reflect-b: rgb(var(--accent-rgb) / 0); /* 内反射渐变止 */
 
-  /* ── v8 石墨墙材质 token（Graphite Wall v8）──
-     正本 = 2026-07-27-graphite-wall-v8-design spec §3。墙自立门户：
-     与物件 --mat-* / 玻璃 --glass-* 三簇分离，共享明度轴逻辑不共享值。
-     受光模型 = 左上 45° 掠射光（全站唯一光向）；墙后无任何发光体。
-     ⚠️ 全部落在既有豁免内：既有 hex 的不透明形态（#111620 = bg-elevated、
-     #080B10 = bg-base）+ 中性明度轴（白/黑低 alpha）+ accent 低 alpha
-     ——零新字面色。tile data-URI 内字面值与本簇交叉锁定，改值两处同步 ── */
-  --wall-face-base: #111620; /* 实心石板（= --mat-face-base 的不透明形态）
-     🚨 提亮此值会把 --text-quaternary 压到 4.5:1 以下（当前 4.60，余量 0.10 档）
-     ——改前必须重算本文件 --text-* 注释与 CLAUDE.md §4 的对比度行 */
-  --wall-face-lit: rgba(255, 255, 255, 0.055); /* 上棱受光 */
-  --wall-face-lit-k: rgba(255, 255, 255, 0.03); /* 左棱受光（侧弱于顶） */
-  --wall-face-tint: rgb(
-    var(--accent-rgb) /
-    0.028
-  ); /* 受光面里一丝蓝 = 全墙唯一蓝味 */
-  --wall-face-shade: rgba(0, 0, 0, 0.42); /* 下缘背光带 */
-  --wall-face-shade-k: rgba(0, 0, 0, 0.3); /* 右缘背光带 */
-  --wall-face-edge: rgba(0, 0, 0, 0.3); /* 下 1px 硬暗棱 */
-  --wall-face-edge-k: rgba(0, 0, 0, 0.2); /* 右 1px 硬暗棱 */
-  --wall-bed-base: #080b10; /* 砖床基底（= bg-base） */
-  --wall-bed-shade: rgba(0, 0, 0, 0.45); /* 槽整体压暗 → 有效 rgb(4,6,9) */
-  --wall-bed-lit: rgba(255, 255, 255, 0.018); /* 槽内下/右壁反弹光 hairline */
-  --wall-bed-dark: rgba(0, 0, 0, 0.35); /* 砖窝底内阴影峰值（光照不到井深处） */
-  --wall-bed-dark-t: rgba(0, 0, 0, 0.4); /* 横槽上壁：上一块砖的接触投影 */
-  --wall-bed-dark-k: rgba(0, 0, 0, 0.28); /* 竖槽左壁：左一块砖的接触投影 */
-
-  /* 砖 tile（288×192 viewBox = 36S×24S，S=8；砖体画在**右下格**
-     translate(8,104) 的 280×88 区、其余全透明）—— **全站唯一一张砖图**，
-     两种铺法共用同一张：
-     - 静态路径叠**两遍**（层 A 铺奇行、层 B 偏移 (P/2, Q) 铺偶行）= running bond
-     - 真砖 div 用 background-size 36/35 x 24/11 + position 100% 100% 把同一张图
-       对位到砖盒（恒等式推导见 .bp-brick 注释）
-     两条路径像素同源，不存在双份字面值需要同步。
-     🚨 砖必须画在**右下格**：只有这个位置能让两轴的 background-position 同时
-     归 100%。画在上半格时 y 轴需要 S/(Q+S) = 7.6923% 这种魔数——能跑，但那是
-     一个没人看得懂、改 pitch 比例就静默错位的常数。
-     图层自下而上：实底 → 蓝味 → 下/右背光带 → 上/左倒角亮带 → 四边硬棱。
-     🚨 四边棱线是**等物理宽**（以砖面高 H 为基准：倒角 0.10·H = 8.8 单位、
-     背光 0.22·H = 19.36 单位），**不是**「各占该轴的 10%/18%/22%」——砖是方的
-     时两者等价，3.18:1 的长砖用后者会把左倒角带撑到 17.5px（≈2–3 个字符宽）
-     压在正文上，且物理上错（真砖的棱角倒角不随砖长变化）。右背光带的
-     offset 0.931 = 1 − 19.36/280、左倒角带的 0.0314 = 8.8/280 都由此而来。
-     注：1 tile 单位 = Q/96 = 0.625 CSS px @基准档，四边「1 单位硬棱」在 DPR1 下
-     实为 ~63% 覆盖的抗锯齿线，装饰性质；凸凹读感由 5px 的槽渐变承担，
-     不依赖硬棱，DPR2 才是真 1px */
-  --wall-tile-brick: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='288' height='192' viewBox='0 0 288 192'><defs><linearGradient id='a' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a9fe5' stop-opacity='0.028'/><stop offset='0.55' stop-color='%234a9fe5' stop-opacity='0'/></linearGradient><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0.78' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.42'/></linearGradient><linearGradient id='r' x1='0' y1='0' x2='1' y2='0'><stop offset='0.931' stop-color='%23000000' stop-opacity='0'/><stop offset='1' stop-color='%23000000' stop-opacity='0.3'/></linearGradient><linearGradient id='t' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.055'/><stop offset='0.1' stop-color='%23ffffff' stop-opacity='0'/></linearGradient><linearGradient id='k' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23ffffff' stop-opacity='0.03'/><stop offset='0.0314' stop-color='%23ffffff' stop-opacity='0'/></linearGradient></defs><g transform='translate(8,104)'><rect width='280' height='88' fill='%23111620'/><rect width='280' height='88' fill='url(%23a)'/><rect width='280' height='88' fill='url(%23b)'/><rect width='280' height='88' fill='url(%23r)'/><rect width='280' height='88' fill='url(%23t)'/><rect width='280' height='88' fill='url(%23k)'/><rect width='280' height='1' fill='%23ffffff' fill-opacity='0.055'/><rect width='1' height='88' fill='%23ffffff' fill-opacity='0.03'/><rect x='279' width='1' height='88' fill='%23000000' fill-opacity='0.2'/><rect y='87' width='280' height='1' fill='%23000000' fill-opacity='0.3'/></g></svg>");
-
-  /* 砖床 tile（288×192 viewBox）— 两条路径共用同一张，几何对齐由构造保证。
-     凸凹线索对调：砖上/左亮、下/右暗；槽上/左暗（上一块砖的接触投影 = 渐变
-     y/x，对应 --wall-bed-dark-t / -k）、下/右亮（反弹光 hairline = --wall-bed-lit）。
-     砖窝底内阴影（渐变 s = --wall-bed-dark）= 光照不到井深处，砖 fade 时露出。
-     错缝（running bond）下的分工：**横缝通长**（真实砌体的 bed joint 连续，
-     两条满宽 y∈[0,8] 与 y∈[96,104]），**竖缝逐行错位**（奇行 x∈[0,8] @y∈[96,192]、
-     偶行 x∈[144,152] @y∈[0,96]）。绘制序 = 底 → 砖窝内阴影 → 竖缝 → 横缝，
-     横缝后画 ⇒ 交叉处横缝胜出，与真实砌体「灰缝通长、竖缝顶进去」一致。
-     偶行砖跨 tile 边界回绕，但 s 是**纯垂直**渐变 ⇒ 直接横向切成两个 rect
-     （x∈[152,288] 与 x∈[0,144]）与整块等价，不需要 use 或负坐标。
-     ⚠️ s 从 offset 0 的**全透明**起、0.06 才到峰值：真砖 div 的抗锯齿上边缘
-     会漏出其下砖床，峰值若压在 y=0 会在每块砖顶缘织出一条暗线 */
-  --wall-tile-bed: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='288' height='192' viewBox='0 0 288 192'><defs><linearGradient id='y' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0.4'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='x' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23000000' stop-opacity='0.28'/><stop offset='1' stop-color='%23000000' stop-opacity='0'/></linearGradient><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23000000' stop-opacity='0'/><stop offset='0.06' stop-color='%23000000' stop-opacity='0.35'/><stop offset='0.45' stop-color='%23000000' stop-opacity='0'/></linearGradient></defs><rect width='288' height='192' fill='%23080b10'/><rect width='288' height='192' fill='%23000000' fill-opacity='0.45'/><rect x='8' y='104' width='280' height='88' fill='url(%23s)'/><rect x='152' y='8' width='136' height='88' fill='url(%23s)'/><rect y='8' width='144' height='88' fill='url(%23s)'/><rect x='144' width='8' height='96' fill='url(%23x)'/><rect x='151' width='1' height='96' fill='%23ffffff' fill-opacity='0.018'/><rect y='96' width='8' height='96' fill='url(%23x)'/><rect x='7' y='96' width='1' height='96' fill='%23ffffff' fill-opacity='0.018'/><rect width='288' height='8' fill='url(%23y)'/><rect y='7' width='288' height='1' fill='%23ffffff' fill-opacity='0.018'/><rect y='96' width='288' height='8' fill='url(%23y)'/><rect y='103' width='288' height='1' fill='%23ffffff' fill-opacity='0.018'/></svg>");
-
-  /* ── 砖墙几何 · 全墙唯一事实源（Graphite Wall v9，2026-07-27）──
-     行高 Q = --wall-brick-h，其余全部派生：
-       P（横向 pitch）= 3Q      S（缝宽，横竖同宽）= Q/12
-       砖面 W = 35Q/12          砖面 H = 11Q/12      ⇒ 面长宽比 35:11 = 3.18:1
-     🚨 **Q 必须是 12 的倍数**：S 落到分数位会让真砖 DOM 与静态 tile 的
-     栅格化方式不同，砖缘织出一圈半像素抗锯齿差（v8 基准档 seam 3.5px 的旧病，
-     v9 靠整数 S 从构造上消除）。加新档（如 ≥5000px）写 120px，不要写 112px。
-     🚨 **不要把 P / S 做成 calc() 派生的自定义属性**：未注册自定义属性的计算值
-     是「var() 已代入但 calc() 未求值」的 token 流，WallBricks 的
-     getComputedStyle().getPropertyValue() 会拿到字符串 "calc(60px * 3)"，
-     parseFloat → NaN → buildFailed → **桌面重力井静默消失**（不报错不掉 lint）。
-     需要 P / 2Q 的地方一律在**真实属性**里写 calc()（真实属性的 calc 正常求值）。
-     阶梯见下方媒体查询；WallBricks **只读不定**（唯一例外 = MAX_BRICKS 封顶时
-     把放大后的 Q 内联写回 .bp-wall，静态 tile 因此始终同档、几何不错位）。
-     正本 = docs/superpowers/specs/2026-07-27-graphite-wall-v9-running-bond-design.md */
-  --wall-brick-h: 60px;
+  /* ── 深空引力场（Void Field v1）──
+     背景层唯一的字面色 = DEEP 深空底。比 --bg-base (#080B10) 略亮一档，
+     因为深空底还要承受 shader 里 VIG 暗角的衰减。
+     ⚠️ 与 src/lib/void-field-shader.ts 的 GLSL `const vec3 DEEP =
+     vec3(0.043, 0.055, 0.078)` 交叉锁定（GLSL 无法消费 var()，同
+     BlueprintObject STROKE 表机制），改值两处同步 */
+  --void-deep: #0b0e14;
 
   /* ── 动画缓动 ── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* 砖墙 pitch 阶梯 — 超宽屏放大。**只有 Q 一个变量**（P = 3Q、S = Q/12 派生），
-   三档 60/72/96 全是 12 的倍数 ⇒ S = 5/6/8 全为整数。
-   全视口真砖阵：DOM 砖数随视口线性（60 档一屏 1920×1080 ≈207，超宽
-   3440×1440 @72 档 ≈330；v8 的方砖同视口分别是 700 / 1242）；
-   触屏/RM/无 JS 路径零 DOM 砖 = 砖床 + 砖 tile 同密度铺满，无独立窄屏档 */
-@media (min-width: 2200px) {
-  :root {
-    --wall-brick-h: 72px;
-  }
-}
-@media (min-width: 3600px) {
-  :root {
-    --wall-brick-h: 96px;
-  }
 }
 
 /* ── 全局基础 ─────────────────────────────── */
@@ -329,142 +250,107 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   BlueprintWall 石墨墙 · Graphite Wall v9（错缝砌体）
-   几何/砌法/tile/井物理正本：
-     docs/superpowers/specs/2026-07-27-graphite-wall-v9-running-bond-design.md
-   材质/受光/token 正本（v8 的存续条款）：
-     docs/superpowers/specs/2026-07-27-graphite-wall-v8-design.md
-   概念：墙 = 一面被左上 45° 掠射光斜照的实心石墨砌体；指针 = 压在
-   上面的重力井。**墙后没有任何发光体**（v6 的角落余晖 + 指针灯已退役）。
-   - 厚度靠材料自己读出：受光棱线 / 倒角亮带 / 背光压暗带 / 凹槽的
-     凸凹线索对调 / 逐砖明度不均——不靠光渗出来
-   - 深度靠**变暗**：砖陷得越深 opacity 越低，露出砖床槽底（更暗）；
-     v6「透出墙后的光」语义就此反转（坑里本来就该暗）
-   - 层纪律（v6「单层砖」的 v8 修订）：**一层砖 + 一层砖床，砖床恒在
-     砖后**。砖床不是砖也不是光，是砖的凹槽；判别标准 = 不参与遮掩、
-     不冒充光、不随帧变化。v5「tile + DOM 砖 + 逐格底衬 + 假涌光」
-     四层互相遮掩的架构仍然被禁
-   - 墙属场景（.bp-wall fixed）：内容从墙前滚过，墙不动——零滚动耦合
-   - 砌法（v9）：**running bond 半砖错缝**，砖 P×Q = 3Q×Q（面 3.18:1，
-     真实模数砖比例）；偶行右移半砖。两条路径同相，见 .bp-wall-face
-   - 指针交互（WallBricks）：全局 3 标量弹簧（井心 x/y + 强度），
-     近针的砖向墙内塌陷成碗（坑心最深 0.75Q = 45px @基准档、坑壁沿坡度
-     朝坑心倾、材料向坑心微聚、井深处砖面渐暗）——一切响应都是井心位置的
-     纯函数。**鼠标按下时井加深到 1.3 倍**（v9 新增，走同一根弹簧）。
-     v9 起井的全部长度参数都是 Q 的倍数 ⇒ 各 pitch 档观感一致
+   VoidField 深空引力场 · Void Field v1
+   正本 = docs/superpowers/specs/2026-07-27-void-field-v1-deep-space-design.md
+   概念：背景 = 一片静止的深空，指针 = 压在空间上的引力井。
+   - 宇宙是静的：星云不漂移、不呼吸、不闪烁，唯一的运动来自你施加的引力。
+     shader 无 uTime ⇒ 空闲态零 rAF / 零 GPU / 零主线程
+   - 背景属场景（fixed）：内容从背景前滚过，背景不动——零滚动耦合
+   - 层纪律：**两层，且永不同时可见**——静态帧（唯一保底）与 WebGL2 实时层，
+     后者画完第一帧即落 [data-live] 把前者整个 display:none。静态帧**不参与
+     合成**（canvas 以 alpha:false 创建并清成不透明色，叠在下面只是白费一次
+     合成）。🚨 禁止再造第三层：砖墙时代「tile + DOM 砖 + 底衬 + 假涌光」
+     四层互相遮掩的机器已因不可维护而退役
+   - 星云带亮区在**左上**（shader 的 TILT 取负值），与全站「光从左上来」
+     同向：按钮顶棱受光 / 物件顶面受光 / 卡片 135deg 内反射
+   - 🚨 背景任一**连续排版承载面**的相对亮度 L ≤ 0.0323 —— 正文对比度的
+     唯一不变量，取代了砖墙时代那张「对各棱线」的六值梯队表。
+     ⚠️ 口径是「连续承载面」不是「逐像素全集」：星点（2–3px 孤立亮点、
+     全屏约 15 颗、面积 0.006%）是明文例外，压到合规等于星点消失。
+     实测：空闲态星云带峰值 rgb(22,37,52) = tertiary 5.50:1；按下态
+     （光子环最强）rgb(24,41,58) = 5.23:1，两者均合规。
+     任何新增发光项都必须重跑这个实算，而不是凭感觉「看起来不亮」
    ═══════════════════════════════════════════════ */
 
-.bp-wall {
+.void-field {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
 }
 
-/* 无 JS/触屏/RM 路径的墙 = 砖床 + 砖两层 tile 叠加平铺（砖层缝区透明，
-   露出其下砖床）；桌面真砖接管后本元素**不隐藏**，改行当只留砖床。
-   两条路径共用同一张床 tile ⇒ 几何对齐由构造保证，不可能错位。
-   tile 内字面色值与 :root 的 --wall-* 簇交叉锁定（data URI 无法消费
-   var()——同 BlueprintObject STROKE 表机制，改值两处同步）。
-   **错缝（v9）**：砖 tile 是 P×2Q 画布、砖只画在右下格 ⇒ 叠两遍即成
-   running bond —— 层 A（position 0 0）铺**奇行**（不移），层 B（偏移
-   (P/2, Q) = calc(Q*1.5) Q）铺**偶行**（右移半砖）。两层砖在 y 上互不
-   重叠（A 落 [Q+S,2Q]、B 偏移后落 [S,Q]）⇒ 仍是「一层砖 + 一层砖床」，
-   层纪律不破。🚨 DOM 相位（WallBricks 的偶行右移）与本处的层 A/B 分工
-   必须同相 —— 改任一处都要同步另一处，否则接管瞬间整墙错半砖 */
-.bp-wall-face {
+/* 静态降级帧 —— 无 JS / 触屏 / RM / 无 WebGL2 四条路径的唯一保底。
+   与实时层**同一支 shader、同一组常量、uStrength = 0** 离线渲出：因 shader
+   无 uTime，产物与实时层空闲态同源，不是手搓的近似品（经 cover 缩放后一致
+   的是画面构成，不是像素）。
+   两张而非一张：静态帧的主要消费方是手机（竖屏），单用横向图 + cover 会把
+   星云带裁掉大半、构图完全走样。**只加载其中一张**。
+   background-color 兜底：图片加载失败时仍是深空底，不会闪白 */
+.void-field-still {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background-image:
-    var(--wall-tile-brick), var(--wall-tile-brick), var(--wall-tile-bed);
-  background-position:
-    0 0,
-    calc(var(--wall-brick-h) * 1.5) var(--wall-brick-h),
-    0 0;
-  background-size: calc(var(--wall-brick-h) * 3) calc(var(--wall-brick-h) * 2);
+  background:
+    var(--void-deep) url("/void-still-l.webp") center / cover no-repeat;
+}
+@media (orientation: portrait) {
+  .void-field-still {
+    background-image: url("/void-still-p.webp");
+  }
 }
 
-/* 真砖接管开关 — 建砖后 WallBricks 在 .bp-wall 上落 data-live：
-   砖层（两层）交给真砖阵，本元素只留砖床（砖床恒在砖后，永不消失）。
-   position 一并复位：image 列表缩到 1 项时 position 列表会循环复用，
-   写死单值免得将来读代码的人要去推算哪一项生效 */
-.bp-wall[data-live] .bp-wall-face {
-  background-image: var(--wall-tile-bed);
-  background-position: 0 0;
+/* 实时层接管开关 —— VoidFieldGL 画完第一帧空闲画面**之后**才落 data-live。
+   🚨 顺序反过来会露出 WebGL 默认清色（纯黑）一帧：静态帧此刻已被撤下 */
+.void-field[data-live] .void-field-still {
+  display: none;
 }
 
-/* 真砖阵容器（WallBricks 懒启动）— 视口级：砖 left/top 建时写死
-   （一次布局），逐帧只写 transform/opacity。z 2 = 恒压在砖床之上
-   （两层共存后写死层序，不再依赖 DOM 序） */
-.bp-wall-grid {
+/* WebGL2 实时层 —— client 岛挂载后创建并插入，不在 SSR 输出里
+   （无 JS 时不留一个空白 canvas 压在静态帧上）。
+   width/height 属性由 JS 按 CSS 盒 × min(DPR, 1.5) 写，此处只管布局盒 */
+.void-field-gl {
   position: absolute;
   inset: 0;
   z-index: 2;
-  /* 圈内砖逐帧被 3D transform 提升合成层、出圈降级——contain 把
-     布局/重绘失效域锁在墙盒内，不外溢重排兄弟砖之外的页面。
-     paint 裁切另有第二个用途（v9）：错缝的偶行左端补了一块砖
-     （left = −P/2 + S），靠 paint containment 裁掉溢出视口的那半块 */
-  contain: layout paint style;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-/* 真砖 — 与静态路径**共用同一张砖图**（零双份字面值）：tile 是 288×192
-   单位（= 36S×24S）、砖体画在右下格 (8,104) 的 280×88 区，要把它对位到
-   W×H(= P−S × Q−S) 的元素盒。
-   🚨 对位量必须**元素相对**，不得读 --wall-brick-h：该变量在 2200/3600px
-   断点瞬间翻档，而元素盒尺寸由 WallBricks 的 JS 写、要等 200ms resize
-   防抖才重建——跨断点期间图与盒对不上（放大时右下暗边裁到盒外、缩小时
-   右下开缝露床）；滚动条出现导致的翻档更不触发 resize，永不自愈。
-   改用恒等式即可完全解耦（以 S 为单位：P=36S, Q=12S, W=35S, H=11S）：
-     x：图宽 = W·(P/W) = P，容器W − 图W = W − P = −S ⇒ position-x 100% 即 −S
-     y：图高 = H·(2Q/H) = 2Q，容器H − 图H = H − 2Q = −(Q+S)
-        ⇒ position-y 100% 即 −(Q+S)，恰好把图 y=Q+S（右下格砖顶）落到盒 y=0
-   ⇒ background-size = 100%·P/W × 100%·2Q/H = 36/35 × 24/11
-   🚨 砖画在**右下格**正是为了让 y 轴也落在 100%：画在上半格时需要
-   y = S/(Q+S) = 7.6923%，一个改比例就静默错位的魔数。
-   代价 = 把 P=3Q, S=Q/12 这条不变量硬编进 CSS，但它本来就已由 288/8 的
-   tile viewBox 承载（v9 spec §8 交叉锁定清单），不是新增耦合。
-   面**不透明**：砖是实心石板，opacity 只在井压下陷时由 JS 写
-   （≤0.40 降幅），露出的是砖床槽底 = 变暗 */
-.bp-brick {
-  position: absolute;
-  background-image: var(--wall-tile-brick);
-  background-size: calc(100% * 36 / 35) calc(100% * 24 / 11);
-  background-position: 100% 100%;
-  background-repeat: no-repeat;
+/* 层纪律的**机械保证**：没有 data-live 就没有 canvas 可见。
+   🚨 主要防的是 GPU 上下文丢失窗口——那时 data-live 已撤、静态帧复位，
+   但 canvas 还压在 z2 上；canvas 以 alpha:false 创建，「丢失上下文的
+   canvas 合成为透明」是引擎行为不是规范保证，赌它就可能给用户一块黑矩形。
+   一行选择器把「两层永不同时可见」从约定变成事实。
+   顺带收益：装配期（canvas 已插入、尚未画完第一帧）它也是隐藏的 ⇒
+   「先画后显示」由时序保证升级成结构保证。
+   🚨 代价与之配套：canvas 在装配期 display:none ⇒ `canvas.clientWidth` 恒为 0。
+   VoidFieldGL 的 resize() 因此**必须量宿主 .void-field**，不能量 canvas 自己
+   （量 canvas 会掉进 documentElement 兜底分支，读到含滚动条的文档宽，
+   实测差 11px）。改动本规则或 resize() 的测量对象时，两处一起看 */
+.void-field:not([data-live]) .void-field-gl {
+  display: none;
 }
 
-/* 逐砖明度微差 — 真砌的墙不可能每块砖一模一样。三变体共享同一张
-   data-URI（多层 background 叠一层纯色覆盖），建砖时按**空间哈希**定一次
-   class（WallBricks 的 variantOf——线性式 (a·c+b·r)%3 的等值集恒为直线，
-   会织出对角条纹，与系数是否素数无关），零逐帧成本；变异只在真砖阵，
-   静态 tile 用基态单一明度。
-   🚨 0.004 不是笔误：覆盖层在深色底上的明度杠杆极度不对称
-   （结果 = base×(1−α) + 255×α）。在 rgb(17,22,32) 上——黑 α0.035
-   = 乘 0.965 = −3.5%；白 α0.022 会把 R 从 17 抬到 22.2 = +31%（砖会发白）。
-   要同量级的 +3.5%，白侧只需 α≈0.004。两个 alpha 的 8bit 落点分别是
-   9/255 与 1/255（压缩器会输出 #00000009 / #ffffff01）——**任何把 alpha
-   四舍五入到 2 位小数的工具都会把白侧抹成 0（变体消失）或 0.01（强 2.5 倍）**。
-   三变体均值 ≈ +0.2% ⇒ 接管时全墙明度无整体台阶 */
-.bp-brick--a {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.035), rgba(0, 0, 0, 0.035)),
-    var(--wall-tile-brick);
-}
-.bp-brick--c {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.004), rgba(255, 255, 255, 0.004)),
-    var(--wall-tile-brick);
+/* 强制配色（Windows 高对比度）：UA 会强制 color/background-color，但**不重绘
+   background-image**，更管不到 canvas 像素——浅色 HCM 主题下会变成黑字压在
+   近黑深空上。背景是纯装饰（aria-hidden），此时整层让位给系统配色。
+   JS 侧 evaluate() 同样把 forced-colors 计入门控，连 canvas 都不挂 */
+@media (forced-colors: active) {
+  .void-field {
+    display: none;
+  }
 }
 
 /* ═══════════════════════════════════════════════
-   Card System v7 材质 / v8 受光 — 玻璃检视窗（压在石墨墙前的玻璃）
+   Card System v7 材质 — 玻璃检视窗（悬在深空前的玻璃）
    设计定案：docs/superpowers/specs/2026-07-26-card-system-v7-glass-design.md
-   （受光模型经 2026-07-27-graphite-wall-v8-design 修订）
+   （受光方向经 2026-07-27-void-field-v1-deep-space-design §4.3 复核：
+   星云带亮区在左上，135deg 内反射方向不变）
    唯一授权入口 = Card 组件（shared/），业务代码不得直接写这些类。
-   材质叙事：v6 时代靠墙后灯光，v8 墙后全灭后改由**材质本身**支撑——
-   毛玻璃把石墨砖面的棱线与凹槽揉成柔光、把砖缝磨成雾（零光源，
-   分离感全部来自 blur 与面底 alpha）。
+   材质叙事：分离感由**材质本身**支撑，不靠背景发光——毛玻璃把星云带的
+   弥漫光揉得更柔、把深空底磨成一片均匀的雾（零光源，分离感全部来自
+   blur 与面底 alpha）。
    变体 = 交互语义：interactive 可点（顶起 + tilt）/ static 纯展示 /
    container 外壳静——「不可点却带可点式 hover」的旧病灶就此修复。
    transform 写入者分层：.card-tilt JS 弹簧逐帧 / 本体 hover 顶起
@@ -472,10 +358,10 @@ body {
    ═══════════════════════════════════════════════ */
 
 /* 基态 = 光滑玻璃档（无 blur，恒定成本 ≈0，兼作老内核回退）：
-   厚度三件套 = 顶棱受光白线 + 底缘压暗（中性明度轴，与按钮/砖同语言）
-   + accent 低 alpha 内反射（v8 起 135deg：高光朝**左上**，与石墨墙的
-   45° 掠射光同向。v7 的 225deg 朝右上是为了对着 v6 的右上角余晖——
-   那个光源已随 v8「墙后全灭」删除，不改就是朝着不存在的光源反光）。
+   厚度三件套 = 顶棱受光白线 + 底缘压暗（中性明度轴，与按钮同语言）
+   + accent 低 alpha 内反射（135deg：高光朝**左上**，与主星云带的亮区
+   同向。🚨 v7 的 225deg 朝右上禁止回改：它原本对着 v6 早已删除的右上角
+   余晖，且与星云带的照度方向相反）。
    ⚠️ background 简写拆成 image + color 两条是有意的：毛玻璃档只换面底
    纯色，拆开后内反射渐变**全站只写一处**（v7 的「两处同步」漂移点就此
    消除，别再合回简写） */
@@ -493,8 +379,8 @@ body {
   transition: border-color 0.3s var(--ease-out-expo);
 }
 /* 毛玻璃档 — 支持 backdrop-filter 才升级（老内核/微信 WebView 自动停留
-   光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——石墨墙的
-   砖缝与棱线透过玻璃被磨成雾。
+   光滑玻璃档，无 JS 参与）：面底降 alpha，分离感交给 blur——星云带的
+   边缘噪声与星点透过玻璃被磨成雾。
    性能门槛不过关时删本块 = 全站定光滑玻璃（spec §1.3）。
    -webkit- 前缀必须写：Safari ≤17 / iOS ≤17 只认前缀形态 */
 @supports (
@@ -509,7 +395,7 @@ body {
 }
 
 /* interactive 专属 — hover 玻璃板被拿近检视：per-element perspective
-   translateZ 顶起（近大）+ 投影落墙 + active 微收。与按钮顶出同语言、
+   translateZ 顶起（近大）+ 投影落向背景 + active 微收。与按钮顶出同语言、
    幅度减半（8px vs 16px：大平面动得少才显厚重） */
 .card-glass-interactive {
   transition:
@@ -574,16 +460,17 @@ body {
 }
 
 /* .sheet-panel（v4 的 L1 图纸面板）已随 v4.2 无底纹排版整体退役：
-   层次纪律 L0/L1/L2 → L0 墙 / L2 卡片，section 一律透墙，
+   层次纪律 L0/L1/L2 → L0 背景 / L2 卡片，section 一律透到背景，
    可读性由文字对比度提档承担（spec §3） */
 
 /* ═══════════════════════════════════════════════
-   按钮系统 v4.2 — 嵌墙砖（Socketed Brick：rest 齐平 / hover 顶出 / active 按入）
+   按钮系统 v4.2 — 嵌槽键（Socketed Key：rest 齐平 / hover 顶出 / active 按入）
    设计定案：docs/superpowers/specs/2026-07-26-living-blueprint-v4.2-design.md（§4）
    唯一授权入口 = ModuleButton 组件（shared/），业务代码不得直接写类。
-   语义 = 砌进墙里的一块砖（BlueprintObject 模块交互的按钮版）：
-   rest 与墙齐平（四周 3px 槽缝环可见、槽内常态微光）→ hover 顶出
-   （per-element perspective 的 translateZ 近大投影 + 槽光涌出洗上墙）
+   语义 = **悬在深空前的仪器面板键**（Void Field v1 §4.2 起换锚；砖墙时代
+   的「砌进墙里的一块砖」随墙退役，几何/槽缝环/槽光全部原样保留）：
+   rest 与面板齐平（四周 3px 槽缝环可见、槽内常态微光）→ hover 顶出
+   （per-element perspective 的 translateZ 近大投影 + 槽光涌出洗上面板）
    → active 按入槽内 →
    disabled 齐平变暗。v4.1 的 --btn-dy 悬浮状态机 / 双伪元素反向抵消 /
    btnHoverIdle 呼吸 / backglow 全部退役。
@@ -636,8 +523,8 @@ body {
   font-weight: 600;
   font-size: 0.875rem;
   border: none;
-  /* accent 渐变通电砖（CTA affordance）+ 砖 tile 同款顶部受光沉降
-     （中性白明度轴）；rest 齐平无外投影（嵌在墙里的东西没有影子） */
+  /* accent 渐变通电键（CTA affordance）+ 同款顶部受光沉降
+     （中性白明度轴）；rest 齐平无外投影（嵌在槽里的东西没有影子） */
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
     linear-gradient(135deg, var(--accent), var(--accent-dark));
@@ -650,24 +537,22 @@ body {
   color: var(--accent);
   font-weight: 500;
   font-size: 0.875rem;
-  /* 字面意义的一块砖：砖同栈（v8 起消费 --wall-face-base 实心石板——
-     按钮语义 = 砌进墙里的一块砖，砖变石墨按钮必须跟）。
-     ⚠️ 面下方不是墙而是 frame::before 铺的 var(--bg-base) 槽腔实底，
-     所以旧值 rgba(17,22,32,0.9) 的实际合成是 0.9×(17,22,32)+0.1×(8,11,16)
-     = rgb(16,21,30)；换成不透明后是 rgb(17,22,32)，差 +1/+1/+2——
-     不是「零变化」，是感知阈下的位移。--mat-face-tint 受光沉降保留
-     = 按钮是块「特别的砖」 */
+  /* 仪器面板键的面 — 不透明 var(--bg-elevated)（Void Field v1 §4.2 起
+     直接锚到背景层级 token：值 #111620 与砖墙时代那个已删除的面基色
+     **逐位相同 ⇒ 零视觉变化**，换掉的只是语义锚点）。
+     ⚠️ 面下方是 frame::before 铺的 var(--bg-base) 槽腔实底，不是背景本身。
+     --mat-face-tint 受光沉降保留 = 这枚键是「通电的那一枚」 */
   border: 1px solid var(--border-strong);
   background:
     linear-gradient(180deg, var(--mat-face-tint), transparent 55%),
-    var(--wall-face-base);
+    var(--bg-elevated);
   box-shadow: var(--btn-inset);
 }
 
 /* 🚨 hover 反馈全部门控在真 hover 设备 — 触屏 tap 一个**不导航**的按钮
    （submit / Try Again / 任何 onClick 形态）后 :hover 会粘滞到下次点击别处：
    按钮永久停在 translateZ(16px) 顶出位、投影挂着、槽光常亮。这正是 v7 卡片
-   系统修掉的病灶的按钮版（CLAUDE.md §7「触屏无 hover：静态齐平嵌墙」在本块
+   系统修掉的病灶的按钮版（CLAUDE.md §7「触屏无 hover：静态齐平嵌槽」在本块
    门控之前并不成立）。:active / :focus-visible / :disabled **不门控**——
    它们在触屏上是有效反馈。
    涌光层的 :has(:hover) 一并进本块，否则槽光仍会粘。
@@ -686,7 +571,7 @@ body {
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 45%),
       linear-gradient(135deg, var(--accent-hover), var(--accent));
-    /* 顶出才有投影落墙 — 悬浮高度的另一半证词 */
+    /* 顶出才有投影落向背景 — 悬浮高度的另一半证词 */
     box-shadow:
       var(--btn-inset),
       0 12px 26px rgba(8, 11, 16, 0.7),
@@ -695,14 +580,14 @@ body {
   .btn-secondary:hover:not(:disabled) {
     color: var(--accent-hover);
     border-color: var(--accent);
-    /* accent 提亮叠在同一砖面基底上 — 不引入新字面色 */
+    /* accent 提亮叠在同一面基底上 — 不引入新字面色 */
     background:
       linear-gradient(
         0deg,
         rgb(var(--accent-rgb) / 0.08),
         rgb(var(--accent-rgb) / 0.08)
       ),
-      var(--wall-face-base);
+      var(--bg-elevated);
     box-shadow:
       var(--btn-inset),
       0 12px 26px rgba(8, 11, 16, 0.7),
@@ -737,20 +622,19 @@ body {
   opacity: 0.55;
 }
 
-/* frame — 静态骨架（呼吸/backglow 已随 v4.2 嵌墙语义退役，本层零动画）；
+/* frame — 静态骨架（呼吸/backglow 已随 v4.2 嵌槽语义退役，本层零动画）；
    isolation 恒建 stacking context：负 z 的槽缝环/涌光层不漏到祖先背景之下 */
 .btn-module-frame {
   position: relative;
   isolation: isolate;
   display: inline-flex;
 }
-/* 槽缝环 — 墙上的砖槽（按钮四周 3px 槽缝）：槽腔 = `--bg-base` 实底，
+/* 槽缝环 — 面板上的键槽（按钮四周 3px 槽缝）：槽腔 = `--bg-base` 实底，
    hairline 框 + 槽内常态微光 + 槽口上缘压暗（凹陷读感）；rest 可见
-   = 「嵌在墙里」的静态证词。
-   ⚠️ v8 起墙侧**确有**槽层（砖床 --wall-bed-*，合成后 rgb(4,6,9)），
-   而本槽腔是 --bg-base rgb(8,11,16)——**亮两档，v8 未统一**（改动会波及
-   全站按钮外观，超出墙体换代范围）。若将来要统一，改消费砖床合成值即可；
-   在此之前不要把注释写成「与砖墙槽同色」 */
+   = 「嵌在槽里」的静态证词。
+   ✅ v8 的未结项「槽腔 rgb(8,11,16) 比砖床 rgb(4,6,9) 亮两档、未统一」
+   已随砖床删除而**自动溶解**（Void Field v1 §4.2 销账）：背景层不再有
+   任何槽结构，槽腔的深浅从此只对自己负责 */
 .btn-module-frame::before {
   content: "";
   position: absolute;
@@ -764,12 +648,11 @@ body {
     inset 0 1px 2px rgba(0, 0, 0, 0.5);
   pointer-events: none;
 }
-/* 涌光层 — hover 顶出时槽光涌出洗上墙（spec §2.5/§4）：opacity-only 过渡；
-   :has 老内核不支持时软降级 = 涌光恒不亮（槽内常态微光仍在，无害）。
-   ⚠️ v8 起墙是**惰性材料、墙后零光源**，本层与槽内常态微光不再由「光在
-   墙后」背书——现行口径 = 按钮是**通电的模块**（primary 本就是 accent 渐变
-   通电砖），槽光属**内容层**的光，与墙的零光源纪律正交而非冲突。
-   墙侧任何形式的发光仍然被禁。
+/* 涌光层 — hover 顶出时槽光涌出洗上面板（spec §2.5/§4）：opacity-only
+   过渡；:has 老内核不支持时软降级 = 涌光恒不亮（槽内常态微光仍在，无害）。
+   ⚠️ 口径（v8 确立，Void Field v1 沿用）：按钮是**通电的模块**（primary
+   本就是 accent 渐变通电键），槽光属**内容层**的光，与背景层的零光源
+   纪律正交而非冲突。背景侧任何形式的发光仍然被禁。
    ⚠️ 下面两条 `:has(:hover)` / `:has(:active)` 是**动态失效选择器**：每次
    指针进出按钮盒都要向上回溯让 frame 子树的样式失效。当前规模（每页
    ≤7 个按钮）成本不可测；将来若出现按钮密集页（长列表每行一个按钮），
@@ -846,7 +729,7 @@ body {
    🚨 filter 不得进本关键帧（Backdrop Root 纪律）：CSS 动画对 filter 的
    插值输出永远是 list 形态——即使 to 写 none，fill both 下 computed 也是
    blur(0px)，wrapper 恒为 Backdrop Root，子孙玻璃卡的 backdrop-filter
-   只能采样到透明 wrapper 而非墙面（毛玻璃静默失效，真机实测确认）。
+   只能采样到透明 wrapper 而非背景面（毛玻璃静默失效，真机实测确认）。
    blur 揉入感由 AnimateOnScroll 的 IO 内联路径承担（filter 不在关键帧内
    即不被动画级联覆盖，其内联终态 'none' 是真 none） */
 @keyframes sheetSettle {
@@ -881,7 +764,7 @@ body {
   }
 }
 
-/* depth-drift（v3 深度层异速位移）已于 v4 退役：fixed 满铺墙就是异速层的
+/* depth-drift（v3 深度层异速位移）已于 v4 退役：fixed 满铺背景就是异速层的
    极限形态（速度 0），两套深度系统并存互相打架——spec C.1 裁决 */
 
 /* ═══════════════════════════════════════════════
@@ -980,8 +863,10 @@ body {
    （自定义属性关键帧 Chrome 拒绝下放合成器）；seamPulse/corePulse 虽只动
    opacity，但元素位于 preserve-3d 的 3D 渲染上下文内（需深度排序的子树同样
    不做合成动画）。结果是它们**与看不看得见无关**地永久占主线程——实测手机
-   模拟滚出视口后静置仍 6.6% 主线程；桌面端更与砖阵 DOM 相乘触发每帧全文档
-   layout（LayoutCount 158 / 2.1s，1920×1080 静止不动）。
+   模拟滚出视口后静置仍 6.6% 主线程；桌面端当年更与砖阵 DOM 相乘触发每帧
+   全文档 layout（LayoutCount 158 / 2.1s，1920×1080 静止不动）。
+   ⚠️ 乘数已消失（砖阵随 Void Field v1 换代删除，背景层不再有任何 DOM），
+   但物件自身那份主线程占用**与背景无关**，门控依旧是它的唯一约束。
    门控 = 物件离开视口即整棵子树 animation-play-state: paused（IO 带
    400px rootMargin 提前唤醒，滚回时已在跑，无「突然启动」观感）。
    ⚠️ 选择器锚在 .bp-object-scene 子树内，**不含** .hero-tilt（它是 scene
@@ -1072,7 +957,7 @@ body {
 }
 
 /* 逐面着色 — 平面体的静态 flat shading（v3 Solid Machine 对比拉开）：
-   光源固定左上前方（与墙 v8 掠射光同向）；受光面明显亮于前脸、背光面明显暗——
+   光源固定左上前方（与主星云带的亮区同向）；受光面明显亮于前脸、背光面明显暗——
    面与面的明度差 + inset 棱线厚度暗示才是「实心」的来源，不是 alpha。
    提亮走 accent 低 alpha（蓝色环境光）+ 中性白受光棱线，压暗走中性黑
    —— 均为明度轴，不引入第二色相（豁免口径 = CLAUDE.md §4 物件条目，v3 扩展） */
@@ -1572,7 +1457,7 @@ body {
 }
 
 /* marquee 两端渐隐 — v4 改 mask 淡出（对任意背景成立）：
-   v3 的 from-bg-base 渐变盖片在满铺墙上会露出实色块 */
+   v3 的 from-bg-base 渐变盖片在满铺背景上会露出实色块 */
 .marquee-fade {
   -webkit-mask-image: linear-gradient(
     90deg,
@@ -1611,10 +1496,10 @@ body {
 /* ═══════════════════════════════════════════════
    ContactForm v7 — 单据填写格
    设计定案：card-system-v7-glass spec §6.2。
-   旧「透明底 + 10% alpha 下划线」在砖墙上与背景混融不可读，退役
+   旧「透明底 + 10% alpha 下划线」在满铺背景上混融不可读，退役
    （focus-line 中心展开下划线随之退役：外置 label + 实底格后语义重复）。
    实底凹格 = bg-base 豁免 rgba 化，比玻璃卡面再深一档——
-   墙 → 玻璃卡 → 填写格三层拉开，填写内容以 txt-primary 高对比呈现
+   背景 → 玻璃卡 → 填写格三层拉开，填写内容以 txt-primary 高对比呈现
    ═══════════════════════════════════════════════ */
 
 .form-field {
@@ -1656,7 +1541,7 @@ body {
     inset 0 1px 2px rgba(0, 0, 0, 0.35),
     0 0 0 2px rgb(var(--accent-rgb) / 0.3);
 }
-/* Chrome autofill 会刷浅底黑字，砸穿「墙→玻璃卡→深色凹格」三层——
+/* Chrome autofill 会刷浅底黑字，砸穿「背景→玻璃卡→深色凹格」三层——
    1000px inset 实底盖回（webkit autofill 唯一可靠通道；消费 --bg-base
    token 非新字面色），文字色经 text-fill-color 收回冷白 */
 .form-field:-webkit-autofill,

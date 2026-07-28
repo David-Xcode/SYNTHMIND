@@ -5,20 +5,20 @@
 // ⚠️ 为什么在根级而不是 (public)/ 内：Next App Router 里 route group 的
 // not-found.tsx 只捕获该 group 内**显式调用** notFound() 的情况；未匹配的
 // URL（真正的 404 主体）只会落到**根级** app/not-found.tsx。放在 (public)/
-// 里等于把绝大多数 404 让给 Next 内置页——那页自带浅色内联样式，压在石墨墙
+// 里等于把绝大多数 404 让给 Next 内置页——那页自带浅色内联样式，压在深空
 // 深色主题上观感割裂，且没有任何转化出口。
 //
 // 代价是拿不到 (public)/layout.tsx 的壳层，故此处自行组装 SiteHeader /
-// SiteFooter / BlueprintWall。BlueprintWall「全站单实例」纪律不受影响：
+// SiteFooter / VoidField。VoidField「全站单实例」纪律不受影响：
 // 本文件不在 (public) 树内，两者永不同时挂载。
 
 import type { Metadata } from 'next';
 import SiteFooter from '@/components/layout/SiteFooter';
 import SiteHeader from '@/components/layout/SiteHeader';
-import BlueprintWall from '@/components/shared/BlueprintWall';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import ModuleButton from '@/components/shared/ModuleButton';
 import SheetLabel from '@/components/shared/SheetLabel';
+import VoidField from '@/components/shared/VoidField';
 
 export const metadata: Metadata = {
   title: 'Page Not Found | Synthmind',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div className="relative">
-      <BlueprintWall />
+      <VoidField />
       <ErrorBoundary fallback={null}>
         <SiteHeader />
       </ErrorBoundary>

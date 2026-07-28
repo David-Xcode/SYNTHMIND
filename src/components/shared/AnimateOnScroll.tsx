@@ -54,7 +54,7 @@ export default function AnimateOnScroll({
   };
 
   // filter 终态必须是 'none' 而非 identity 值 blur(0)：非 none 的 filter
-  // 构成 Backdrop Root，玻璃卡只能采样到 wrapper 内（透明）而非墙面，
+  // 构成 Backdrop Root，玻璃卡只能采样到 wrapper 内（透明）而非背景面，
   // 毛玻璃静默失效（v7 审查逐级挂载实验定位）。transform 终态同写 none
   // 属卫生习惯——实测祖先 transform 不截断采样（tilt 无碍），真凶只有
   // filter。scrub 路径由 CSS 侧 `.sheet-reveal:has(.card-glass)` 退出

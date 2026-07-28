@@ -88,7 +88,7 @@ export default function SocialProofBar() {
   return (
     // overflow-clip-safe：clip 不创建 scroll container（overflow-hidden 会让
     // 子元素的 view() 时间轴绑到本节，sheet-reveal 退化）
-    // v4：透墙 section（背景 = 满铺砖墙）；两端渐隐改 mask（.marquee-fade）
+    // v4：透背景 section（背景 = 满铺深空引力场）；两端渐隐改 mask（.marquee-fade）
     // IA v1 §3：本节不再是首页收尾，而是 hero 与 01 旗舰段之间的过渡带——
     // 上下留白双双收紧，让它贴着 hero 读成同一口气
     <section className="pt-10 pb-16 overflow-clip-safe">

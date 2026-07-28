@@ -12,7 +12,7 @@
 - PR 描述需包含变更摘要、验证步骤（`npm run lint`、`npm run build`、手动提交表单）
   以及 UI 变更的截图或录屏。
 - 涉及配置、环境变量或安全策略调整时，在 PR 中说明影响面与回滚策略。
-- 设计系统级改动（材质 / 动效 / 卡片 / 按钮 / 墙体）必须与 `docs/superpowers/specs/`
+- 设计系统级改动（材质 / 动效 / 卡片 / 按钮 / 背景层）必须与 `docs/superpowers/specs/`
   下的对应 spec 同 commit 落盘，并同步更新 CLAUDE.md——三者不得脱节。
 
 ## 安全与配置提示

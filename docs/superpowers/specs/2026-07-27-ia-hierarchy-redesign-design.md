@@ -40,7 +40,8 @@
 我下一步去哪；全站视觉重量与信息重要度重新对齐。
 
 **非目标（明确不动）**：
-- BlueprintWall（v8 石墨墙）、Hero 动态模组（BlueprintObject v3.1 +
+- VoidField（深空引力场；原文写的「BlueprintWall / v8 石墨墙」已于
+  2026-07-27 随背景换代退役）、Hero 动态模组（BlueprintObject v3.1 +
   HeroObjectPhysics）、按钮/卡片材质引擎、pointer-tilt-engine——零改动；
 - 路由与 SEO 资产（URL、redirects、canonical、JSON-LD 结构）不动；
 - 对外事实红线（CSIO 时态 / 客户不点名 / brokerages 不是 carriers）原样遵守；

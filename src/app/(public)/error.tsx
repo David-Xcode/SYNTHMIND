@@ -10,7 +10,7 @@
 // 因为它要接收 reset 回调）。
 //
 // 壳层由 (public)/layout.tsx 提供 —— error.tsx 渲染在 layout 内部，
-// 所以这里**不要**再挂 BlueprintWall / SiteHeader（会变成双实例）。
+// 所以这里**不要**再挂 VoidField / SiteHeader（会变成双实例）。
 
 import { useEffect } from 'react';
 import ModuleButton from '@/components/shared/ModuleButton';

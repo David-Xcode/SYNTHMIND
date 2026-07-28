@@ -6,7 +6,7 @@
 // per-entry 参数）——本组件只剩参数表 + 注册生命周期，行为与 v4.2 逐参数等价。
 // ModuleButton 的交互中间层：hover 顶出期间按钮随指针微摆（mouse-tracking
 // 豁免第 3 例窄列举——rAF 阻尼弹簧非 1:1 硬跟）。仅悬停期跟随（盒内满权重、
-// 盒外即零）：嵌墙砖在槽里不该晃，摆动只属于顶出后的悬空状态。
+// 盒外即零）：嵌在槽里的键不该晃，摆动只属于顶出后的悬空状态。
 // 门控/RM teardown/rect 缓存/收敛停帧纪律全部在引擎内，见引擎头注。
 
 import { type ReactNode, useEffect, useRef } from 'react';
