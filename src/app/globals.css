@@ -1441,10 +1441,16 @@ body {
   }
 }
 
+/* 🚨 时长与 logo 数量耦合：平移量是 translateX(-50%)（= 轨道总宽的一半），
+   时长固定 ⇒ 线速度随内容变宽而变快。60s 是 10 个 logo（单组 1377px）时的
+   ≈68.9px/s；2026-07-31 增补 3 个地产盘后单组 2002px（+45%），沿用 60s 会让
+   跑马灯同步快 45%。87s 把线速度还原到 ≈69.0px/s（基准的 100.2%）。
+   **每次增删 logo 或换 logo 资源都要按 `新单组宽 × REPEAT_COUNT ÷ 68.9` 重算**——
+   换一张宽高比不同的 logo 同样会移动这个值，不只是增删数量 */
 .animate-marquee {
-  animation: marquee 60s linear infinite;
+  animation: marquee 87s linear infinite;
 }
-/* 键盘暂停（WCAG 2.2.2）— 第一条轨道里是 40 个可 Tab 的真实链接，Tab 进去
+/* 键盘暂停（WCAG 2.2.2）— 第一条轨道里是 13 个可 Tab 的真实链接，Tab 进去
    若轨道还在跑，焦点环会跟着元素横向漂移，无法确认当前落在哪个产品上。
    :focus-within 是零 JS 的键盘可达暂停机制，且不受 hover 门控影响。
    ⚠️ hover 暂停**不在这里**：它由 SocialProofBar.tsx 的

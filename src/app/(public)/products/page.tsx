@@ -72,7 +72,7 @@ export default function ProductsPage() {
               </AnimateOnScroll>
             ))}
 
-            {/* 第 6 卡 — 地产项目卡：五盘打包为一个项目，进聚合详情页。
+            {/* 第 6 卡 — 地产项目卡：全部地产盘打包为一个项目，进聚合详情页。
                 卡头 mono 注记 = 真实数量序列（结构性编号，不占自由标注预算） */}
             <AnimateOnScroll delay={caseStudies.length * 80 + 100}>
               {/* 不加 aria-label：卡内容（注记/标题/描述）自描述，覆盖它反而

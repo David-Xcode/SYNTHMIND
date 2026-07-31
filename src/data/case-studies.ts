@@ -1,6 +1,6 @@
 // ─── 产品数据层 ───
 // 5 个软件产品案例，供产品展示页与详情页使用
-// 地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens）见 real-estate.ts
+// 地产营销站见 real-estate.ts（清单不在此复述——手抄的盘名必然过期）
 
 /** 成果条目 — 大数字上不上卡由文案作者**显式授权**，不再由正则从散文反解。
  * 带 `value` → StatCard 大数字卡（value 在上、label 在下）；

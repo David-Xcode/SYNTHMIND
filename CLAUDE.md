@@ -35,11 +35,22 @@
 - Generic reusable components go in `shared/`
 
 ### Real Estate Module — IMPORTANT
-地产营销站（Avella / Kingshaven / Woodbine Parkside / UnionGlens / Rosaleen）**打包为一个项目**（2026-07-26 定案）：
+地产营销站**全部已上线盘打包为一个项目**（2026-07-26 定案）。
+🚨 **本文件不复述盘清单**——正本 = `src/data/real-estate.ts`（各盘的上线状态与
+canonical 域名另以地产家族仓库自带的注册表为准）。此处曾手抄五个盘名，
+2026-07-31 增补到八盘时当场过期；清单只应有一个正本：
 - 数据层：`src/data/real-estate.ts`（`RealEstateSite` 接口，**只收已上线的盘**——域名未解析不收录）
 - 展示：`/products` 作品网格一张项目卡（S.06，站内链接）+ `/products/real-estate` 聚合详情页（叙事 + stats + `<RealEstateSiteGrid />` 每盘外链真实站点）
 - 旧详情页 slug 在 `next.config.js` 中 `permanent:true`（= 308）重定向到 `/products/real-estate`（`#real-estate` 页内锚点已退役）
-- 新增地产盘 = 上线后在 `real-estate.ts` 加一条 + logo 放 `public/product/`；新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
+- 🚨 **新增地产盘 = 四步，缺一不可**（前两步之外的两步曾被漏掉，2026-07-31 补入）：
+  ① `real-estate.ts` 加一条（**只收已上线的盘**，先 curl 实测域名解析）
+  ② logo 放 `public/product/`（组件施加 `filter brightness-0 invert` → **必须透明底**，
+     带实底的会渲成白块；宽高比控制在约 3–6:1，否则会横跨整卡或糊成小点）
+  ③ `next.config.js` 加一条 `/products/<slug>` → `/products/real-estate` 的 308
+     （slug 空间必须统一可解析，否则猜测 URL 会撞进 `/products/[slug]` 动态路由 404）
+  ④ 按 globals.css `.animate-marquee` 里的公式**重算 marquee 时长**——
+     平移量随 logo 总宽走而时长固定，不改就等于给首页跑马灯提速
+- 新增软件产品 = 在 `case-studies.ts` 加一条（详情页自动生成）
 - 导航 label = **Our Work**（路由仍是 `/products`，2026-07-26 起）
 
 ### Homepage Structure — IMPORTANT

@@ -30,7 +30,7 @@ export const realEstateSites: RealEstateSite[] = [
       'VIP lead capture',
       'Custom design system',
     ],
-    url: 'https://liveatavella.ca',
+    url: 'https://www.liveatavella.ca',
     logo: '/product/avella.png',
   },
   {
@@ -84,5 +84,47 @@ export const realEstateSites: RealEstateSite[] = [
     ],
     url: 'https://www.rosaleenataudengrand.ca',
     logo: '/product/rosaleen.svg',
+  },
+  {
+    slug: 'quitowns',
+    name: 'QUI Modern Towns',
+    location: 'Markham, ON',
+    description:
+      'Six-page launch site for a two-collection towns development across from Mount Joy GO — weekend preview dates derive themselves from the calendar each week, backed by VIP registration and automated email confirmation.',
+    highlights: [
+      'Self-advancing event dates',
+      'Two home collections',
+      'VIP registration',
+    ],
+    url: 'https://www.quitownsmarkham.ca',
+    logo: '/product/quitowns.png',
+  },
+  {
+    slug: 'bridle-path',
+    name: 'The Bridle Path Condos',
+    location: 'Toronto, ON',
+    description:
+      "Two-address condominium launch in Toronto's Bridle Path — a single dynamic route renders both buildings from one fact sheet, each carrying its own typographic voice, with priority registration throughout.",
+    highlights: [
+      'Two addresses, one route',
+      'Dual typographic voices',
+      'Priority registration',
+    ],
+    url: 'https://www.thebridlepathcondos.ca',
+    logo: '/product/bridle-path.svg',
+  },
+  {
+    slug: 'montara',
+    name: 'Montara',
+    location: 'Aurora, ON',
+    description:
+      'Golf-side townhome collection backing onto Magna Golf Club — a five-page site pairing a floor plan and elevation library with neighbourhood storytelling and a registration pipeline wired to automated follow-up.',
+    highlights: [
+      'Plan & elevation library',
+      'Five-page site',
+      'Automated lead follow-up',
+    ],
+    url: 'https://www.auroramontarahomes.ca',
+    logo: '/product/montara.svg',
   },
 ];
