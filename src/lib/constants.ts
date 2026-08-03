@@ -23,6 +23,11 @@ export const INDUSTRIES_SERVED = 4;
 export const BRAND_ACCENT = '#4A9FE5';
 export const BRAND_ACCENT_DARK = '#3488CC';
 
+// BrokerTool.ai 产品站 — 在建旗舰平台的公开官网（2026-08 上线，品牌名自此公开）。
+// InDevelopmentShowcase 入口卡与平台详情页的外链消费；不再进 case-studies
+// （它是在建产品，不属于 shipped 口径）
+export const BROKERTOOL_URL = 'https://brokertool.ai';
+
 // CSIO 官方外链 — CsioMemberRow（身份行）与平台详情页的引用块消费
 // 会员名录 = 可验证的会员身份；新闻稿 = 2026-07-21 七家新会员欢迎稿（含对
 // Synthmind 的一句话官方定位，页面引用块原句不改写）

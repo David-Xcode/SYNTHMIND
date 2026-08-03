@@ -61,12 +61,27 @@ canonical 域名另以地产家族仓库自带的注册表为准）。此处曾�
 homepage-slim spec 里那三段删除指令已加退役横幅，**别再删 FeaturedWork /
 ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.md` §3）。
 
-### Brokerage Platform Page — IMPORTANT（在建旗舰产品）
+### BrokerTool.ai Platform Page — IMPORTANT（在建旗舰产品）
 `/products/brokerage-platform`（2026-07-27 新建）是 AI 原生 BMS 的完整介绍页；
 `/products` 第一段的 `<InDevelopmentShowcase />` 已精简为入口卡（身份背书 + 一句话 +
-标签 + 进入链接），**长文案不要往回搬**。页面三段：CSIO 标准与 eDocs 认证（重心）/
-平台能力全景 / 产品蓝图 + 已签约经纪行。CSIO 身份行（徽章 + 名录 + 新闻稿双外链）
-= 共享组件 `<CsioMemberRow />`，两处消费，不要再写第二份 JSX。
+标签 + 双出口链接），**长文案不要往回搬**。页面三段：CSIO 标准与 eDocs 认证（重心）/
+平台能力全景（八项，与产品站同序）/ 产品蓝图 + 已签约经纪行。CSIO 身份行
+（徽章 + 名录 + 新闻稿双外链）= 共享组件 `<CsioMemberRow />`，两处消费，
+不要再写第二份 JSX。
+
+🚨 **它是在建产品，不进 `case-studies.ts`**（2026-08-03 定案）：那里只收
+**已交付**的软件产品。曾有一条把 BrokerTool.ai 写成「已上线的保险 AI 客服助理」的
+条目混在 shipped 网格里，与现实冲突，已整条删除 + `/products/brokertool-ai` 308 到
+本页。产品名与状态的**唯一正确形态** = 「BrokerTool.ai · IN DEVELOPMENT」。
+
+- **产品站 = `https://brokertool.ai`**（2026-08 上线，品牌名自此可公开点名）。
+  URL 走 `BROKERTOOL_URL` 常量，**组件里不写字面量**；入口卡与详情页各挂一条外链
+- **市场口径 = 全加拿大**（"Canadian brokerages" / "for Canada"）——CSIO 本就是
+  全国标准，2026-08-03 从 Ontario-only 放宽，**别改回省级口径**
+- ⚠️ **未决**：详情页八项能力与产品站文案高度趋同，跨域重复内容会让 Google
+  只收一边（多半是权重更高的 synthmind.ca，等于产品站吃不到搜索流量）。
+  要么接受并观察，要么把本页瘦成「为什么做 + CSIO 背书」并把细节让给产品站——
+  拍板前别在两边继续加同构长文案
 
 🚨 **对外事实红线（改这两处文案前必读，源文件头注释有完整版）**：
 - **客户绝不点名**：已上线的经纪运营系统服务真实经纪行——品牌名、生产数据量
@@ -80,7 +95,11 @@ ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.m
   brokerage 管理系统，写成 carrier 是行业逻辑硬伤（2026-07-27 David 确认）；
   不点名、不写数字（数字会被追问且会过时）
 - **在建产品时态**：能力描述用名词式规格或 "designed to / being built to"，
-  禁用「系统已经在做 X」的完成时态；内部项目代号不出现在任何对外文案
+  禁用「系统已经在做 X」的完成时态；内部项目代号不出现在任何对外文案。
+  ⚠️ **混合体拆两种时态**（2026-08-03 审查定案）：某能力的**独立产品已上线**、
+  但**平台集成未完成**时，一句话里两个时态各管各的事实——如 E-signature 卡的
+  "a proven standalone product, now being built into the platform"。
+  把已做到的说弱了是另一种不诚实，但完成时**只能**盖在真已完成的那半边
 
 ---
 

@@ -1,6 +1,10 @@
 // ─── 产品数据层 ───
-// 5 个软件产品案例，供产品展示页与详情页使用
+// 4 个软件产品案例，供产品展示页与详情页使用
 // 地产营销站见 real-estate.ts（清单不在此复述——手抄的盘名必然过期）
+// ⚠️ BrokerTool.ai 已于 2026-08-03 移出：它是**在建**旗舰平台（AI 原生 BMS），
+// 不属于 shipped 口径——旧条目把它写成已交付的 AI 客服助理，与现实冲突。
+// 它的介绍住 InDevelopmentShowcase + /products/brokerage-platform + brokertool.ai
+// 产品站；旧详情页 slug 在 next.config.js 308 到 /products/brokerage-platform
 
 /** 成果条目 — 大数字上不上卡由文案作者**显式授权**，不再由正则从散文反解。
  * 带 `value` → StatCard 大数字卡（value 在上、label 在下）；
@@ -26,8 +30,10 @@ export interface CaseStudy {
   industry: string;
   url: string;
   logo: string;
-  /** 首页 02 精选段收录标记 — 精选口径 = 覆盖 BMS 三块核心能力
-   * （AI 文档处理 / 电子签署 / 保险 AI 助理），各占一个不同行业 */
+  /** 首页 02 精选段收录标记 — 精选口径 = 覆盖 BMS 三块已上线的核心能力
+   * （AI 文档处理 / 电子签署 / 保险运营自动化），各占一个不同行业。
+   * 2026-08-03 起「保险」名额由 Onest Insurance 承担（BrokerTool.ai 移出
+   * shipped 后，精选只收真正已交付的产品） */
   featured?: boolean;
   challenge: string[];
   solution: string[];
@@ -122,6 +128,7 @@ export const caseStudies: CaseStudy[] = [
     industry: 'Insurance',
     url: 'https://www.onestinsurance.ca/',
     logo: '/product/onest-logo-cropped.svg',
+    featured: true,
     challenge: [
       'Brokers relied on phone calls and emails to collect client information for insurance quotes — a slow, error-prone process that created data entry bottlenecks.',
       'Once policies were prepared and ready in the carrier portal, brokers had to manually notify each client individually, consuming valuable time on routine follow-up.',
@@ -153,47 +160,6 @@ export const caseStudies: CaseStudy[] = [
       'TypeScript',
       'Node.js',
       'Email Automation',
-      'Tailwind CSS',
-      'Vercel',
-    ],
-  },
-  {
-    slug: 'brokertool-ai',
-    title: 'BrokerTool.ai',
-    tagline: 'AI assistant purpose-built for insurance brokers.',
-    industry: 'Insurance',
-    url: 'https://brokertool.ai/',
-    logo: '/product/brokertool.png',
-    featured: true,
-    challenge: [
-      'Insurance brokers spend significant time answering repetitive client questions about coverage details, policy terms, and claim procedures.',
-      'New brokers face a steep learning curve — insurance products are complex, and training takes months before they can confidently handle client inquiries.',
-      'After-hours client inquiries went unanswered until the next business day, risking lost leads.',
-    ],
-    solution: [
-      'Built an AI assistant trained on insurance industry knowledge that handles common client inquiries 24/7, from coverage explanations to claims guidance.',
-      'Developed a broker-facing knowledge base that helps new brokers quickly find policy details and comparison points during client calls.',
-      'Implemented lead capture and qualification — the AI identifies high-intent prospects and routes them to the appropriate broker with context.',
-    ],
-    results: [
-      { label: 'Automated the bulk of repetitive client inquiries' },
-      {
-        label:
-          'Reduced new broker training time by providing instant knowledge access',
-      },
-      // 24/7 是排班口径不是度量——旧解析器靠前置空白规则才没把 "7 lead" 读成数字，
-      // 现在由「不写 value」显式表达：它就是一条 bullet
-      { label: '24/7 lead capture with intelligent qualification' },
-      {
-        label:
-          'Seamless handoff from AI to human broker with full context preserved',
-      },
-    ],
-    techStack: [
-      'Next.js',
-      'React',
-      'TypeScript',
-      'Gemini AI',
       'Tailwind CSS',
       'Vercel',
     ],

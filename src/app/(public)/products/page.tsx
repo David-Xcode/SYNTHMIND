@@ -1,7 +1,7 @@
 // ─── Our Work 总览页 · Blueprint ───
 // 两段式结构（2026-07-26 重排：旗舰在建产品从页尾升到页首）：
 // ① AI-Native BMS 旗舰模块（CSIO 会员 + 官方新闻稿双背书）
-// ② Shipped 作品网格：5 软件产品（进详情页）+ 1 地产项目卡（进聚合详情页）
+// ② Shipped 作品网格：4 软件产品（进详情页）+ 1 地产项目卡（进聚合详情页）
 // 产品卡 = 图纸卡：S.NN 图纸编号 + crop marks 角标
 
 import type { Metadata } from 'next';
@@ -72,11 +72,11 @@ export default function ProductsPage() {
               </AnimateOnScroll>
             ))}
 
-            {/* 第 6 卡 — 地产项目卡：全部地产盘打包为一个项目，进聚合详情页。
+            {/* 末位卡 — 地产项目卡：全部地产盘打包为一个项目，进聚合详情页。
                 卡头 mono 注记 = 真实数量序列（结构性编号，不占自由标注预算） */}
             <AnimateOnScroll delay={caseStudies.length * 80 + 100}>
               {/* 不加 aria-label：卡内容（注记/标题/描述）自描述，覆盖它反而
-                  让可访问名丢失细节，且与五张软件卡的行为不一致 */}
+                  让可访问名丢失细节，且与四张软件卡的行为不一致 */}
               <Link href="/products/real-estate" className="block h-full group">
                 <Card
                   variant="interactive"
@@ -91,7 +91,7 @@ export default function ProductsPage() {
                     </span>
                   </div>
 
-                  {/* 行业眉标 — 与五张软件卡同形态（CaseStudyCard） */}
+                  {/* 行业眉标 — 与四张软件卡同形态（CaseStudyCard） */}
                   <Eyebrow tone="tertiary" className="block mb-2">
                     Real estate
                   </Eyebrow>

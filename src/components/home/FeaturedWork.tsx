@@ -1,7 +1,7 @@
 // ─── 首页 02 · Shipped 精选 · Blueprint ───
 // 说服链第二段（IA v1 §3）：回答「凭什么信你」——三张已上线案例卡 +
 // 通向 /products 全量作品的出口。卡片形态走共享 <CaseStudyCard />，
-// 与 /products 六卡网格同源；精选口径存数据层 featured 标记，不在此硬编码。
+// 与 /products 作品网格同源；精选口径存数据层 featured 标记，不在此硬编码。
 // Server Component：交互全在 client 叶子（AnimateOnScroll / Card 内 CardTilt）
 
 import Link from 'next/link';

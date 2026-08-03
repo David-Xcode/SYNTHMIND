@@ -1,7 +1,11 @@
-// ─── AI 原生 BMS 平台详情页 · Blueprint ───
+// ─── BrokerTool.ai 平台详情页 · Blueprint ───
 // 在建旗舰产品的完整介绍（2026-07-27 新建）：CSIO 标准与 eDocs 认证进度为
 // 页面重心，其次是平台能力全景与「能力汇入一个平台」的产品蓝图。
 // 静态段，与 [slug] 动态段共存（同 /products/real-estate 先例）。
+// 2026-08-03：产品站 brokertool.ai 上线，品牌名公开——本页正式点名产品、
+// hero 下挂产品站外链、市场口径从 Ontario 放宽到全加拿大（CSIO 本就是全国
+// 标准）、能力全景与产品站对齐为八项；旧 case-studies 详情页 slug
+// /products/brokertool-ai 已 308 到本页（next.config.js）。
 //
 // 🚨 事实边界（对外材料红线，改文案前必读）：
 // ① 客户身份绝不点名——已上线的经纪运营系统服务的是真实经纪行，品牌名/生产
@@ -31,27 +35,29 @@ import CsioMemberRow from '@/components/products/CsioMemberRow';
 import AnimateOnScroll from '@/components/shared/AnimateOnScroll';
 import Card from '@/components/shared/Card';
 import CTABanner from '@/components/shared/CTABanner';
+import ExternalArrowIcon from '@/components/shared/ExternalArrowIcon';
 import HighlightTag from '@/components/shared/HighlightTag';
 import PageHero from '@/components/shared/PageHero';
 import SectionTitle from '@/components/shared/SectionTitle';
 import SheetLabel from '@/components/shared/SheetLabel';
 import {
   BASE_OPEN_GRAPH,
+  BROKERTOOL_URL,
   CSIO_PRESS_RELEASE_URL,
   SITE_URL,
 } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'AI-Native Brokerage Platform — Synthmind',
+  title: 'BrokerTool.ai — AI-Native Brokerage Platform | Synthmind',
   description:
-    "The brokerage management system we're building for Ontario insurance brokerages — CSIO eDocs ingestion, AI document review, and playbook automation.",
+    "The AI-native brokerage management platform we're building for Canadian brokerages — CSIO eDocs ingestion, AI review, and playbook automation.",
   alternates: { canonical: '/products/brokerage-platform' },
   openGraph: {
     ...BASE_OPEN_GRAPH,
     url: `${SITE_URL}/products/brokerage-platform`,
-    title: 'AI-Native Brokerage Platform — Synthmind',
+    title: 'BrokerTool.ai — AI-Native Brokerage Platform | Synthmind',
     description:
-      "The brokerage management system we're building for Ontario, on CSIO standards.",
+      "The AI-native brokerage management platform we're building for Canada, on CSIO standards.",
   },
 };
 
@@ -65,7 +71,8 @@ const EDOCS_SEGMENTS = [
 ];
 
 // 平台能力全景 — 名词式规格描述（在建产品时态纪律，见文件头 ④）；
-// David 点名的 AI 核保与 AI 助理排前两位
+// 2026-08-03 与产品站 brokertool.ai 对齐为八项（新增 E-signature / Client
+// portal），顺序同产品站；David 点名的 AI 核保与 AI 助理排前两位
 const CAPABILITIES = [
   {
     title: 'AI in-house underwriting',
@@ -79,18 +86,28 @@ const CAPABILITIES = [
   },
   {
     title: 'Policy & client lifecycle',
-    body: 'Clients, policies, coverages, renewals, and claims in one record instead of five systems — an append-only activity log behind every change, and e-signature workflows that file executed forms against the policy they belong to.',
-    tags: ['Quote to bind', 'E-signature', 'Append-only audit log'],
+    body: 'Clients, policies, coverages, renewals, and claims in one record instead of five systems — an append-only activity log behind every change, from first contact to a confirmed policy.',
+    tags: ['Quote to bind', 'Renewals & claims', 'Append-only audit log'],
+  },
+  {
+    title: 'E-signature, built in',
+    body: 'Envelopes, audit certificates, and public verification — a proven standalone product, now being built into the platform so executed forms file themselves against the policy they belong to.',
+    tags: ['Envelopes', 'Audit certificates', 'Public verification'],
+  },
+  {
+    title: 'Client portal',
+    body: 'A place for clients to see their policies and documents, get notified when carrier documents land, and start service requests that route straight to their broker — designed to replace the phone queue, not the broker.',
+    tags: ['Policy visibility', 'Document access', 'Service requests'],
+  },
+  {
+    title: 'Communications & marketing',
+    body: 'Policy events routed to the client and their broker as the right message, logged for audit. When a regulatory change or a renewal cycle calls for it, the same system is being built to handle targeted outreach to the book — no exporting a spreadsheet to a marketing tool.',
+    tags: ['Event-driven notices', 'Producer routing', 'Send-once guarantees'],
   },
   {
     title: 'Broker workflow engine',
     body: 'Defined states with an owner and a deadline: assignment, follow-up, confirmation documents, approval records. The compliance trail becomes a by-product of doing the work rather than a second job at month end.',
     tags: ['Task states', 'Approvals', 'Compliance records'],
-  },
-  {
-    title: 'Client communications',
-    body: 'Policy events routed to the client and their broker as the right message, logged for audit. When a regulatory change or a renewal cycle calls for it, the same system is being built to handle targeted outreach to the book — no exporting a spreadsheet to a marketing tool.',
-    tags: ['Event-driven notices', 'Producer routing', 'Send-once guarantees'],
   },
   {
     title: 'Back office',
@@ -110,11 +127,29 @@ export default function BrokeragePlatformPage() {
       />
 
       <PageHero
-        eyebrow="WHAT WE'RE BUILDING"
-        light="The AI-Native"
-        bold="Brokerage Platform"
+        eyebrow="IN DEVELOPMENT"
+        light="We're Building"
+        bold="BrokerTool.ai"
         subtitle="CSIO eDocs that arrive filed and readable, AI review before a submission leaves the office, and an assistant that keeps the judgment calls with your brokers."
       />
+
+      {/* 产品站外链 — hero 副标题正下方（-mt 收进 hero 的 pb-24 里，
+          与副标题贴成同一口气）。外链开新页 + ExternalArrowIcon（站内箭头
+          是 ArrowRightIcon，两者语义区分是既有约定） */}
+      <div className="relative -mt-16 px-4 text-center">
+        <AnimateOnScroll delay={250}>
+          <a
+            href={BROKERTOOL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit the product site at brokertool.ai (opens in a new tab)"
+            className="inline-flex items-center gap-1.5 text-accent text-sm font-medium hover:gap-2 transition-all duration-300"
+          >
+            Visit the product site at brokertool.ai
+            <ExternalArrowIcon className="w-3.5 h-3.5" />
+          </a>
+        </AnimateOnScroll>
+      </div>
 
       {/* ── 01 CSIO 标准与 eDocs（页面重心） ──
           hero 后第一章：不加 ruled-line，pt 收半档（IA v1 §2.4） */}
@@ -239,7 +274,7 @@ export default function BrokeragePlatformPage() {
               eyebrow="PLATFORM"
               light="One System for the"
               bold="Whole Brokerage"
-              subtitle="Six capability areas, designed as one system rather than five separate tools that email each other. Here's what each is being built to do."
+              subtitle="Eight capability areas, designed as one system rather than eight separate tools that email each other. Here's what each is being built to do."
             />
           </AnimateOnScroll>
 
@@ -284,12 +319,14 @@ export default function BrokeragePlatformPage() {
             <Card variant="static">
               <div className="max-w-3xl space-y-4">
                 <p className="text-txt-secondary text-base leading-relaxed">
-                  These capability areas did not start on a whiteboard. Three of
-                  them already run as separate production systems inside Ontario
-                  brokerages — AI document review in one, broker workflow and
+                  These capability areas did not start on a whiteboard. Five of
+                  them already run as separate production systems — AI document
+                  review inside a Canadian brokerage, broker workflow and
                   compliance records in another, client notifications and
-                  campaigns in a third. Each earned its place against real
-                  files, real deadlines, and real regulatory obligations.
+                  campaigns at book scale, e-signature as a standalone product
+                  serving businesses across Canada, and a payroll ledger built
+                  to CRA requirements. Each earned its place against real files,
+                  real deadlines, and real regulatory obligations.
                 </p>
                 <p className="text-txt-secondary text-base leading-relaxed">
                   The platform brings that proven ground into a single system
