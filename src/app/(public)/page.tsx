@@ -70,7 +70,7 @@ export default function HomePage() {
         <SocialProofBar />
       </ErrorBoundary>
 
-      {/* 01 — 旗舰在建产品（BrokerTool.ai）。首页副标题先说清「这是给谁的」：
+      {/* 01 — 旗舰在建产品（BrokerTool）。首页副标题先说清「这是给谁的」：
           访客可能是从 CSIO 名录点进来的经纪行，第一句就要接住。
           ⚠️ 不要复述卡内定位句（"An AI-native brokerage management system for
           Canadian insurance brokerages…"）——两者同屏相距不到一屏，重复开头

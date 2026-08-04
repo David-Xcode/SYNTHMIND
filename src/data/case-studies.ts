@@ -1,10 +1,11 @@
 // ─── 产品数据层 ───
 // 4 个软件产品案例，供产品展示页与详情页使用
 // 地产营销站见 real-estate.ts（清单不在此复述——手抄的盘名必然过期）
-// ⚠️ BrokerTool.ai 已于 2026-08-03 移出：它是**在建**旗舰平台（AI 原生 BMS），
+// ⚠️ BrokerTool 已于 2026-08-03 移出：它是**在建**旗舰平台（AI 原生 BMS），
 // 不属于 shipped 口径——旧条目把它写成已交付的 AI 客服助理，与现实冲突。
 // 它的介绍住 InDevelopmentShowcase + /products/brokerage-platform + brokertool.ca
-// 产品站（域名 .ca 不是 .ai，2026-08-04 换址；品牌名仍是 BrokerTool.ai）；
+// 产品站（2026-08-04 换址到 .ca，同日改名去掉 `.ai` 后缀——产品名与地址现在
+// 只差一个 `.ca`，但仍是两样东西）；
 // 旧详情页 slug 在 next.config.js 308 到 /products/brokerage-platform
 
 /** 成果条目 — 大数字上不上卡由文案作者**显式授权**，不再由正则从散文反解。
@@ -33,7 +34,7 @@ export interface CaseStudy {
   logo: string;
   /** 首页 02 精选段收录标记 — 精选口径 = 覆盖 BMS 三块已上线的核心能力
    * （AI 文档处理 / 电子签署 / 保险运营自动化），各占一个不同行业。
-   * 2026-08-03 起「保险」名额由 Onest Insurance 承担（BrokerTool.ai 移出
+   * 2026-08-03 起「保险」名额由 Onest Insurance 承担（BrokerTool 移出
    * shipped 后，精选只收真正已交付的产品） */
   featured?: boolean;
   challenge: string[];

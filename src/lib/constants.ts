@@ -23,7 +23,7 @@ export const INDUSTRIES_SERVED = 4;
 export const BRAND_ACCENT = '#4A9FE5';
 export const BRAND_ACCENT_DARK = '#3488CC';
 
-// BrokerTool.ai 产品站 — 在建旗舰平台的公开官网（2026-08 上线，品牌名自此公开）。
+// BrokerTool 产品站 — 在建旗舰平台的公开官网（2026-08 上线，品牌名自此公开）。
 // InDevelopmentShowcase 入口卡与平台详情页的外链消费；不再进 case-studies
 // （它是在建产品，不属于 shipped 口径）
 //
@@ -35,10 +35,11 @@ export const BRAND_ACCENT_DARK = '#3488CC';
 // ⚠️ 别把这读成「域名没了」——**域名仍注册、DNS 区仍受控**，补一条 A + 301
 // 到 .ca 只差一条记录（至今未做，故历史名片/邮件签名上的 .ai 全是硬死链）。
 //
-// 品牌名仍叫「BrokerTool.ai」（产品站自身的 <title> 与 og:site_name 至今如此），
-// 所以**只有地址改，产品名不改**，两者别混为一谈。可见文案写裸域
-// `brokertool.ca`（展示惯例，同本站对外说 synthmind.ca），href 走本常量的
-// 规范主机——两者形态不必逐字相同，指向同一站点即可。
+// 🔴 品牌名 = 「BrokerTool」，**不带任何后缀**（2026-08-04 David 拍板，spec 93
+// 刀 4；产品站的 <title> / og:site_name / 页脚已同步改完）。此前一版口径写的是
+// 「只有地址改、产品名仍叫 BrokerTool.ai」——**那条已作废**，别照它推导文案。
+// 可见文案写裸域 `brokertool.ca`（展示惯例，同本站对外说 synthmind.ca），
+// href 走本常量的规范主机——两者形态不必逐字相同，指向同一站点即可。
 //
 // 主机选 www 的理由（⚠️ 不是「零跳转」——apex 与 www 都 200、同 etag、彼此
 // 无跳转，产品站主机未归一，「零跳转」在这里不具区分力）：产品站的**全部

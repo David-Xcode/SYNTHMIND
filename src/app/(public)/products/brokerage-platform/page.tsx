@@ -1,4 +1,4 @@
-// ─── BrokerTool.ai 平台详情页 · Blueprint ───
+// ─── BrokerTool 平台详情页 · Blueprint ───
 // 在建旗舰产品的完整介绍（2026-07-27 新建）：CSIO 标准与 eDocs 认证进度为
 // 页面重心，其次是平台能力全景与「能力汇入一个平台」的产品蓝图。
 // 静态段，与 [slug] 动态段共存（同 /products/real-estate 先例）。
@@ -48,14 +48,14 @@ import {
 } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'BrokerTool.ai — AI-Native Brokerage Platform | Synthmind',
+  title: 'BrokerTool — AI-Native Brokerage Platform | Synthmind',
   description:
     "The AI-native brokerage management platform we're building for Canadian brokerages — CSIO eDocs ingestion, AI review, and playbook automation.",
   alternates: { canonical: '/products/brokerage-platform' },
   openGraph: {
     ...BASE_OPEN_GRAPH,
     url: `${SITE_URL}/products/brokerage-platform`,
-    title: 'BrokerTool.ai — AI-Native Brokerage Platform | Synthmind',
+    title: 'BrokerTool — AI-Native Brokerage Platform | Synthmind',
     description:
       "The AI-native brokerage management platform we're building for Canada, on CSIO standards.",
   },
@@ -129,7 +129,7 @@ export default function BrokeragePlatformPage() {
       <PageHero
         eyebrow="IN DEVELOPMENT"
         light="We're Building"
-        bold="BrokerTool.ai"
+        bold="BrokerTool"
         subtitle="CSIO eDocs that arrive filed and readable, AI review before a submission leaves the office, and an assistant that keeps the judgment calls with your brokers."
       />
 

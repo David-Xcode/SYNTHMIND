@@ -61,7 +61,7 @@ canonical 域名另以地产家族仓库自带的注册表为准）。此处曾�
 homepage-slim spec 里那三段删除指令已加退役横幅，**别再删 FeaturedWork /
 ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.md` §3）。
 
-### BrokerTool.ai Platform Page — IMPORTANT（在建旗舰产品）
+### BrokerTool Platform Page — IMPORTANT（在建旗舰产品）
 `/products/brokerage-platform`（2026-07-27 新建）是 AI 原生 BMS 的完整介绍页；
 `/products` 第一段的 `<InDevelopmentShowcase />` 已精简为入口卡（身份背书 + 一句话 +
 标签 + 双出口链接），**长文案不要往回搬**。页面三段：CSIO 标准与 eDocs 认证（重心）/
@@ -70,17 +70,19 @@ ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.m
 不要再写第二份 JSX。
 
 🚨 **它是在建产品，不进 `case-studies.ts`**（2026-08-03 定案）：那里只收
-**已交付**的软件产品。曾有一条把 BrokerTool.ai 写成「已上线的保险 AI 客服助理」的
-条目混在 shipped 网格里，与现实冲突，已整条删除 + `/products/brokertool-ai` 308 到
-本页。产品名与状态的**唯一正确形态** = 「BrokerTool.ai · IN DEVELOPMENT」。
+**已交付**的软件产品。曾有一条把它写成「已上线的保险 AI 客服助理」的条目混在
+shipped 网格里，与现实冲突，已整条删除 + `/products/brokertool-ai` 308 到
+本页。产品名与状态的**唯一正确形态** = 「BrokerTool · IN DEVELOPMENT」。
 
 - 🚨 **产品站 = `https://www.brokertool.ca`——域名是 `.ca`，不是 `.ai`**（2026-08-04 换址）。
   URL 走 `BROKERTOOL_URL` 常量，**组件里不写字面量**；入口卡与详情页各挂一条外链。
   **完整的实测事实、主机选型理由与未决项住在该常量的注释里（正本），此处不复述**——
   只留三条最容易被改错的：
-  - **品牌名不随域名改**：产品名恒为「BrokerTool.ai」（产品站自身的 `<title>` 与
-    `og:site_name` 至今如此）。改文案时**地址与产品名分开对待**，别把正文里的产品名
-    一并改成 .ca
+  - 🔴 **产品名 = 「BrokerTool」，不带任何后缀**（2026-08-04 David 拍板，spec 93 刀 4；
+    产品站的 `<title>` / `og:site_name` / 页脚 / 邮件模板已同步改完）。
+    ⚠️ 此前一版口径写的是「**品牌名不随域名改**，产品名恒为 BrokerTool.ai」——
+    **那条已作废**，别照它推导文案。名字与地址现在只差一个 `.ca`，更容易混用：
+    产品名取字面 `BrokerTool`，地址取 `BROKERTOOL_URL` 常量，别互相推导
   - **可见文案写裸域 `brokertool.ca`，`href` 走常量的规范主机（www）** —— 两者形态
     不必逐字相同，指向同一站点即可（同本站：canonical 是 www.synthmind.ca，对外说
     synthmind.ca）。⚠️ 别把这条读成「文案必须与 href 逐字一致」而去掉 www
@@ -95,9 +97,14 @@ ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.m
   拍板前别在两边继续加同构长文案。
   🚨 **2026-08-04 换址后这条的风险上升了一档，别照旧当「观察中」读**：新域
   brokertool.ca 权重从零开始。两页 title 近乎同构（本站
-  `BrokerTool.ai — AI-Native Brokerage Platform | Synthmind` vs 产品站
-  `BrokerTool.ai | AI-Native Brokerage Management Platform`），当前配置下
-  synthmind.ca 大概率赢下「BrokerTool.ai」品牌词——即产品站排不上自己的名字。
+  `BrokerTool — AI-Native Brokerage Platform | Synthmind` vs 产品站
+  `BrokerTool | AI-Native Brokerage Management Platform`），当前配置下
+  synthmind.ca 大概率赢下「BrokerTool」品牌词——即产品站排不上自己的名字。
+  ⚠️ **同日改名对这条没有改善**：两个 title 的同构程度与改名前一模一样，只是
+  争的关键词从「BrokerTool.ai」变成「BrokerTool」。而且**改名后更糟一点**——
+  无后缀的 `BrokerTool` 是更通用的词，竞争面比带 `.ai` 的独特串更宽。
+  差异化要动的是**副标题措辞**（本站强调「Synthmind 在建的产品」，产品站强调
+  「产品本身是什么」），不是产品名——产品名两边必须一致。
   ✅ 产品站的 canonical 已于同日修好（不再指死主机，与本仓外链同主机）——
   **别再把它当成未决项排查**；剩余的是主机归一 308、旧域 301、og.png 三项。
   ⚠️ **拍板顺序**：等产品站主机归一 + 新域被 Google 正常收录后再评估要不要

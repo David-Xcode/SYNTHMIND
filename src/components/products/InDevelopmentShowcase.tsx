@@ -1,5 +1,5 @@
 // ─── 旗舰在建产品模块 · Blueprint ───
-// /products 第一段 + 首页 01 段：BrokerTool.ai 的入口卡（2026-07-27 精简——
+// /products 第一段 + 首页 01 段：BrokerTool 的入口卡（2026-07-27 精简——
 // 完整介绍、CSIO eDocs 标准详解与认证进度已迁到 /products/brokerage-platform，
 // 本卡只留身份背书 + 一句话定位 + 能力标签 + 双出口链接）
 // 2026-08-03：产品站上线，品牌名自此公开——本卡正式点名产品，
@@ -66,7 +66,7 @@ export default function InDevelopmentShowcase({
             sheetNo="01"
             eyebrow="IN DEVELOPMENT"
             light="Introducing"
-            bold="BrokerTool.ai"
+            bold="BrokerTool"
             subtitle={subtitle}
           />
         </AnimateOnScroll>

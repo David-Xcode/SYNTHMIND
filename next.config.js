@@ -98,7 +98,7 @@ const nextConfig = {
       { source: '/products/quitowns', destination: '/products/real-estate', permanent: true },
       { source: '/products/bridle-path', destination: '/products/real-estate', permanent: true },
       { source: '/products/montara', destination: '/products/real-estate', permanent: true },
-      // BrokerTool.ai 移出 shipped 案例（2026-08-03）：它是在建旗舰平台，
+      // BrokerTool 移出 shipped 案例（2026-08-03）：它是在建旗舰平台，
       // 旧 case-study 详情页并入平台详情页
       { source: '/products/brokertool-ai', destination: '/products/brokerage-platform', permanent: true },
       // 已删除路由：industries → products 列表页
