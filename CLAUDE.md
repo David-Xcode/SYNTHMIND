@@ -93,14 +93,15 @@ ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.m
   只收一边（多半是权重更高的 synthmind.ca，等于产品站吃不到搜索流量）。
   要么接受并观察，要么把本页瘦成「为什么做 + CSIO 背书」并把细节让给产品站——
   拍板前别在两边继续加同构长文案。
-  🚨 **2026-08-04 换址后这条的风险上升了两档，别照旧当「观察中」读**：新域
-  brokertool.ca 权重从零开始，且它的 canonical 仍指死主机 www.brokertool.ai
-  （= 在指示 Google 别索引自己）。两页 title 近乎同构（本站
+  🚨 **2026-08-04 换址后这条的风险上升了一档，别照旧当「观察中」读**：新域
+  brokertool.ca 权重从零开始。两页 title 近乎同构（本站
   `BrokerTool.ai — AI-Native Brokerage Platform | Synthmind` vs 产品站
   `BrokerTool.ai | AI-Native Brokerage Management Platform`），当前配置下
-  synthmind.ca 几乎注定赢下「BrokerTool.ai」品牌词——即产品站排不上自己的名字。
-  ⚠️ **拍板顺序**：先让产品站修好 canonical 与主机归一，再回来评估要不要瘦身；
-  在那之前瘦身是拿错误的观测结果做决策
+  synthmind.ca 大概率赢下「BrokerTool.ai」品牌词——即产品站排不上自己的名字。
+  ✅ 产品站的 canonical 已于同日修好（不再指死主机，与本仓外链同主机）——
+  **别再把它当成未决项排查**；剩余的是主机归一 308、旧域 301、og.png 三项。
+  ⚠️ **拍板顺序**：等产品站主机归一 + 新域被 Google 正常收录后再评估要不要
+  瘦身；在那之前瘦身是拿尚未稳定的观测结果做决策
 
 🚨 **对外事实红线（改这两处文案前必读，源文件头注释有完整版）**：
 - **客户绝不点名**：已上线的经纪运营系统服务真实经纪行——品牌名、生产数据量

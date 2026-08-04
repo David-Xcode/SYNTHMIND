@@ -42,14 +42,16 @@ export const BRAND_ACCENT_DARK = '#3488CC';
 //
 // 主机选 www 的理由（⚠️ 不是「零跳转」——apex 与 www 都 200、同 etag、彼此
 // 无跳转，产品站主机未归一，「零跳转」在这里不具区分力）：产品站的**全部
-// 自指信号都是 www 形态**——canonical / og:url / robots.txt 的 Sitemap 指令 /
-// sitemap.xml 五条 loc 目前都写着 www.brokertool.ai，故其 SITE_URL 常量修 TLD
-// 时大概率落到 www.brokertool.ca；且本仓 12 条出站外链 + SITE_URL 无一例外用
-// www，写 apex 会成为全仓唯一的裸 apex。
-// ⚠️ 未决（属产品站仓库，本仓无门可拦）：brokertool.ca 的 canonical 至今仍指
-// 死主机 www.brokertool.ai——它在指示 Google 别索引自己，我们这三条外链的权重
-// 因此落在一个可能进不了索引的页面上。产品站完成主机归一后，此处应改为与其
-// canonical 同主机。
+// 自指信号都是 www 形态**，且 2026-08-04 已实际落到 `www.brokertool.ca`
+// （产品站仓 commit 502a1aa/54e54ba：canonical / og:url / og:image /
+// sitemap 全部 loc / robots 的 Sitemap 指令统一改由新域派生）——本常量与它
+// **同主机，已对齐**。且本仓 12 条出站外链 + SITE_URL 无一例外用 www，
+// 写 apex 会成为全仓唯一的裸 apex。
+// ⚠️ 产品站侧剩余未决（属那个仓库，本仓无门可拦，**别再当成 canonical 问题
+// 排查**——canonical 已修好）：① 主机归一未做，apex 与 www 仍都 200 且无
+// 308；② 旧域 brokertool.ai 未补 301；③ `/og.png` 从未存在（那仓无 public/
+// 目录），故本站三条外链导出的页面分享时无预览图。若产品站日后归一到 apex
+// 而非 www，此处需跟着改。
 export const BROKERTOOL_URL = 'https://www.brokertool.ca';
 
 // CSIO 官方外链 — CsioMemberRow（身份行）与平台详情页的引用块消费
