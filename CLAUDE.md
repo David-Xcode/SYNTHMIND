@@ -88,7 +88,17 @@ shipped 网格里，与现实冲突，已整条删除 + `/products/brokertool-ai
     synthmind.ca）。⚠️ 别把这条读成「文案必须与 href 逐字一致」而去掉 www
   - ⚠️ 路由 slug `/products/brokertool-ai` 的 308 **保持 `-ai` 不动**：那是旧
     case-study 已被索引的历史 URL，改掉等于把旧链接打成 404。它是 synthmind.ca 上的
-    **路径**，与产品站的 TLD 无关，两者不该联动
+    **路径**，与产品站的 TLD 无关，两者不该联动（`next.config.js` 那行上方也有一份
+    就地说明——要动手的人打开的是那个文件，不是本文）
+
+- 🔴 **`docs/` 下的文件改不改，判据是「它是不是活的指令源」，不是「它是不是历史记录」**
+  （2026-08-04 刀 4 教训）：改名时按「历史记录不回改」放过了整个 `docs/superpowers/`，
+  但 `2026-07-27-ia-hierarchy-redesign-design.md` 是本文上面点名的**现行 IA 正本**，
+  其 §5「视觉证据层（Phase 4）」**尚未执行**（`public/product/shots/` 不存在），
+  正文是一条待执行指令，里面的站点清单还写着换址前的旧域——下一个执行 Phase 4 的人
+  会去截一个 DNS 都解析不到的站。判据换成「活指令源 vs 已退役」后就分得开了：
+  同目录的 `plans/2026-03-14-*.md` 带强力退役横幅（「不要按本文件动手」），
+  保留旧名**正确**。两份文件不该同判据。
 - **市场口径 = 全加拿大**（"Canadian brokerages" / "for Canada"）——CSIO 本就是
   全国标准，2026-08-03 从 Ontario-only 放宽，**别改回省级口径**
 - ⚠️ **未决**：详情页八项能力与产品站文案高度趋同，跨域重复内容会让 Google
@@ -100,15 +110,33 @@ shipped 网格里，与现实冲突，已整条删除 + `/products/brokertool-ai
   `BrokerTool — AI-Native Brokerage Platform | Synthmind` vs 产品站
   `BrokerTool | AI-Native Brokerage Management Platform`），当前配置下
   synthmind.ca 大概率赢下「BrokerTool」品牌词——即产品站排不上自己的名字。
-  ⚠️ **同日改名对这条没有改善**：两个 title 的同构程度与改名前一模一样，只是
-  争的关键词从「BrokerTool.ai」变成「BrokerTool」。而且**改名后更糟一点**——
-  无后缀的 `BrokerTool` 是更通用的词，竞争面比带 `.ai` 的独特串更宽。
-  差异化要动的是**副标题措辞**（本站强调「Synthmind 在建的产品」，产品站强调
-  「产品本身是什么」），不是产品名——产品名两边必须一致。
+  ⚠️ **同日改名的影响要分两根轴看，别合并成一句「更糟」或「没影响」**：
+  - **同构程度**：与改名前一模一样，只是争的词从「BrokerTool.ai」变成「BrokerTool」。
+  - **通用词稀释**：`broker tool` 是通用英文名词短语，SERP 会混进 stock / mortgage /
+    freight broker tools。这条确实变糟了，但它对**两边同等**稀释，**不改变** synthmind
+    与产品站的相对胜负。
+  - 🔴 **相对胜负这根轴上，改名是净利好产品站**（此前本条写反了）：改名前品牌串是
+    `BrokerTool.ai` 而产品站住在 `brokertool.ca`，**品牌名与域名不一致**——搜品牌词时
+    产品站自己都不是精确匹配域，那个错配是在主动帮 synthmind.ca。改名后
+    `BrokerTool` == `brokertool`.ca 的根标签，exact-match domain 与品牌名同源这个
+    （弱但真实的）导航意图信号**只归产品站**。
+  🔴 **真正该动的杠杆不是副标题**（此前也写偏了）：本站在**三个 exact-match 槽位**
+  上都写着产品名——title、`/products/brokerage-platform` 的 h1（"We're Building
+  BrokerTool"）、`/` 与 `/products` 的 h2（"Introducing BrokerTool"），副标题措辞是
+  其中最弱的一根。且两边 description 也几乎同构（本站那句就是产品站那句加
+  "we're building"）。有效且**不违反「产品名两边必须一致」**的做法是让本站的
+  高权重槽位**别以品牌 token 开头**：title 改成 `Brokerage Platform — the AI-native
+  BMS Synthmind is building | Synthmind`、h1 同理让位（正文里再点名）、description
+  改写成母公司视角而非产品自述。名字仍是 BrokerTool，只是不塞进本站每一个槽位。
+  ⚠️ 这几条是**文案改动，未执行**——等下面的拍板顺序。
   ✅ 产品站的 canonical 已于同日修好（不再指死主机，与本仓外链同主机）——
   **别再把它当成未决项排查**；剩余的是主机归一 308、旧域 301、og.png 三项。
-  ⚠️ **拍板顺序**：等产品站主机归一 + 新域被 Google 正常收录后再评估要不要
-  瘦身；在那之前瘦身是拿尚未稳定的观测结果做决策
+  🔴 **别从 title 那头动手——第一嫌疑是主机归一没做**：产品站的 apex 与 www
+  当前**都直接 200、同 etag、彼此无跳转**，它自己的权重被劈成两半。这比 title
+  措辞大一个量级，且改起来是 Vercel 后台点一下的事。上面那三项不是与 title
+  同级的并列遗留，**主机归一是前置**。
+  ⚠️ **拍板顺序**：先主机归一 308 → 等新域被 Google 正常收录 → 再评估要不要
+  瘦身 / 调 title；在那之前动文案是拿尚未稳定的观测结果做决策
 
 🚨 **对外事实红线（改这两处文案前必读，源文件头注释有完整版）**：
 - **客户绝不点名**：已上线的经纪运营系统服务真实经纪行——品牌名、生产数据量

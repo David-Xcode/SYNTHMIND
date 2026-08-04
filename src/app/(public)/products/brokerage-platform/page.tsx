@@ -47,17 +47,40 @@ import {
   SITE_URL,
 } from '@/lib/constants';
 
+// 本页是全站唯一带独立产品品牌的页，标题串三处共用（title / og / twitter）。
+// 🚨 **必须显式声明 twitter，不能只写 openGraph**：Next 的 metadata 是**按字段
+// 整块继承、不深合并**——只覆写 openGraph 时 twitter 整块继承根 layout，实测
+// 构建产物里 og:title 是本产品、twitter:title 却是「Synthmind | AI-Powered
+// Software Development」，而 X/Twitter 卡片优先读 twitter:title。结果是这页分享
+// 到 X 完全看不到产品名。（2026-08-04 spec 93 刀 4 审查实证于构建产物。）
+const PAGE_TITLE = 'BrokerTool — AI-Native Brokerage Platform | Synthmind';
+const PAGE_DESCRIPTION =
+  "The AI-native brokerage management platform we're building for Canadian brokerages — CSIO eDocs ingestion, AI review, and playbook automation.";
+const PAGE_SOCIAL_DESCRIPTION =
+  "The AI-native brokerage management platform we're building for Canada, on CSIO standards.";
+
 export const metadata: Metadata = {
-  title: 'BrokerTool — AI-Native Brokerage Platform | Synthmind',
-  description:
-    "The AI-native brokerage management platform we're building for Canadian brokerages — CSIO eDocs ingestion, AI review, and playbook automation.",
+  title: PAGE_TITLE,
+  description: PAGE_DESCRIPTION,
   alternates: { canonical: '/products/brokerage-platform' },
   openGraph: {
     ...BASE_OPEN_GRAPH,
     url: `${SITE_URL}/products/brokerage-platform`,
-    title: 'BrokerTool — AI-Native Brokerage Platform | Synthmind',
-    description:
-      "The AI-native brokerage management platform we're building for Canada, on CSIO standards.",
+    title: PAGE_TITLE,
+    description: PAGE_SOCIAL_DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: PAGE_TITLE,
+    description: PAGE_SOCIAL_DESCRIPTION,
+    // images 与根 layout 同款对象形态：裸 url 字符串会丢 twitter:image:alt，
+    // 读屏用户在 X 上拿不到图片描述（根 layout 2026-07-27 审查已修，此处对齐）
+    images: [
+      {
+        url: BASE_OPEN_GRAPH.images[0].url,
+        alt: BASE_OPEN_GRAPH.images[0].alt,
+      },
+    ],
   },
 };
 

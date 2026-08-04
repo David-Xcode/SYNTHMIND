@@ -156,8 +156,12 @@
 ## 5. 视觉证据层（Phase 4）
 
 - **来源**：Claude 用 Playwright 从各产品 live 站截取（easy-sign.ca /
-  t-onegroup.com / onestinsurance.ca / brokertool.ai / GE Tax / 5 个地产站），
+  t-onegroup.com / onestinsurance.ca / **www.brokertool.ca** / GE Tax / 5 个地产站），
   1440px 视口，取首屏或最有辨识度的界面。
+  ⚠️ **2026-08-04 换址修正**：原文写的是旧域 `brokertool.ai`，它自换址起是 DNS
+  NODATA（apex）/ NXDOMAIN（www），照原文截会拿到浏览器级 DNS 失败页。本文 §5
+  Phase 4 **尚未执行**（`public/product/shots/` 不存在），是一条**活指令**不是历史
+  记录——所以这里直接改址，不加历史批注。
 - **规格**：统一裁切 16:10，WebP，进 `public/product/shots/`；案例卡顶部
   缩略图区（`aspect-[16/10]` + 圆角 8px 内嵌 + 顶部受光 hairline），case
   study hero 放大图。

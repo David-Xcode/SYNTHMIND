@@ -3,9 +3,9 @@
 // 地产营销站见 real-estate.ts（清单不在此复述——手抄的盘名必然过期）
 // ⚠️ BrokerTool 已于 2026-08-03 移出：它是**在建**旗舰平台（AI 原生 BMS），
 // 不属于 shipped 口径——旧条目把它写成已交付的 AI 客服助理，与现实冲突。
-// 它的介绍住 InDevelopmentShowcase + /products/brokerage-platform + brokertool.ca
-// 产品站（2026-08-04 换址到 .ca，同日改名去掉 `.ai` 后缀——产品名与地址现在
-// 只差一个 `.ca`，但仍是两样东西）；
+// 它的介绍住 InDevelopmentShowcase + /products/brokerage-platform + 产品站；
+// **品牌名与地址的口径正本 = src/lib/constants.ts 的 BROKERTOOL_URL 注释，此处不复述**
+// （CLAUDE.md 明写这条纪律，而改名当天这里一度抄成了第三份副本）。
 // 旧详情页 slug 在 next.config.js 308 到 /products/brokerage-platform
 
 /** 成果条目 — 大数字上不上卡由文案作者**显式授权**，不再由正则从散文反解。

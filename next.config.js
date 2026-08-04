@@ -100,6 +100,11 @@ const nextConfig = {
       { source: '/products/montara', destination: '/products/real-estate', permanent: true },
       // BrokerTool 移出 shipped 案例（2026-08-03）：它是在建旗舰平台，
       // 旧 case-study 详情页并入平台详情页
+      // 🔴 **source 的 `-ai` 后缀保持不动,别顺手「改干净」**：那是旧 case-study
+      // 已被搜索引擎索引的历史 URL，改掉或删掉 = 把存量外链打成 404。它是本站的
+      // **路径**，与产品名 2026-08-04 去掉 `.ai` 后缀、以及产品站的 TLD 都无关，
+      // 三者不该联动。（改名当天这条保护说明只写在 CLAUDE.md，而要动手的人打开的
+      // 是本文件——注释是本仓唯一的门，所以就地补一份。）
       { source: '/products/brokertool-ai', destination: '/products/brokerage-platform', permanent: true },
       // 已删除路由：industries → products 列表页
       // 旧 slug (insurance, real-estate, accounting-tax, construction) 无对应 product，统一到列表页
