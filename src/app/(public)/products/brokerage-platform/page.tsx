@@ -2,7 +2,7 @@
 // 在建旗舰产品的完整介绍（2026-07-27 新建）：CSIO 标准与 eDocs 认证进度为
 // 页面重心，其次是平台能力全景与「能力汇入一个平台」的产品蓝图。
 // 静态段，与 [slug] 动态段共存（同 /products/real-estate 先例）。
-// 2026-08-03：产品站 brokertool.ai 上线，品牌名公开——本页正式点名产品、
+// 2026-08-03：产品站上线，品牌名公开——本页正式点名产品、
 // hero 下挂产品站外链、市场口径从 Ontario 放宽到全加拿大（CSIO 本就是全国
 // 标准）、能力全景与产品站对齐为八项；旧 case-studies 详情页 slug
 // /products/brokertool-ai 已 308 到本页（next.config.js）。
@@ -71,7 +71,7 @@ const EDOCS_SEGMENTS = [
 ];
 
 // 平台能力全景 — 名词式规格描述（在建产品时态纪律，见文件头 ④）；
-// 2026-08-03 与产品站 brokertool.ai 对齐为八项（新增 E-signature / Client
+// 2026-08-03 与产品站对齐为八项（新增 E-signature / Client
 // portal），顺序同产品站；David 点名的 AI 核保与 AI 助理排前两位
 const CAPABILITIES = [
   {
@@ -142,10 +142,10 @@ export default function BrokeragePlatformPage() {
             href={BROKERTOOL_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Visit the product site at brokertool.ai (opens in a new tab)"
+            aria-label="Visit the product site at brokertool.ca (opens in a new tab)"
             className="inline-flex items-center gap-1.5 text-accent text-sm font-medium hover:gap-2 transition-all duration-300"
           >
-            Visit the product site at brokertool.ai
+            Visit the product site at brokertool.ca
             <ExternalArrowIcon className="w-3.5 h-3.5" />
           </a>
         </AnimateOnScroll>

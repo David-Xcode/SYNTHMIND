@@ -2,7 +2,7 @@
 // /products 第一段 + 首页 01 段：BrokerTool.ai 的入口卡（2026-07-27 精简——
 // 完整介绍、CSIO eDocs 标准详解与认证进度已迁到 /products/brokerage-platform，
 // 本卡只留身份背书 + 一句话定位 + 能力标签 + 双出口链接）
-// 2026-08-03：产品站 brokertool.ai 上线，品牌名自此公开——本卡正式点名产品，
+// 2026-08-03：产品站上线，品牌名自此公开——本卡正式点名产品，
 // 状态眉标改为 IN DEVELOPMENT（明示在建，不与 shipped 作品混淆），并新增
 // 产品站外链；旧的 case-studies「AI 客服助理」条目已删除（与现实冲突）。
 // IA v1 §3：首页与 /products 双处消费同一组件——入口卡本就是为「一段话 +
@@ -116,10 +116,10 @@ export default function InDevelopmentShowcase({
                 href={BROKERTOOL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Visit brokertool.ai (opens in a new tab)"
+                aria-label="Visit brokertool.ca (opens in a new tab)"
                 className="inline-flex items-center gap-1 text-accent text-sm font-medium hover:gap-1.5 transition-all duration-300"
               >
-                Visit brokertool.ai
+                Visit brokertool.ca
                 <ExternalArrowIcon className="w-3.5 h-3.5" />
               </a>
             </div>

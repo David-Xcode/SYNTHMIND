@@ -26,7 +26,31 @@ export const BRAND_ACCENT_DARK = '#3488CC';
 // BrokerTool.ai 产品站 — 在建旗舰平台的公开官网（2026-08 上线，品牌名自此公开）。
 // InDevelopmentShowcase 入口卡与平台详情页的外链消费；不再进 case-studies
 // （它是在建产品，不属于 shipped 口径）
-export const BROKERTOOL_URL = 'https://brokertool.ai';
+//
+// 🚨 域名 = .ca 不是 .ai（2026-08-04 换址）：产品站已迁到 brokertool.ca，
+// 旧地址打不开——官网上任何残留的 .ai 外链都是死链。2026-08-04 实测形态：
+//   brokertool.ai      → NOERROR 但零 ANSWER（NODATA）：**区仍在**，
+//                        SOA 仍是 ns1.dnsowl.com，只是没挂 A 记录
+//   www.brokertool.ai  → NXDOMAIN（该名字不存在）
+// ⚠️ 别把这读成「域名没了」——**域名仍注册、DNS 区仍受控**，补一条 A + 301
+// 到 .ca 只差一条记录（至今未做，故历史名片/邮件签名上的 .ai 全是硬死链）。
+//
+// 品牌名仍叫「BrokerTool.ai」（产品站自身的 <title> 与 og:site_name 至今如此），
+// 所以**只有地址改，产品名不改**，两者别混为一谈。可见文案写裸域
+// `brokertool.ca`（展示惯例，同本站对外说 synthmind.ca），href 走本常量的
+// 规范主机——两者形态不必逐字相同，指向同一站点即可。
+//
+// 主机选 www 的理由（⚠️ 不是「零跳转」——apex 与 www 都 200、同 etag、彼此
+// 无跳转，产品站主机未归一，「零跳转」在这里不具区分力）：产品站的**全部
+// 自指信号都是 www 形态**——canonical / og:url / robots.txt 的 Sitemap 指令 /
+// sitemap.xml 五条 loc 目前都写着 www.brokertool.ai，故其 SITE_URL 常量修 TLD
+// 时大概率落到 www.brokertool.ca；且本仓 12 条出站外链 + SITE_URL 无一例外用
+// www，写 apex 会成为全仓唯一的裸 apex。
+// ⚠️ 未决（属产品站仓库，本仓无门可拦）：brokertool.ca 的 canonical 至今仍指
+// 死主机 www.brokertool.ai——它在指示 Google 别索引自己，我们这三条外链的权重
+// 因此落在一个可能进不了索引的页面上。产品站完成主机归一后，此处应改为与其
+// canonical 同主机。
+export const BROKERTOOL_URL = 'https://www.brokertool.ca';
 
 // CSIO 官方外链 — CsioMemberRow（身份行）与平台详情页的引用块消费
 // 会员名录 = 可验证的会员身份；新闻稿 = 2026-07-21 七家新会员欢迎稿（含对

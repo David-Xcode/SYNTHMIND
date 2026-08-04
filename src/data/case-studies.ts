@@ -3,8 +3,9 @@
 // 地产营销站见 real-estate.ts（清单不在此复述——手抄的盘名必然过期）
 // ⚠️ BrokerTool.ai 已于 2026-08-03 移出：它是**在建**旗舰平台（AI 原生 BMS），
 // 不属于 shipped 口径——旧条目把它写成已交付的 AI 客服助理，与现实冲突。
-// 它的介绍住 InDevelopmentShowcase + /products/brokerage-platform + brokertool.ai
-// 产品站；旧详情页 slug 在 next.config.js 308 到 /products/brokerage-platform
+// 它的介绍住 InDevelopmentShowcase + /products/brokerage-platform + brokertool.ca
+// 产品站（域名 .ca 不是 .ai，2026-08-04 换址；品牌名仍是 BrokerTool.ai）；
+// 旧详情页 slug 在 next.config.js 308 到 /products/brokerage-platform
 
 /** 成果条目 — 大数字上不上卡由文案作者**显式授权**，不再由正则从散文反解。
  * 带 `value` → StatCard 大数字卡（value 在上、label 在下）；

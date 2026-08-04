@@ -74,14 +74,33 @@ ProcessStrip / CTABanner**（正本 = `2026-07-27-ia-hierarchy-redesign-design.m
 条目混在 shipped 网格里，与现实冲突，已整条删除 + `/products/brokertool-ai` 308 到
 本页。产品名与状态的**唯一正确形态** = 「BrokerTool.ai · IN DEVELOPMENT」。
 
-- **产品站 = `https://brokertool.ai`**（2026-08 上线，品牌名自此可公开点名）。
-  URL 走 `BROKERTOOL_URL` 常量，**组件里不写字面量**；入口卡与详情页各挂一条外链
+- 🚨 **产品站 = `https://www.brokertool.ca`——域名是 `.ca`，不是 `.ai`**（2026-08-04 换址）。
+  URL 走 `BROKERTOOL_URL` 常量，**组件里不写字面量**；入口卡与详情页各挂一条外链。
+  **完整的实测事实、主机选型理由与未决项住在该常量的注释里（正本），此处不复述**——
+  只留三条最容易被改错的：
+  - **品牌名不随域名改**：产品名恒为「BrokerTool.ai」（产品站自身的 `<title>` 与
+    `og:site_name` 至今如此）。改文案时**地址与产品名分开对待**，别把正文里的产品名
+    一并改成 .ca
+  - **可见文案写裸域 `brokertool.ca`，`href` 走常量的规范主机（www）** —— 两者形态
+    不必逐字相同，指向同一站点即可（同本站：canonical 是 www.synthmind.ca，对外说
+    synthmind.ca）。⚠️ 别把这条读成「文案必须与 href 逐字一致」而去掉 www
+  - ⚠️ 路由 slug `/products/brokertool-ai` 的 308 **保持 `-ai` 不动**：那是旧
+    case-study 已被索引的历史 URL，改掉等于把旧链接打成 404。它是 synthmind.ca 上的
+    **路径**，与产品站的 TLD 无关，两者不该联动
 - **市场口径 = 全加拿大**（"Canadian brokerages" / "for Canada"）——CSIO 本就是
   全国标准，2026-08-03 从 Ontario-only 放宽，**别改回省级口径**
 - ⚠️ **未决**：详情页八项能力与产品站文案高度趋同，跨域重复内容会让 Google
   只收一边（多半是权重更高的 synthmind.ca，等于产品站吃不到搜索流量）。
   要么接受并观察，要么把本页瘦成「为什么做 + CSIO 背书」并把细节让给产品站——
-  拍板前别在两边继续加同构长文案
+  拍板前别在两边继续加同构长文案。
+  🚨 **2026-08-04 换址后这条的风险上升了两档，别照旧当「观察中」读**：新域
+  brokertool.ca 权重从零开始，且它的 canonical 仍指死主机 www.brokertool.ai
+  （= 在指示 Google 别索引自己）。两页 title 近乎同构（本站
+  `BrokerTool.ai — AI-Native Brokerage Platform | Synthmind` vs 产品站
+  `BrokerTool.ai | AI-Native Brokerage Management Platform`），当前配置下
+  synthmind.ca 几乎注定赢下「BrokerTool.ai」品牌词——即产品站排不上自己的名字。
+  ⚠️ **拍板顺序**：先让产品站修好 canonical 与主机归一，再回来评估要不要瘦身；
+  在那之前瘦身是拿错误的观测结果做决策
 
 🚨 **对外事实红线（改这两处文案前必读，源文件头注释有完整版）**：
 - **客户绝不点名**：已上线的经纪运营系统服务真实经纪行——品牌名、生产数据量
