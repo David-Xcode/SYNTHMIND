@@ -103,40 +103,14 @@ shipped 网格里，与现实冲突，已整条删除 + `/products/brokertool-ai
   全国标准，2026-08-03 从 Ontario-only 放宽，**别改回省级口径**
 - ⚠️ **未决**：详情页八项能力与产品站文案高度趋同，跨域重复内容会让 Google
   只收一边（多半是权重更高的 synthmind.ca，等于产品站吃不到搜索流量）。
-  要么接受并观察，要么把本页瘦成「为什么做 + CSIO 背书」并把细节让给产品站——
-  拍板前别在两边继续加同构长文案。
-  🚨 **2026-08-04 换址后这条的风险上升了一档，别照旧当「观察中」读**：新域
-  brokertool.ca 权重从零开始。两页 title 近乎同构（本站
-  `BrokerTool — AI-Native Brokerage Platform | Synthmind` vs 产品站
-  `BrokerTool | AI-Native Brokerage Management Platform`），当前配置下
-  synthmind.ca 大概率赢下「BrokerTool」品牌词——即产品站排不上自己的名字。
-  ⚠️ **同日改名的影响要分两根轴看，别合并成一句「更糟」或「没影响」**：
-  - **同构程度**：与改名前一模一样，只是争的词从「BrokerTool.ai」变成「BrokerTool」。
-  - **通用词稀释**：`broker tool` 是通用英文名词短语，SERP 会混进 stock / mortgage /
-    freight broker tools。这条确实变糟了，但它对**两边同等**稀释，**不改变** synthmind
-    与产品站的相对胜负。
-  - 🔴 **相对胜负这根轴上，改名是净利好产品站**（此前本条写反了）：改名前品牌串是
-    `BrokerTool.ai` 而产品站住在 `brokertool.ca`，**品牌名与域名不一致**——搜品牌词时
-    产品站自己都不是精确匹配域，那个错配是在主动帮 synthmind.ca。改名后
-    `BrokerTool` == `brokertool`.ca 的根标签，exact-match domain 与品牌名同源这个
-    （弱但真实的）导航意图信号**只归产品站**。
-  🔴 **真正该动的杠杆不是副标题**（此前也写偏了）：本站在**三个 exact-match 槽位**
-  上都写着产品名——title、`/products/brokerage-platform` 的 h1（"We're Building
-  BrokerTool"）、`/` 与 `/products` 的 h2（"Introducing BrokerTool"），副标题措辞是
-  其中最弱的一根。且两边 description 也几乎同构（本站那句就是产品站那句加
-  "we're building"）。有效且**不违反「产品名两边必须一致」**的做法是让本站的
-  高权重槽位**别以品牌 token 开头**：title 改成 `Brokerage Platform — the AI-native
-  BMS Synthmind is building | Synthmind`、h1 同理让位（正文里再点名）、description
-  改写成母公司视角而非产品自述。名字仍是 BrokerTool，只是不塞进本站每一个槽位。
-  ⚠️ 这几条是**文案改动，未执行**——等下面的拍板顺序。
-  ✅ 产品站的 canonical 已于同日修好（不再指死主机，与本仓外链同主机）——
-  **别再把它当成未决项排查**；剩余的是主机归一 308、旧域 301、og.png 三项。
-  🔴 **别从 title 那头动手——第一嫌疑是主机归一没做**：产品站的 apex 与 www
-  当前**都直接 200、同 etag、彼此无跳转**，它自己的权重被劈成两半。这比 title
-  措辞大一个量级，且改起来是 Vercel 后台点一下的事。上面那三项不是与 title
-  同级的并列遗留，**主机归一是前置**。
-  ⚠️ **拍板顺序**：先主机归一 308 → 等新域被 Google 正常收录 → 再评估要不要
-  瘦身 / 调 title；在那之前动文案是拿尚未稳定的观测结果做决策
+  两页 title 也近乎同构（本站 `BrokerTool — AI-Native Brokerage Platform | Synthmind`
+  vs 产品站 `BrokerTool | AI-Native Brokerage Management Platform`）。
+  🔴 **但别从 title 那头动手——第一嫌疑是产品站主机没归一**（apex 与 www 都直接
+  200、同 etag、彼此无跳转，它自己的权重被劈成两半）。那是 Vercel 后台点一下的事，
+  比 title 措辞大一个量级。**拍板顺序**：先主机归一 → 等新域被正常收录 → 再看要不要
+  调文案；在那之前动文案是拿尚未稳定的观测结果做决策。
+  真要差异化时，杠杆是让本站的高权重槽位（title / 详情页 h1 / 首页 h2）**别以品牌
+  token 开头**，而不是改产品名——产品名两边必须一致。
 
 🚨 **对外事实红线（改这两处文案前必读，源文件头注释有完整版）**：
 - **客户绝不点名**：已上线的经纪运营系统服务真实经纪行——品牌名、生产数据量

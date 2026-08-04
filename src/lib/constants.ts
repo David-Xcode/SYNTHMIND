@@ -27,32 +27,15 @@ export const BRAND_ACCENT_DARK = '#3488CC';
 // InDevelopmentShowcase 入口卡与平台详情页的外链消费；不再进 case-studies
 // （它是在建产品，不属于 shipped 口径）
 //
-// 🚨 域名 = .ca 不是 .ai（2026-08-04 换址）：产品站已迁到 brokertool.ca，
-// 旧地址打不开——官网上任何残留的 .ai 外链都是死链。2026-08-04 实测形态：
-//   brokertool.ai      → NOERROR 但零 ANSWER（NODATA）：**区仍在**，
-//                        SOA 仍是 ns1.dnsowl.com，只是没挂 A 记录
-//   www.brokertool.ai  → NXDOMAIN（该名字不存在）
-// ⚠️ 别把这读成「域名没了」——**域名仍注册、DNS 区仍受控**，补一条 A + 301
-// 到 .ca 只差一条记录（至今未做，故历史名片/邮件签名上的 .ai 全是硬死链）。
-//
-// 🔴 品牌名 = 「BrokerTool」，**不带任何后缀**（2026-08-04 David 拍板，spec 93
-// 刀 4；产品站的 <title> / og:site_name / 页脚已同步改完）。此前一版口径写的是
+// 🔴 品牌名 = 「BrokerTool」，**不带任何后缀**；域名 = brokertool.ca
+// （2026-08-04 David 拍板改名 + 换址，spec 93 刀 4）。此前一版口径写的是
 // 「只有地址改、产品名仍叫 BrokerTool.ai」——**那条已作废**，别照它推导文案。
-// 可见文案写裸域 `brokertool.ca`（展示惯例，同本站对外说 synthmind.ca），
-// href 走本常量的规范主机——两者形态不必逐字相同，指向同一站点即可。
+// 旧域 `.ai` **已弃用**：不补 301、不续费，官网上任何 `.ai` 外链都是死链。
 //
-// 主机选 www 的理由（⚠️ 不是「零跳转」——apex 与 www 都 200、同 etag、彼此
-// 无跳转，产品站主机未归一，「零跳转」在这里不具区分力）：产品站的**全部
-// 自指信号都是 www 形态**，且 2026-08-04 已实际落到 `www.brokertool.ca`
-// （产品站仓 commit 502a1aa/54e54ba：canonical / og:url / og:image /
-// sitemap 全部 loc / robots 的 Sitemap 指令统一改由新域派生）——本常量与它
-// **同主机，已对齐**。且本仓 12 条出站外链 + SITE_URL 无一例外用 www，
-// 写 apex 会成为全仓唯一的裸 apex。
-// ⚠️ 产品站侧剩余未决（属那个仓库，本仓无门可拦，**别再当成 canonical 问题
-// 排查**——canonical 已修好）：① 主机归一未做，apex 与 www 仍都 200 且无
-// 308；② 旧域 brokertool.ai 未补 301；③ `/og.png` 从未存在（那仓无 public/
-// 目录），故本站三条外链导出的页面分享时无预览图。若产品站日后归一到 apex
-// 而非 www，此处需跟着改。
+// 主机选 www：产品站全部自指信号都是 www 形态，本仓 12 条出站外链 + SITE_URL
+// 亦无一例外，写 apex 会成为全仓唯一的裸 apex。
+// ⚠️ 产品站侧仍未做的一件事（属那个仓库，本仓无门可拦）：主机归一——apex 与 www
+// 仍都 200 且无 308。若它日后归一到 apex 而非 www，此处需跟着改。
 export const BROKERTOOL_URL = 'https://www.brokertool.ca';
 
 // CSIO 官方外链 — CsioMemberRow（身份行）与平台详情页的引用块消费
@@ -84,30 +67,3 @@ export const BASE_OPEN_GRAPH = {
     },
   ],
 };
-
-// Twitter/X 卡片基础字段 — 与 BASE_OPEN_GRAPH 同款理由，**但这是独立的一条通道**。
-// 🔴 Next 的 metadata 按字段整块继承:页面只覆写 `openGraph` 时，`twitter` 会**原样
-// 继承根 layout**，而 X 卡片优先读 `twitter:title` 而非 `og:title`。2026-08-04 实测
-// 于构建产物：产品页 og:title 已是产品名、twitter:title 却仍是公司通用标题，
-// 分享到 X 完全看不到产品名。有独立标题的页面**必须显式声明 twitter**。
-//
-// ⚠️ 现状(已知、未修)：全站只有根 layout 与 /products/brokerage-platform 声明了
-// twitter，其余页面（/、/products、/products/real-estate、/products/[slug]、
-// /about、/contact）分享到 X 一律显示公司通用标题。那些页面没有独立品牌，
-// 优先级低于产品页，但**这是同一个根因**，要修就用本工厂一起修。
-export const BASE_TWITTER = {
-  card: 'summary_large_image' as const,
-  // 对象形态而非裸 url 字符串：裸串会丢 twitter:image:alt，
-  // 读屏用户在 X 上拿不到图片描述（2026-07-27 审查修复，勿改回）
-  images: [
-    {
-      url: BASE_OPEN_GRAPH.images[0].url,
-      alt: BASE_OPEN_GRAPH.images[0].alt,
-    },
-  ],
-};
-
-/** 每页 Twitter 卡片：与 pageOpenGraph 配对使用，别只写其中一个 */
-export function pageTwitter(title: string, description: string) {
-  return { ...BASE_TWITTER, title, description };
-}

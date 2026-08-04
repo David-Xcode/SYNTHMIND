@@ -112,7 +112,11 @@ for Real Businesses'`，description 同步微调；canonical /products 不变。
 6. **CTA**：保留 `Building a brokerage? Talk to us` → /contact（container 卡
    内自悬停链接形态不变）。
 
-**事实边界（红线）**：不公开内部代号 Compass；不提任何未合作 carrier 名字；
+> ℹ️ 2026-08-04 更新：原红线含「不公开内部代号 Compass」，**已移除**——产品对外名
+> 已定为 BrokerTool 并公开发布（spec 93），`compass` 只是仓库/内部工程用名，
+> 不再需要防泄露。其余红线不变。
+
+**事实边界（红线）**：不提任何未合作 carrier 名字；
 不提内部路线图/阶段/日期；不写未上线功能的完成时态——在建产品用
 "we're building / designed to" 时态。CSIO 会员身份与新闻稿引用是仅有的
 第三方可验证事实，引用原句不改写。
@@ -211,5 +215,5 @@ synthmind.ca" 已公开双方关系；站内 T-ONE Submit case study 亦已公�
 - 不改 /products 路由、不改 case-study 详情页模板、不动 About / Contact 页。
 - 不动 Blueprint 材质/动效系统（墙、玻璃卡、按钮、tilt 引擎零改动）。
 - 不为 Quitowns / Bridle Path 预留 "coming soon" 卡位。
-- 不公开 Compass 代号与内部实现细节。
+- 不公开内部实现细节。
 - Hero 文案不重写（v7 审计定案维持）。

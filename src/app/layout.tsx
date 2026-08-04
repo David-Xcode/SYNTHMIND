@@ -54,19 +54,13 @@ export const metadata: Metadata = {
     description:
       'Working software for traditional industries — workflow automation, legacy modernization, and custom AI.',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Synthmind | AI-Powered Software Development',
-    description: 'AI tools that actually work for traditional industries.',
-    // 对象形态而非裸 url 字符串：此前只有 og:image:alt，twitter:image:alt 缺失，
-    // 读屏用户在 X 上拿不到图片描述（2026-07-27 审查修复）
-    images: [
-      {
-        url: BASE_OPEN_GRAPH.images[0].url,
-        alt: BASE_OPEN_GRAPH.images[0].alt,
-      },
-    ],
-  },
+  // 🔴 **只声明 card,不重复 title/description/image**:X 在缺 `twitter:*` 时
+  // **会 fallback 到对应的 `og:*`**。此前两套都写,结果是每个页面只覆写 openGraph、
+  // twitter 整块继承根 layout —— 实测 /about、/products、产品详情页等**六个页面**
+  // 分享到 X 全都显示首页的通用标题。删掉重复字段后,各页自动跟着**自己的** og 走,
+  // 既少一半标签,也不再有"新页面漏写 twitter"这个失效模式。
+  // `card` 是唯一不可省的——没它 X 默认用小图卡 `summary` 而非大图卡。
+  twitter: { card: 'summary_large_image' },
 };
 
 export default function RootLayout({
