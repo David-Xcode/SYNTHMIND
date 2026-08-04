@@ -84,3 +84,30 @@ export const BASE_OPEN_GRAPH = {
     },
   ],
 };
+
+// Twitter/X 卡片基础字段 — 与 BASE_OPEN_GRAPH 同款理由，**但这是独立的一条通道**。
+// 🔴 Next 的 metadata 按字段整块继承:页面只覆写 `openGraph` 时，`twitter` 会**原样
+// 继承根 layout**，而 X 卡片优先读 `twitter:title` 而非 `og:title`。2026-08-04 实测
+// 于构建产物：产品页 og:title 已是产品名、twitter:title 却仍是公司通用标题，
+// 分享到 X 完全看不到产品名。有独立标题的页面**必须显式声明 twitter**。
+//
+// ⚠️ 现状(已知、未修)：全站只有根 layout 与 /products/brokerage-platform 声明了
+// twitter，其余页面（/、/products、/products/real-estate、/products/[slug]、
+// /about、/contact）分享到 X 一律显示公司通用标题。那些页面没有独立品牌，
+// 优先级低于产品页，但**这是同一个根因**，要修就用本工厂一起修。
+export const BASE_TWITTER = {
+  card: 'summary_large_image' as const,
+  // 对象形态而非裸 url 字符串：裸串会丢 twitter:image:alt，
+  // 读屏用户在 X 上拿不到图片描述（2026-07-27 审查修复，勿改回）
+  images: [
+    {
+      url: BASE_OPEN_GRAPH.images[0].url,
+      alt: BASE_OPEN_GRAPH.images[0].alt,
+    },
+  ],
+};
+
+/** 每页 Twitter 卡片：与 pageOpenGraph 配对使用，别只写其中一个 */
+export function pageTwitter(title: string, description: string) {
+  return { ...BASE_TWITTER, title, description };
+}

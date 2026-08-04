@@ -44,6 +44,7 @@ import {
   BASE_OPEN_GRAPH,
   BROKERTOOL_URL,
   CSIO_PRESS_RELEASE_URL,
+  pageTwitter,
   SITE_URL,
 } from '@/lib/constants';
 
@@ -69,19 +70,11 @@ export const metadata: Metadata = {
     title: PAGE_TITLE,
     description: PAGE_SOCIAL_DESCRIPTION,
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: PAGE_TITLE,
-    description: PAGE_SOCIAL_DESCRIPTION,
-    // images 与根 layout 同款对象形态：裸 url 字符串会丢 twitter:image:alt，
-    // 读屏用户在 X 上拿不到图片描述（根 layout 2026-07-27 审查已修，此处对齐）
-    images: [
-      {
-        url: BASE_OPEN_GRAPH.images[0].url,
-        alt: BASE_OPEN_GRAPH.images[0].alt,
-      },
-    ],
-  },
+  // ⚠️ 卡图与 alt 仍是**公司通用**的 /og-image.jpg（"Synthmind — AI-Powered
+  // Software Development"）。标题/描述已产品化，图还没有，所以卡片整体仍读作
+  // Synthmind。这是资产欠账不是代码缺陷 —— 要产品化就出一张产品站同款 og 图
+  // （产品站仓 scripts/og-template.html 是现成的排版源）。
+  twitter: pageTwitter(PAGE_TITLE, PAGE_SOCIAL_DESCRIPTION),
 };
 
 // CSIO eDocs 五个官方段名（申请表口径，Personal lines）
